@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import logoUnsil from "../../assets/images/logo-unsil.png";
+import logoUnsil from "../../assets/images/logo-unsil.jpeg";
 import MosqueIllustration from "./MosqueIllustration";
 import {
   LayoutDashboard,

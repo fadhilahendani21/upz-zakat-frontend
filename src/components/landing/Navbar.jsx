@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Heart, User, Menu, X } from "lucide-react";
-import logoUnsil from "../../assets/images/logo-unsil.png";
+import logoUnsil from "../../assets/images/logo-unsil.jpeg";
 
 const menu = [
   { label: "Beranda", to: "/" },
