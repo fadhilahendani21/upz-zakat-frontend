@@ -14,6 +14,7 @@ import {
   BookOpen,
   UserCog,
   Settings,
+  X,
 } from "lucide-react";
 
 const pengelolaan = [
@@ -56,24 +57,46 @@ function SidebarLink({ item }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   return (
-    <aside className="w-64 shrink-0 h-screen sticky top-0 border-r border-gray-100 bg-white flex flex-col">
-      <div className="h-20 flex items-center gap-3 px-6 border-b border-gray-100">
-        <img
-          src={logoUnsil}
-          alt="Logo UPZ Zakat Universitas Siliwangi"
-          className="w-10 h-10 rounded-full object-cover shrink-0"
+    <>
+      {/* Overlay gelap, cuma muncul di mobile pas sidebar kebuka */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={onClose}
         />
-        <div>
-          <p className="font-bold text-gray-900 text-sm leading-tight">
-            UPZ Zakat
-          </p>
-          <p className="text-[11px] text-gray-500 leading-tight">
-            Universitas Siliwangi
-          </p>
+      )}
+
+      <aside
+        className={`w-64 shrink-0 h-screen bg-white flex flex-col
+          fixed top-0 left-0 z-50 border-r border-gray-100
+          transition-transform duration-300 ease-in-out
+          lg:sticky lg:translate-x-0
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="h-20 flex items-center gap-3 px-6 border-b border-gray-100">
+          <img
+            src={logoUnsil}
+            alt="Logo UPZ Zakat Universitas Siliwangi"
+            className="w-10 h-10 rounded-full object-cover shrink-0"
+          />
+          <div className="flex-1">
+            <p className="font-bold text-gray-900 text-sm leading-tight">
+              UPZ Zakat
+            </p>
+            <p className="text-[11px] text-gray-500 leading-tight">
+              Universitas Siliwangi
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="lg:hidden text-gray-400 hover:text-gray-600"
+            aria-label="Tutup menu"
+          >
+            <X size={20} />
+          </button>
         </div>
-      </div>
 
       <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
         <NavLink
@@ -138,6 +161,7 @@ export default function Sidebar() {
           </p>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

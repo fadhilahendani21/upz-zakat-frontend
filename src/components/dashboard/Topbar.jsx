@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Bell, HelpCircle, ChevronDown } from "lucide-react";
+import { Bell, HelpCircle, ChevronDown, Menu } from "lucide-react";
 
-export default function Topbar({ title, subtitle }) {
+export default function Topbar({ title, subtitle, onMenuClick }) {
   const [today, setToday] = useState(new Date());
 
   useEffect(() => {
@@ -33,20 +33,33 @@ export default function Topbar({ title, subtitle }) {
     .replace(/\bAH\b/, "H");
 
   return (
-    <div className="flex items-start justify-between mb-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {title || (
-            <>
-              Assalamu&apos;alaikum,{" "}
-              <span className="text-brand-600">Admin UPZ</span> 👋
-            </>
+    <div className="flex items-start justify-between mb-8 gap-3">
+      <div className="flex items-start gap-3 min-w-0">
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden mt-1 shrink-0 text-gray-500 hover:text-gray-700"
+          aria-label="Buka menu"
+        >
+          <Menu size={22} />
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate sm:whitespace-normal">
+            {title || (
+              <>
+                Assalamu&apos;alaikum,{" "}
+                <span className="text-brand-600">Admin UPZ</span> 👋
+              </>
+            )}
+          </h1>
+          {subtitle && (
+            <p className="text-sm text-gray-500 mt-1 hidden sm:block">
+              {subtitle}
+            </p>
           )}
-        </h1>
-        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        </div>
       </div>
 
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3 sm:gap-5 shrink-0">
         <div className="text-right hidden md:block">
           <p className="text-sm text-gray-700">{tanggalMasehi}</p>
           <p className="text-xs text-gray-400">{tanggalHijriah}</p>
