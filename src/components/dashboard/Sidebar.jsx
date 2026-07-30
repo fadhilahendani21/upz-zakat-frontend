@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import logoUnsil from "../../assets/images/logo-unsil.png";
+import MosqueIllustration from "./MosqueIllustration";
 import {
   LayoutDashboard,
   ArrowDownToLine,
@@ -124,13 +125,18 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      <div className="m-4 p-4 rounded-xl bg-brand-700 text-white text-xs leading-relaxed">
-        <p className="text-lg leading-none mb-2">&ldquo;</p>
-        <p>
-          Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu
-          membersihkan dan mensucikan mereka.
-        </p>
-        <p className="mt-2 text-brand-200 text-[11px]">– QS. At-Taubah: 103</p>
+      <div className="relative m-4 p-4 rounded-xl bg-brand-700 text-white text-xs leading-relaxed overflow-hidden">
+        <MosqueIllustration className="pointer-events-none absolute -bottom-6 -right-4 w-32 text-white/10 -z-0" />
+        <div className="relative z-10">
+          <p className="text-lg leading-none mb-2">&ldquo;</p>
+          <p>
+            Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu
+            membersihkan dan mensucikan mereka.
+          </p>
+          <p className="mt-2 text-brand-200 text-[11px]">
+            – QS. At-Taubah: 103
+          </p>
+        </div>
       </div>
     </aside>
   );
