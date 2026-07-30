@@ -43,7 +43,7 @@ export default function Hero() {
         </svg>
 
         <div
-          className="absolute inset-0 bg-brand-100"
+          className="absolute inset-0 bg-linear-to-br from-brand-200 via-brand-100 to-white"
           style={{ clipPath: "url(#heroBlob)" }}
         >
           <img
