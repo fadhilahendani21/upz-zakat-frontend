@@ -29,7 +29,7 @@ export default function StatsBar() {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-6 pb-16">
+    <section className="max-w-7xl mx-auto px-6 pb-8">
       <div className="bg-brand-700 rounded-2xl px-8 py-6 flex flex-col lg:flex-row lg:items-center lg:divide-x lg:divide-white/15 gap-6 lg:gap-0">
         <div className="flex-1 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:pr-8">
           {items.map((item) => (
