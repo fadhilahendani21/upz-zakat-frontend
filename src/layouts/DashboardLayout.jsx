@@ -20,7 +20,7 @@ export default function DashboardLayout() {
 
         <footer className="relative z-10 mt-10 pt-5 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-gray-500">
           <p>
-            © {new Date().getFullYear()} UPZ Zakat Universitas Siliwangi
+            © 2025 UPZ Zakat Universitas Siliwangi
             <span className="hidden sm:inline"> · </span>
             <span className="block sm:inline">
               Transparan, Amanah, dan Memberi Manfaat
