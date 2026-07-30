@@ -1,5 +1,6 @@
 import { ShieldCheck, Wallet, FileSearch } from "lucide-react";
 import Button from "../common/Button";
+import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
 
 export default function Hero() {
   return (
@@ -45,10 +46,11 @@ export default function Hero() {
           className="absolute inset-0 bg-brand-100"
           style={{ clipPath: "url(#heroBlob)" }}
         >
-          {/* Ganti div di bawah ini dengan <img src={...} className="w-full h-full object-cover" /> */}
-          <div className="absolute inset-0 flex items-center justify-center text-brand-700 font-semibold text-center px-10">
-            Foto Gedung Universitas Siliwangi
-          </div>
+          <img
+            src={gedungUnsil}
+            alt="Gedung Universitas Siliwangi"
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <div className="absolute bottom-6 left-24 right-6 sm:left-32">
