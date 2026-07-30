@@ -9,14 +9,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    const res = await login(email, password);
-    localStorage.setItem("token", res.token);
-    setLoading(false);
-    navigate("/dashboard");
+    setError(null);
+    try {
+      const res = await login(email, password);
+      localStorage.setItem("token", res.token);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message ?? "Login gagal. Periksa email dan password Anda.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -56,6 +63,11 @@ export default function LoginPage() {
               placeholder="********"
             />
           </div>
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Memproses..." : "Masuk"}
           </Button>
