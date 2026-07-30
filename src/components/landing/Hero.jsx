@@ -51,15 +51,19 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-6 right-10 bg-white/95 backdrop-blur rounded-2xl p-5 shadow-lg">
-          <p className="text-brand-700 text-2xl leading-none mb-2">&ldquo;</p>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu
-            membersihkan dan mensucikan mereka.
-          </p>
-          <p className="mt-2 text-xs text-gray-500 font-medium">
-            – QS. At-Taubah: 103
-          </p>
+        <div className="absolute bottom-6 left-24 right-6 sm:left-32">
+          <div className="relative bg-white/95 backdrop-blur rounded-2xl p-5 pt-6 shadow-lg">
+            <div className="absolute -top-4 left-5 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center text-lg font-serif shadow-md">
+              &ldquo;
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Ambillah zakat dari sebagian harta mereka, dengan zakat itu
+              kamu membersihkan dan mensucikan mereka.
+            </p>
+            <p className="mt-2 text-xs text-gray-500 font-medium">
+              – QS. At-Taubah: 103
+            </p>
+          </div>
         </div>
       </div>
     </section>
