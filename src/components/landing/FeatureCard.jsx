@@ -20,7 +20,7 @@ const icons = {
 
 export default function FeatureCard() {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+    <section className="max-w-7xl mx-auto px-6 pt-2 pb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
       {dummyFitur.map((fitur) => {
         const Icon = icons[fitur.icon];
         return (

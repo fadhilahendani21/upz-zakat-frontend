@@ -4,7 +4,7 @@ import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
 
 export default function Hero() {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12 items-center">
+    <section className="max-w-7xl mx-auto px-6 pt-12 pb-4 grid lg:grid-cols-2 gap-12 items-center">
       <div>
         <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
           <ShieldCheck size={14} /> Transparan • Amanah • Profesional
