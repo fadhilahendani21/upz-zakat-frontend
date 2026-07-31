@@ -5,67 +5,81 @@ import LineChartCard from "../../components/dashboard/LineChartCard";
 import DonutChartCard from "../../components/dashboard/DonutChartCard";
 import TransactionList from "../../components/dashboard/TransactionList";
 import ProgramProgress from "../../components/dashboard/ProgramProgress";
-import {
-  getDashboardStats,
-  getRingkasanDana,
-  getGrafikTahunan,
-  getTransaksiTerbaru,
-  getProgramAktif,
-} from "../../services/dashboardService";
+import { getAllDashboardData, getCachedDashboardData, clearDashboardCache } from "../../services/dashboardService";
 import { isDemoMode } from "../../services/authService";
 import { formatRupiah } from "../../utils/formatRupiah";
 
 const IS_DEMO = isDemoMode();
 
+// Baca cache localStorage SEKARANG (synchronous, sebelum component render)
+// → data langsung tersedia sebagai initial state
+const _cached = getCachedDashboardData();
+
 export default function DashboardHome() {
-  const [stats, setStats] = useState(null);
-  const [ringkasan, setRingkasan] = useState([]);
-  const [grafik, setGrafik] = useState([]);
-  const [transaksi, setTransaksi] = useState([]);
-  const [program, setProgram] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Initial state dari localStorage — render langsung tanpa loading
+  const [stats, setStats]       = useState(_cached?.stats ?? null);
+  const [ringkasan, setRingkasan] = useState(_cached?.ringkasanDana ?? []);
+  const [grafik, setGrafik]     = useState(_cached?.grafik ?? []);
+  const [transaksi, setTransaksi] = useState(_cached?.transaksi ?? []);
+  const [program, setProgram]   = useState(_cached?.program ?? []);
+
+  // loading hanya true jika belum ada cache sama sekali
+  const [loading, setLoading] = useState(!_cached && !IS_DEMO);
+  const [refreshing, setRefreshing] = useState(!!_cached); // background refresh indicator
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Kalau belum login, redirect ke login
+    // Kalau belum login (dan bukan demo), redirect ke login
     const token = localStorage.getItem("token");
-    if (!token) {
+    if (!token && !IS_DEMO) {
       window.location.href = "/masuk";
       return;
     }
 
-    async function fetchAll() {
-      setLoading(true);
-      setError(null);
+    async function fetchFresh() {
+      // Kalau ada cache → fetch diam-diam (tidak tampilkan loading penuh)
+      // Kalau tidak ada cache → tampilkan loading spinner
+      if (!_cached) setLoading(true);
+      setRefreshing(true);
+
       try {
-        // allSettled: tiap request independen, satu gagal tidak block yg lain
-        const [sRes, rRes, gRes, tRes, pRes] = await Promise.allSettled([
-          getDashboardStats(),
-          getRingkasanDana(),
-          getGrafikTahunan(),
-          getTransaksiTerbaru(5),
-          getProgramAktif(),
-        ]);
-
-        // Kalau stats gagal (paling kritis), tampilkan error
-        if (sRes.status === "rejected") {
-          throw new Error(sRes.reason?.message ?? "Gagal mengambil data statistik dashboard.");
-        }
-
-        setStats(sRes.value);
-        if (rRes.status === "fulfilled") setRingkasan(rRes.value);
-        if (gRes.status === "fulfilled") setGrafik(gRes.value);
-        if (tRes.status === "fulfilled") setTransaksi(tRes.value);
-        if (pRes.status === "fulfilled") setProgram(pRes.value);
+        const data = await getAllDashboardData();
+        setStats(data.stats);
+        setRingkasan(data.ringkasanDana);
+        setGrafik(data.grafik);
+        setTransaksi(data.transaksi);
+        setProgram(data.program);
+        setError(null);
       } catch (err) {
-        setError(err.message ?? "Gagal memuat data dashboard.");
+        // Kalau ada cache, jangan tampilkan error — biarkan data lama tetap tampil
+        if (!_cached) setError(err.message ?? "Gagal memuat data dashboard.");
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     }
 
-    fetchAll();
+    fetchFresh();
   }, []);
+
+  // Paksa refresh: hapus localStorage cache lalu fetch ulang dari API
+  async function forceRefresh() {
+    clearDashboardCache();
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAllDashboardData();
+      setStats(data.stats);
+      setRingkasan(data.ringkasanDana);
+      setGrafik(data.grafik);
+      setTransaksi(data.transaksi);
+      setProgram(data.program);
+    } catch (err) {
+      setError(err.message ?? "Gagal memuat data.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -81,7 +95,7 @@ export default function DashboardHome() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <p className="text-red-500 font-medium">{error}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={forceRefresh}
           className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
         >
           Coba Lagi
@@ -92,6 +106,7 @@ export default function DashboardHome() {
 
   return (
     <div>
+
       {/* Banner Mode Demo */}
       {IS_DEMO && (
         <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2.5 rounded-xl mb-5">
@@ -102,6 +117,29 @@ export default function DashboardHome() {
           </span>
         </div>
       )}
+
+      {/* Indikator background refresh + tombol force refresh */}
+      <div className="flex items-center justify-between mb-3">
+        {refreshing && !IS_DEMO ? (
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="w-3 h-3 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
+            <span>Memperbarui data...</span>
+          </div>
+        ) : <span />}
+        {!IS_DEMO && (
+          <button
+            onClick={forceRefresh}
+            title="Paksa ambil data terbaru dari server"
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-green-600 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+              <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+            </svg>
+            Refresh
+          </button>
+        )}
+      </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
