@@ -33,7 +33,7 @@ export default function Hero() {
         </p>
       </div>
 
-      <div className="relative aspect-4/3">
+      <div className="relative aspect-4/3 p-4 sm:p-6">
         <svg width="0" height="0" className="absolute">
           <defs>
             <clipPath id="heroBlob" clipPathUnits="objectBoundingBox">
@@ -42,8 +42,18 @@ export default function Hero() {
           </defs>
         </svg>
 
+        {/* Halo gradasi di belakang foto, sengaja dibikin lebih besar biar keliatan di sisi luar foto */}
         <div
-          className="absolute inset-0 bg-linear-to-br from-brand-200 via-brand-100 to-white"
+          className="absolute inset-0"
+          style={{
+            clipPath: "url(#heroBlob)",
+            background:
+              "linear-gradient(to bottom right, #b8e0bd, #dbf0dd, #ffffff)",
+          }}
+        ></div>
+
+        <div
+          className="absolute inset-4 sm:inset-6"
           style={{ clipPath: "url(#heroBlob)" }}
         >
           <img
