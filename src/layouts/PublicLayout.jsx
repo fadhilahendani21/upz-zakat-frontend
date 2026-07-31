@@ -3,7 +3,7 @@ import Navbar from "../components/landing/Navbar";
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-linear-to-b from-white via-brand-50 to-brand-200">
       <Navbar />
       <main>
         <Outlet />

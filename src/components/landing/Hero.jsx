@@ -33,7 +33,7 @@ export default function Hero() {
         </p>
       </div>
 
-      <div className="relative aspect-4/3 p-4 sm:p-6">
+      <div className="relative aspect-square sm:aspect-4/3 p-4 sm:p-6">
         <svg width="0" height="0" className="absolute">
           <defs>
             <clipPath id="heroBlob" clipPathUnits="objectBoundingBox">
@@ -59,7 +59,7 @@ export default function Hero() {
           <img
             src={gedungUnsil}
             alt="Gedung Universitas Siliwangi"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-bottom"
           />
         </div>
 
