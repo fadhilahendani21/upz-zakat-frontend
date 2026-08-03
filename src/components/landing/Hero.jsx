@@ -4,75 +4,59 @@ import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
 
 export default function Hero() {
   return (
-    <section className="max-w-7xl mx-auto px-6 pt-12 pb-4 grid lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
-          <ShieldCheck size={14} /> Transparan • Amanah • Profesional
-        </span>
-
-        <h1 className="mt-5 text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
-          Menunaikan Zakat,{" "}
-          <span className="text-brand-600">Membersamai Umat</span>
-        </h1>
-
-        <p className="mt-5 text-gray-600 leading-relaxed">
-          UPZ Zakat Universitas Siliwangi hadir untuk memudahkan sivitas
-          akademika dan masyarakat dalam menunaikan zakat, infak, dan sedekah
-          secara aman, transparan, dan terpercaya.
-        </p>
-
-        <div className="mt-8 flex flex-wrap gap-4">
-          <Button icon={Wallet}>Tunaikan Zakat</Button>
-          <Button variant="outline" icon={FileSearch}>
-            Cek Perhitungan Zakat
-          </Button>
-        </div>
-
-        <p className="mt-5 text-xs text-gray-500 flex items-center gap-2">
-          <ShieldCheck size={14} /> Transaksi aman dan diawasi oleh Syariah
-        </p>
-      </div>
-
-      <div className="relative aspect-square sm:aspect-4/3 p-4 sm:p-6">
-        <svg width="0" height="0" className="absolute">
-          <defs>
-            <clipPath id="heroBlob" clipPathUnits="objectBoundingBox">
-              <path d="M0.25,0 L1,0 L1,1 L0.32,1 C0.12,1 0,0.83 0,0.58 C0,0.58 0,0.25 0.25,0 Z" />
-            </clipPath>
-          </defs>
-        </svg>
-
-        {/* Halo gradasi di belakang foto, sengaja dibikin lebih besar biar keliatan di sisi luar foto */}
-        <div
-          className="absolute inset-0"
-          style={{
-            clipPath: "url(#heroBlob)",
-            background:
-              "linear-gradient(to bottom right, #b8e0bd, #dbf0dd, #ffffff)",
-          }}
-        ></div>
-
-        <div
-          className="absolute inset-4 sm:inset-6"
-          style={{ clipPath: "url(#heroBlob)" }}
-        >
+    <section className="relative overflow-hidden">
+      <div className="relative max-w-7xl w-full mx-auto px-6 py-16 sm:py-24">
+        <div className="absolute inset-y-0 right-6 w-full sm:w-[65%]">
           <img
             src={gedungUnsil}
             alt="Gedung Universitas Siliwangi"
-            className="w-full h-full object-cover object-bottom"
+            className="w-full h-full object-cover object-right"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent 0%, transparent 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, black 55%)",
+              maskImage:
+                "linear-gradient(to right, transparent 0%, transparent 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, black 55%)",
+            }}
           />
         </div>
+        <div className="relative max-w-xl">
+          <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
+            <ShieldCheck size={14} /> Transparan • Amanah • Profesional
+          </span>
 
-        <div className="absolute bottom-6 left-24 right-6 sm:left-32">
-          <div className="relative bg-white/95 backdrop-blur rounded-2xl p-5 pt-6 shadow-lg">
+          <h1 className="mt-5 text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+            Menunaikan Zakat,{" "}
+            <span className="text-brand-600">Membersamai Umat</span>
+          </h1>
+
+          <p className="mt-5 text-gray-600 leading-relaxed">
+            UPZ Zakat Universitas Siliwangi hadir untuk memudahkan sivitas
+            akademika dan masyarakat dalam menunaikan zakat, infak, dan
+            sedekah secara aman, transparan, dan terpercaya.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Button icon={Wallet}>Tunaikan Zakat</Button>
+            <Button variant="outline" icon={FileSearch}>
+              Cek Perhitungan Zakat
+            </Button>
+          </div>
+
+          <p className="mt-5 text-xs text-gray-500 flex items-center gap-2">
+            <ShieldCheck size={14} /> Transaksi aman dan diawasi oleh Syariah
+          </p>
+        </div>
+
+        <div className="hidden md:block absolute bottom-6 right-10 w-72 sm:w-80 z-10">
+          <div className="relative bg-white/70 backdrop-blur-sm rounded-2xl p-5 pt-6 shadow-lg">
             <div className="absolute -top-4 left-5 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center text-lg font-serif shadow-md">
               &ldquo;
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed">
+            <p className="text-sm text-gray-800 leading-relaxed">
               Ambillah zakat dari sebagian harta mereka, dengan zakat itu
               kamu membersihkan dan mensucikan mereka.
             </p>
-            <p className="mt-2 text-xs text-gray-500 font-medium">
+            <p className="mt-2 text-xs text-gray-600 font-medium">
               – QS. At-Taubah: 103
             </p>
           </div>
