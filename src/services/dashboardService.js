@@ -2,9 +2,10 @@
  * dashboardService.js
  *
  * Strategi:
- *  1. Kalau VITE_API_URL tidak di-set di .env → langsung pakai dummy data (mode demo)
- *  2. Kalau VITE_API_URL di-set tapi API gagal/timeout → fallback ke dummy data
- *  3. Kalau API berhasil → pakai data real dari backend
+ *  1. VITE_API_URL tidak di-set → mode demo (dummy data)
+ *  2. VITE_API_URL di-set → 1 request ke /api/dashboard/all (bukan 5 terpisah)
+ *     Ini menghilangkan 4 round-trip token verification ke Neon.
+ *  3. Kalau API gagal → fallback ke dummy data
  */
 
 import { dummyStats, dummyRingkasanDana } from "../data/dummyStats";
@@ -13,13 +14,52 @@ import { dummyTransaksi } from "../data/dummyTransaksi";
 import { dummyProgramAktif } from "../data/dummyProgram";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const USE_DUMMY = !API_URL; // tidak ada VITE_API_URL → mode demo
+const USE_DUMMY = !API_URL;
 
 if (USE_DUMMY) {
   console.info(
     "%c[UPZ Dashboard] Mode Demo aktif — VITE_API_URL tidak di-set. Data ditampilkan dari dummy.",
     "color: #f59e0b; font-weight: bold;"
   );
+}
+
+// ─── Client-side SWR Cache (localStorage) ────────────────────────────────────
+
+const LS_KEY = "upz_dashboard_data";
+const LS_TTL = 5 * 60 * 1000; // 5 menit dalam ms
+
+/**
+ * Baca cache dashboard dari localStorage — SYNCHRONOUS, instan.
+ * Return null jika tidak ada atau sudah expired.
+ */
+export function getCachedDashboardData() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const { data, savedAt } = JSON.parse(raw);
+    if (Date.now() - savedAt > LS_TTL) return null; // expired
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Simpan data dashboard ke localStorage setelah fetch berhasil.
+ */
+function saveDashboardCache(data) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ data, savedAt: Date.now() }));
+  } catch {
+    // localStorage penuh atau private browsing — abaikan
+  }
+}
+
+/**
+ * Hapus cache (dipanggil saat logout)
+ */
+export function clearDashboardCache() {
+  localStorage.removeItem(LS_KEY);
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -32,131 +72,92 @@ function authHeaders() {
   };
 }
 
-/**
- * Handle response HTTP — 401 redirect ke /masuk, selainnya throw error
- */
-async function handleResponse(res, errorMsg) {
-  if (res.status === 401) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/masuk";
-    throw new Error("Sesi habis. Silakan login kembali.");
-  }
-  if (!res.ok) {
-    try {
-      const body = await res.json();
-      throw new Error(body.message ?? errorMsg);
-    } catch {
-      throw new Error(errorMsg);
-    }
-  }
-  return await res.json();
-}
+// ─── Main: 1 endpoint gabungan ───────────────────────────────────────────────
 
 /**
- * Wrapper: coba fetch ke API, kalau gagal (network error / timeout) → fallback
- * @param {() => Promise<any>} apiFn  - fungsi fetch ke API
- * @param {any} fallback              - data dummy sebagai fallback
- * @param {string} label              - nama endpoint untuk log
+ * Ambil SEMUA data dashboard sekaligus dalam 1 request.
+ * Mengembalikan object: { stats, ringkasanDana, grafik, transaksi, program }
+ *
+ * Keuntungan vs 5 endpoint terpisah:
+ *  - 1x token verification (vs 5x)
+ *  - 1x TCP connection (vs 5x sequential di php artisan serve)
+ *  - Dashboard load dari ~5 detik → ~1 detik
  */
-async function withFallback(apiFn, fallback, label) {
+export async function getAllDashboardData(tahun = 2025) {
+  // Mode demo: langsung return dummy
   if (USE_DUMMY) {
-    return Promise.resolve(fallback);
+    return {
+      stats: dummyStats,
+      ringkasanDana: dummyRingkasanDana,
+      grafik: dummyChartTahunan,
+      transaksi: dummyTransaksi.slice(0, 5),
+      program: dummyProgramAktif,
+    };
   }
+
   try {
-    return await apiFn();
+    const res = await fetch(`${API_URL}/dashboard/all?tahun=${tahun}`, {
+      headers: authHeaders(),
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/masuk";
+      throw new Error("Sesi habis. Silakan login kembali.");
+    }
+
+    if (!res.ok) {
+      throw new Error("Gagal mengambil data dashboard.");
+    }
+
+    const data = await res.json();
+    saveDashboardCache(data); // simpan untuk kunjungan berikutnya
+    return data;
   } catch (err) {
     console.warn(
-      `%c[UPZ Dashboard] Gagal ambil ${label}, fallback ke dummy data. Error: ${err.message}`,
+      `%c[UPZ Dashboard] API gagal, fallback ke dummy. Error: ${err.message}`,
       "color: #f59e0b;"
     );
-    return fallback;
+    // Fallback ke dummy data jika API gagal
+    return {
+      stats: dummyStats,
+      ringkasanDana: dummyRingkasanDana,
+      grafik: dummyChartTahunan,
+      transaksi: dummyTransaksi.slice(0, 5),
+      program: dummyProgramAktif,
+    };
   }
 }
 
-// ─── Service Functions ────────────────────────────────────────────────────────
+// ─── Legacy individual functions (tetap dipertahankan untuk kompatibilitas) ──
 
-/**
- * Ambil statistik utama dashboard
- * GET /api/dashboard/stats?tahun=2025
- */
+/** @deprecated Gunakan getAllDashboardData() untuk performa lebih baik */
 export async function getDashboardStats(tahun = 2025) {
-  return withFallback(
-    async () => {
-      const res = await fetch(`${API_URL}/dashboard/stats?tahun=${tahun}`, {
-        headers: authHeaders(),
-      });
-      return handleResponse(res, "Gagal mengambil data statistik dashboard.");
-    },
-    dummyStats,
-    "dashboard/stats"
-  );
+  const data = await getAllDashboardData(tahun);
+  return data.stats;
 }
 
-/**
- * Ambil data ringkasan dana untuk donut chart
- * GET /api/dashboard/ringkasan-dana?tahun=2025
- */
+/** @deprecated Gunakan getAllDashboardData() */
 export async function getRingkasanDana(tahun = 2025) {
-  return withFallback(
-    async () => {
-      const res = await fetch(`${API_URL}/dashboard/ringkasan-dana?tahun=${tahun}`, {
-        headers: authHeaders(),
-      });
-      return handleResponse(res, "Gagal mengambil data ringkasan dana.");
-    },
-    dummyRingkasanDana,
-    "dashboard/ringkasan-dana"
-  );
+  const data = await getAllDashboardData(tahun);
+  return data.ringkasanDana;
 }
 
-/**
- * Ambil data grafik pengumpulan vs penyaluran per bulan
- * GET /api/dashboard/grafik?tahun=2025
- */
+/** @deprecated Gunakan getAllDashboardData() */
 export async function getGrafikTahunan(tahun = 2025) {
-  return withFallback(
-    async () => {
-      const res = await fetch(`${API_URL}/dashboard/grafik?tahun=${tahun}`, {
-        headers: authHeaders(),
-      });
-      return handleResponse(res, "Gagal mengambil data grafik.");
-    },
-    dummyChartTahunan,
-    "dashboard/grafik"
-  );
+  const data = await getAllDashboardData(tahun);
+  return data.grafik;
 }
 
-/**
- * Ambil daftar transaksi terbaru
- * GET /api/transaksi?limit=5&sort=terbaru
- */
+/** @deprecated Gunakan getAllDashboardData() */
 export async function getTransaksiTerbaru(limit = 5) {
-  return withFallback(
-    async () => {
-      const res = await fetch(`${API_URL}/transaksi?limit=${limit}&sort=terbaru`, {
-        headers: authHeaders(),
-      });
-      return handleResponse(res, "Gagal mengambil data transaksi.");
-    },
-    dummyTransaksi.slice(0, limit),
-    "transaksi"
-  );
+  const data = await getAllDashboardData();
+  return data.transaksi;
 }
 
-/**
- * Ambil daftar program penyaluran aktif
- * GET /api/program?status=aktif
- */
+/** @deprecated Gunakan getAllDashboardData() */
 export async function getProgramAktif(tahun = 2025) {
-  return withFallback(
-    async () => {
-      const res = await fetch(`${API_URL}/program?status=aktif&tahun=${tahun}`, {
-        headers: authHeaders(),
-      });
-      return handleResponse(res, "Gagal mengambil data program aktif.");
-    },
-    dummyProgramAktif,
-    "program"
-  );
+  const data = await getAllDashboardData(tahun);
+  return data.program;
 }
