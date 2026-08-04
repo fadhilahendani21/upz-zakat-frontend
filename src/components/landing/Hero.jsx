@@ -5,8 +5,8 @@ import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
 export default function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="relative max-w-7xl w-full mx-auto px-6 py-16 sm:py-24">
-        <div className="absolute inset-y-0 right-6 w-full sm:w-[65%]">
+      <div className="relative max-w-7xl w-full mx-auto px-6 py-10 sm:py-16 lg:py-24">
+        <div className="hidden sm:block absolute inset-y-0 right-6 w-[65%]">
           <img
             src={gedungUnsil}
             alt="Gedung Universitas Siliwangi"
@@ -19,12 +19,13 @@ export default function Hero() {
             }}
           />
         </div>
+
         <div className="relative max-w-xl">
           <span className="inline-flex items-center gap-2 text-xs font-medium text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
             <ShieldCheck size={14} /> Transparan • Amanah • Profesional
           </span>
 
-          <h1 className="mt-5 text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+          <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
             Menunaikan Zakat,{" "}
             <span className="text-brand-600">Membersamai Umat</span>
           </h1>
@@ -44,6 +45,24 @@ export default function Hero() {
 
           <p className="mt-5 text-xs text-gray-500 flex items-center gap-2">
             <ShieldCheck size={14} /> Transaksi aman dan diawasi oleh Syariah
+          </p>
+        </div>
+
+        <div className="sm:hidden relative mt-8 rounded-2xl overflow-hidden shadow-md">
+          <img
+            src={gedungUnsil}
+            alt="Gedung Universitas Siliwangi"
+            className="w-full h-56 object-cover object-bottom"
+          />
+        </div>
+
+        <div className="sm:hidden mt-4 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <p className="text-xs text-gray-700 leading-relaxed">
+            &ldquo;Ambillah zakat dari sebagian harta mereka, dengan zakat itu
+            kamu membersihkan dan mensucikan mereka.&rdquo;
+          </p>
+          <p className="mt-1 text-[11px] text-gray-500 font-medium">
+            – QS. At-Taubah: 103
           </p>
         </div>
 

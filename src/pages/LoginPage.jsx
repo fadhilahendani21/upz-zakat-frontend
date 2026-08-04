@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ShieldCheck, Loader2 } from "lucide-react";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import FloatingLeaves from "../components/common/FloatingLeaves";
 import { login } from "../services/authService";
 
 export default function LoginPage() {
@@ -9,30 +11,32 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    try {
-      const res = await login(email, password);
-      localStorage.setItem("token", res.token);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.message ?? "Login gagal. Periksa email dan password Anda.");
-    } finally {
-      setLoading(false);
-    }
+    const res = await login(email, password);
+    localStorage.setItem("token", res.token);
+    setLoading(false);
+    navigate("/dashboard");
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-      <Card className="w-full max-w-sm">
-        <h1 className="text-xl font-bold text-gray-900 mb-1">
+    <div className="min-h-screen bg-linear-to-b from-white via-brand-50 to-brand-200 flex items-center justify-center px-6 relative overflow-hidden">
+      <FloatingLeaves />
+
+      <Card
+        className="w-full max-w-sm relative z-10 bg-white/75 backdrop-blur-md"
+        style={{ animation: "fadeInUp 0.6s ease-out" }}
+      >
+        <div className="w-12 h-12 mx-auto rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
+          <ShieldCheck size={22} />
+        </div>
+
+        <h1 className="text-xl font-bold text-gray-900 mb-1 text-center">
           Masuk Admin UPZ
         </h1>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-gray-500 mb-6 text-center">
           UPZ Zakat Universitas Siliwangi
         </p>
 
@@ -46,7 +50,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:scale-[1.02] focus:border-brand-400"
               placeholder="admin@unsil.ac.id"
             />
           </div>
@@ -59,16 +63,16 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:scale-[1.02] focus:border-brand-400"
               placeholder="********"
             />
           </div>
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+            disabled={loading}
+          >
+            {loading && <Loader2 size={16} className="animate-spin" />}
             {loading ? "Memproses..." : "Masuk"}
           </Button>
         </form>

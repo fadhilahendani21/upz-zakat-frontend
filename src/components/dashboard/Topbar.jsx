@@ -47,7 +47,7 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
             {title || (
               <>
                 Assalamu&apos;alaikum,{" "}
-                <span className="text-brand-600">Admin UPZ</span> 👋
+                <span className="text-brand-600">Admin UPZ</span>
               </>
             )}
           </h1>
