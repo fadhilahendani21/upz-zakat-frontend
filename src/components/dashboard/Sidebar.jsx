@@ -6,6 +6,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Users,
+  Heart,
   Globe,
   FolderKanban,
   Receipt,
@@ -20,9 +21,10 @@ import {
 const pengelolaan = [
   { label: "Pengumpulan", icon: ArrowDownToLine, to: "/dashboard/pengumpulan" },
   { label: "Penyaluran", icon: ArrowUpFromLine, to: "/dashboard/penyaluran" },
-  { label: "Muzakki & Mustahik", icon: Users, to: "/dashboard/muzakki-mustahik" },
-  { label: "Donasi Online", icon: Globe, to: "/dashboard/donasi-online" },
+  { label: "Muzakki", icon: Users, to: "/dashboard/muzakki" },
+  { label: "Mustahik", icon: Heart, to: "/dashboard/mustahik" },
   { label: "Program", icon: FolderKanban, to: "/dashboard/program" },
+  { label: "Donasi Online", icon: Globe, to: "/dashboard/donasi-online" },
 ];
 
 const keuangan = [

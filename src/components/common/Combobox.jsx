@@ -97,8 +97,8 @@ export default function Combobox({
       >
         {value ? (
           <span className="flex-1 truncate text-gray-800">{value.nama}
-            {value.unit_kerja && (
-              <span className="text-gray-400 ml-1 text-xs">— {value.unit_kerja}</span>
+            {(value.unit_kerja || value.kategori) && (
+              <span className="text-gray-400 ml-1 text-xs">— {value.unit_kerja || value.kategori}</span>
             )}
           </span>
         ) : (
@@ -152,8 +152,8 @@ export default function Combobox({
                       ${value?.id === opt.id ? "bg-brand-50 text-brand-700 font-medium" : "text-gray-700"}`}
                   >
                     <span className="block font-medium">{opt.nama}</span>
-                    {opt.unit_kerja && (
-                      <span className="block text-xs text-gray-400">{opt.unit_kerja}</span>
+                    {(opt.unit_kerja || opt.kategori) && (
+                      <span className="block text-xs text-gray-400">{opt.unit_kerja || opt.kategori}</span>
                     )}
                   </button>
                 </li>

@@ -10,7 +10,7 @@ import Combobox from "../../components/common/Combobox";
 import { formatRupiah } from "../../utils/formatRupiah";
 import { getMuzakkiOptions } from "../../services/muzakkiService";
 import { getPengumpulan, savePengumpulan } from "../../services/transaksiService";
-
+import { NumericFormat } from "react-number-format";
 // ── Konstanta ─────────────────────────────────────────────────────────────────
 const KATEGORI_OPTIONS = ["Zakat Fitrah", "Zakat Maal", "Infaq", "Sedekah", "Dana Lainnya"];
 const BULAN_OPTIONS = [
@@ -106,9 +106,13 @@ function ModalTambah({ onClose, onSaved }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nominal (Rp)</label>
-              <input
-                type="number" placeholder="0" min="1"
-                value={form.nominal} onChange={(e) => setForm({ ...form, nominal: e.target.value })}
+              <NumericFormat
+                placeholder="0"
+                value={form.nominal}
+                onValueChange={(values) => setForm({ ...form, nominal: values.value })}
+                thousandSeparator="."
+                decimalSeparator=","
+                prefix="Rp "
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
               />
             </div>

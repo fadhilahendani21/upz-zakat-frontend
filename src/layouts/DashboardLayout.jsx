@@ -26,13 +26,21 @@ export default function DashboardLayout() {
       topbarTitle = "Penyaluran";
       topbarSubtitle = "Manajemen penyaluran dana zakat kepada mustahik.";
       break;
-    case "/dashboard/muzakki-mustahik":
-      topbarTitle = "Muzakki & Mustahik";
-      topbarSubtitle = "Data induk muzakki dan mustahik UPZ Universitas Siliwangi.";
+    case "/dashboard/muzakki":
+      topbarTitle = "Muzakki";
+      topbarSubtitle = "Data induk muzakki (pemberi zakat) UPZ Universitas Siliwangi.";
+      break;
+    case "/dashboard/mustahik":
+      topbarTitle = "Mustahik";
+      topbarSubtitle = "Data induk mustahik (penerima zakat) UPZ Universitas Siliwangi.";
       break;
     case "/dashboard/donasi-online":
       topbarTitle = "Donasi Online";
       topbarSubtitle = "Pantau dan kelola transaksi donasi online.";
+      break;
+    case "/dashboard/program":
+      topbarTitle = "Program Penyaluran";
+      topbarSubtitle = "Kelola program-program penyaluran zakat aktif UPZ Unsil.";
       break;
     case "/dashboard/transaksi":
       topbarTitle = "Transaksi Umum";

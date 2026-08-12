@@ -1,35 +1,41 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Users, UserCheck, UserX, Plus, Search,
+  Heart, UserCheck, UserX, Plus, Search,
   ChevronLeft, ChevronRight, X, Pencil, Trash2,
-  Phone, Mail, Building2, TrendingUp,
+  Phone, MapPin,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
-import { formatRupiah } from "../../utils/formatRupiah";
 import {
-  getMuzakki, createMuzakki, updateMuzakki, deleteMuzakki,
-} from "../../services/muzakkiService";
+  getMustahik, createMustahik, updateMustahik, deleteMustahik,
+} from "../../services/mustahikService";
 
 // ── Konstanta ─────────────────────────────────────────────────────────────────
-const UNIT_KERJA_OPTIONS = [
-  "Rektorat", "FKIP", "Fakultas Hukum", "Fakultas Ekonomi & Bisnis",
-  "Fakultas Pertanian", "Fakultas Teknik", "Fakultas Ilmu Kesehatan",
-  "Fakultas MIPA", "Pascasarjana", "Unit Kerja Lainnya",
+const KATEGORI_OPTIONS = [
+  "Fakir Miskin", "Gharim", "Muallaf", "Ibnu Sabil", "Fi Sabilillah", "Amil",
 ];
+
+const KATEGORI_COLORS = {
+  "Fakir Miskin":  "bg-red-50 text-red-700",
+  "Gharim":        "bg-orange-50 text-orange-700",
+  "Muallaf":       "bg-purple-50 text-purple-700",
+  "Ibnu Sabil":    "bg-blue-50 text-blue-700",
+  "Fi Sabilillah": "bg-green-50 text-green-700",
+  "Amil":          "bg-yellow-50 text-yellow-700",
+};
 
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
   const [form, setForm] = useState({
-    nama: initial?.nama ?? "",
-    email: initial?.email ?? "",
-    no_hp: initial?.no_hp ?? "",
-    unit_kerja: initial?.unit_kerja ?? "",
-    status: initial?.status ?? "aktif",
+    nama:     initial?.nama ?? "",
+    no_hp:    initial?.no_hp ?? "",
+    alamat:   initial?.alamat ?? "",
+    kategori: initial?.kategori ?? "Fakir Miskin",
+    status:   initial?.status ?? "aktif",
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors]   = useState({});
 
   function set(field, val) {
     setForm((f) => ({ ...f, [field]: val }));
@@ -39,8 +45,6 @@ function ModalForm({ initial, onClose, onSaved }) {
   function validate() {
     const errs = {};
     if (!form.nama.trim()) errs.nama = "Nama wajib diisi.";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errs.email = "Format email tidak valid.";
     return errs;
   }
 
@@ -48,14 +52,10 @@ function ModalForm({ initial, onClose, onSaved }) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-
     setLoading(true);
     try {
-      if (isEdit) {
-        await updateMuzakki(initial.id, form);
-      } else {
-        await createMuzakki(form);
-      }
+      if (isEdit) await updateMustahik(initial.id, form);
+      else         await createMustahik(form);
       onSaved();
     } catch (err) {
       setErrors({ _global: err.message });
@@ -82,7 +82,7 @@ function ModalForm({ initial, onClose, onSaved }) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-[fadeInUp_0.2s_ease]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">
-            {isEdit ? "Edit Muzakki" : "Tambah Muzakki"}
+            {isEdit ? "Edit Mustahik" : "Tambah Mustahik"}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X size={20} />
@@ -97,30 +97,23 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             )}
 
-            <Field label="Nama Lengkap *" field="nama" placeholder="Nama muzakki" />
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Email" field="email" type="email" placeholder="email@unsil.ac.id" />
-              <Field label="No. HP" field="no_hp" placeholder="08xxxxxxxxxx" />
-            </div>
+            <Field label="Nama Lengkap *" field="nama" placeholder="Nama mustahik" />
+            <Field label="No. HP" field="no_hp" placeholder="08xxxxxxxxxx" />
+            <Field label="Alamat" field="alamat" placeholder="Alamat lengkap mustahik" />
 
-            {/* Unit Kerja — select bisa diketik via datalist */}
+            {/* Kategori Asnaf */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Unit Kerja / Fakultas</label>
-              <div className="relative">
-                <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  list="unit-kerja-list"
-                  value={form.unit_kerja}
-                  onChange={(e) => set("unit_kerja", e.target.value)}
-                  placeholder="Pilih atau ketik unit kerja..."
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
-                />
-                <datalist id="unit-kerja-list">
-                  {UNIT_KERJA_OPTIONS.map((u) => <option key={u} value={u} />)}
-                </datalist>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori Asnaf</label>
+              <select
+                value={form.kategori}
+                onChange={(e) => set("kategori", e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
+              >
+                {KATEGORI_OPTIONS.map((k) => <option key={k} value={k}>{k}</option>)}
+              </select>
             </div>
 
+            {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
               <div className="flex gap-3">
@@ -148,14 +141,14 @@ function ModalForm({ initial, onClose, onSaved }) {
   );
 }
 
-// ── Modal Konfirmasi Hapus ────────────────────────────────────────────────────
-function ModalHapus({ muzakki, onClose, onDeleted }) {
+// ── Modal Hapus ───────────────────────────────────────────────────────────────
+function ModalHapus({ mustahik, onClose, onDeleted }) {
   const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
     setLoading(true);
     try {
-      await deleteMuzakki(muzakki.id);
+      await deleteMustahik(mustahik.id);
       onDeleted();
     } catch (err) {
       alert(err.message);
@@ -170,9 +163,9 @@ function ModalHapus({ muzakki, onClose, onDeleted }) {
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
           <Trash2 size={22} className="text-red-500" />
         </div>
-        <h3 className="text-center font-semibold text-gray-900 mb-1">Hapus Muzakki?</h3>
+        <h3 className="text-center font-semibold text-gray-900 mb-1">Hapus Mustahik?</h3>
         <p className="text-center text-sm text-gray-500 mb-6">
-          <span className="font-medium text-gray-800">{muzakki.nama}</span> akan dihapus dari sistem. Tindakan ini tidak dapat dibatalkan.
+          <span className="font-medium text-gray-800">{mustahik.nama}</span> akan dihapus dari sistem.
         </p>
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={loading}>Batal</Button>
@@ -189,20 +182,21 @@ function ModalHapus({ muzakki, onClose, onDeleted }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function MuzakkiMustahik() {
-  const [data, setData] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, current_page: 1, last_page: 1 });
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [page, setPage] = useState(1);
-  const [modalForm, setModalForm] = useState(null); // null | { mode: 'add'|'edit', data?: obj }
-  const [modalHapus, setModalHapus] = useState(null); // null | obj
+export default function Mustahik() {
+  const [data, setData]           = useState([]);
+  const [meta, setMeta]           = useState({ total: 0, current_page: 1, last_page: 1 });
+  const [loading, setLoading]     = useState(true);
+  const [search, setSearch]       = useState("");
+  const [statusFilter, setStatus] = useState("");
+  const [kategoriFilter, setKategori] = useState("");
+  const [page, setPage]           = useState(1);
+  const [modalForm, setModalForm] = useState(null);
+  const [modalHapus, setModalHapus] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getMuzakki({ search, status: statusFilter, page, perPage: 10 });
+      const res = await getMustahik({ search, status: statusFilter, kategori: kategoriFilter, page, perPage: 10 });
       setData(res.data);
       setMeta(res.meta);
     } catch (err) {
@@ -210,18 +204,14 @@ export default function MuzakkiMustahik() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page]);
+  }, [search, statusFilter, kategoriFilter, page]);
 
   useEffect(() => {
     const t = setTimeout(fetchData, search ? 350 : 0);
     return () => clearTimeout(t);
   }, [fetchData, search]);
 
-  function handleSaved() {
-    setModalForm(null);
-    fetchData();
-  }
-
+  function handleSaved() { setModalForm(null); fetchData(); }
   function handleDeleted() {
     setModalHapus(null);
     if (data.length === 1 && page > 1) setPage((p) => p - 1);
@@ -236,20 +226,20 @@ export default function MuzakkiMustahik() {
       {/* Header Actions */}
       <div className="flex justify-end mb-4 -mt-3 relative z-20">
         <Button icon={Plus} onClick={() => setModalForm({ mode: "add" })}>
-          Tambah Muzakki
+          Tambah Mustahik
         </Button>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {[
-          { label: "Total Muzakki", value: meta.total, icon: Users, color: "green", sub: "Terdaftar di sistem" },
-          { label: "Muzakki Aktif", value: aktif, icon: UserCheck, color: "blue", sub: "Status aktif" },
-          { label: "Tidak Aktif", value: tidakAktif, icon: UserX, color: "red", sub: "Perlu ditinjau" },
+          { label: "Total Mustahik", value: meta.total, icon: Heart, color: "red", sub: "Terdaftar di sistem" },
+          { label: "Mustahik Aktif", value: aktif, icon: UserCheck, color: "green", sub: "Status aktif" },
+          { label: "Tidak Aktif",    value: tidakAktif, icon: UserX, color: "gray", sub: "Perlu ditinjau" },
         ].map((s) => (
           <Card key={s.label} className="!p-5">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3
-              ${s.color === "green" ? "bg-brand-50 text-brand-600" : s.color === "blue" ? "bg-blue-50 text-blue-600" : "bg-red-50 text-red-500"}`}>
+              ${s.color === "red" ? "bg-red-50 text-red-500" : s.color === "green" ? "bg-brand-50 text-brand-600" : "bg-gray-100 text-gray-500"}`}>
               <s.icon size={20} />
             </div>
             <p className="text-sm text-gray-500">{s.label}</p>
@@ -266,24 +256,28 @@ export default function MuzakkiMustahik() {
           <div className="relative flex-1 w-full">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              type="text" placeholder="Cari nama, email, atau unit kerja..."
+              type="text" placeholder="Cari nama, alamat, atau kategori..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
             />
           </div>
-          <div className="flex gap-2">
-            {[
-              { val: "", label: "Semua" },
-              { val: "aktif", label: "Aktif" },
-              { val: "tidak_aktif", label: "Tidak Aktif" },
-            ].map(({ val, label }) => (
-              <button key={val} onClick={() => { setStatusFilter(val); setPage(1); }}
+          <div className="flex gap-2 flex-wrap">
+            {[{ val: "", label: "Semua" }, { val: "aktif", label: "Aktif" }, { val: "tidak_aktif", label: "Tidak Aktif" }].map(({ val, label }) => (
+              <button key={val} onClick={() => { setStatus(val); setPage(1); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
                   ${statusFilter === val ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
                 {label}
               </button>
             ))}
+            <select
+              value={kategoriFilter}
+              onChange={(e) => { setKategori(e.target.value); setPage(1); }}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none"
+            >
+              <option value="">Semua Kategori</option>
+              {KATEGORI_OPTIONS.map((k) => <option key={k} value={k}>{k}</option>)}
+            </select>
           </div>
         </div>
 
@@ -292,7 +286,7 @@ export default function MuzakkiMustahik() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                {["Nama", "Unit Kerja", "Kontak", "Transaksi", "Status", ""].map((h) => (
+                {["Nama", "Kontak & Alamat", "Kategori", "Status", ""].map((h) => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
@@ -301,93 +295,66 @@ export default function MuzakkiMustahik() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
-                    <div className="w-7 h-7 border-3 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
-                    <p className="text-gray-400 text-sm mt-3">Memuat data...</p>
-                  </td>
-                </tr>
+                <tr><td colSpan={5} className="px-5 py-12 text-center">
+                  <div className="w-7 h-7 border-3 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
+                  <p className="text-gray-400 text-sm mt-3">Memuat data...</p>
+                </td></tr>
               ) : data.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-gray-400 text-sm">
-                    {search ? "Tidak ada muzakki yang cocok dengan pencarian." : "Belum ada data muzakki."}
+                <tr><td colSpan={5} className="px-5 py-12 text-center text-gray-400 text-sm">
+                  {search ? "Tidak ada mustahik yang cocok dengan pencarian." : "Belum ada data mustahik."}
+                </td></tr>
+              ) : data.map((row) => (
+                <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-semibold text-sm shrink-0">
+                        {row.nama.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">{row.nama}</p>
+                        <p className="text-xs text-gray-400">#{row.id}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="space-y-0.5">
+                      {row.no_hp && (
+                        <p className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <Phone size={11} className="text-gray-400" /> {row.no_hp}
+                        </p>
+                      )}
+                      {row.alamat && (
+                        <p className="flex items-center gap-1.5 text-xs text-gray-500 max-w-xs truncate">
+                          <MapPin size={11} className="text-gray-400 shrink-0" /> {row.alamat}
+                        </p>
+                      )}
+                      {!row.no_hp && !row.alamat && <span className="text-gray-300 text-xs">—</span>}
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${KATEGORI_COLORS[row.kategori] ?? "bg-gray-100 text-gray-600"}`}>
+                      {row.kategori ?? "—"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${row.status === "aktif" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      {row.status === "aktif" ? "Aktif" : "Tidak Aktif"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setModalForm({ mode: "edit", data: row })}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition" title="Edit">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => setModalHapus(row)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition" title="Hapus">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                data.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold text-sm shrink-0">
-                          {row.nama.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-800">{row.nama}</p>
-                          <p className="text-xs text-gray-400">#{row.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {row.unit_kerja ? (
-                        <span className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Building2 size={13} className="text-gray-400" />
-                          {row.unit_kerja}
-                        </span>
-                      ) : (
-                        <span className="text-gray-300 text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="space-y-0.5">
-                        {row.email && (
-                          <p className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <Mail size={11} className="text-gray-400" /> {row.email}
-                          </p>
-                        )}
-                        {row.no_hp && (
-                          <p className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <Phone size={11} className="text-gray-400" /> {row.no_hp}
-                          </p>
-                        )}
-                        {!row.email && !row.no_hp && <span className="text-gray-300 text-xs">—</span>}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="text-sm font-medium text-gray-700">
-                        {row.transaksi_count ?? 0}
-                        <span className="text-gray-400 font-normal text-xs ml-1">transaksi</span>
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                        row.status === "aktif"
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                      }`}>
-                        {row.status === "aktif" ? "Aktif" : "Tidak Aktif"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setModalForm({ mode: "edit", data: row })}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition"
-                          title="Edit"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => setModalHapus(row)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
-                          title="Hapus"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -396,13 +363,11 @@ export default function MuzakkiMustahik() {
         {!loading && meta.last_page > 1 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
             <p className="text-xs text-gray-500">
-              Halaman {meta.current_page} dari {meta.last_page} • Total {meta.total} muzakki
+              Halaman {meta.current_page} dari {meta.last_page} • Total {meta.total} mustahik
             </p>
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
                 <ChevronLeft size={15} />
               </button>
               {Array.from({ length: Math.min(meta.last_page, 5) }, (_, i) => {
@@ -416,10 +381,8 @@ export default function MuzakkiMustahik() {
                   </button>
                 );
               })}
-              <button
-                onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
+              <button onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
                 <ChevronRight size={15} />
               </button>
             </div>
@@ -437,7 +400,7 @@ export default function MuzakkiMustahik() {
       )}
       {modalHapus && (
         <ModalHapus
-          muzakki={modalHapus}
+          mustahik={modalHapus}
           onClose={() => setModalHapus(null)}
           onDeleted={handleDeleted}
         />

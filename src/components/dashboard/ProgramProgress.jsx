@@ -1,12 +1,13 @@
-import { GraduationCap, HeartHandshake, HeartPulse, Store } from "lucide-react";
+import { Link } from "react-router-dom";
+import { GraduationCap, HeartHandshake, HeartPulse, Store, FolderKanban } from "lucide-react";
 import Card from "../common/Card";
 import { formatRupiah } from "../../utils/formatRupiah";
 
 const iconMap = {
   "Beasiswa Mahasiswa Mustahik": GraduationCap,
-  "Santunan Yatim & Dhuafa": HeartHandshake,
-  "Bantuan Kesehatan": HeartPulse,
-  "Bantuan UMKM Mustahik": Store,
+  "Santunan Yatim & Dhuafa":     HeartHandshake,
+  "Bantuan Kesehatan":           HeartPulse,
+  "Bantuan UMKM Mustahik":       Store,
 };
 
 export default function ProgramProgress({ data }) {
@@ -14,14 +15,19 @@ export default function ProgramProgress({ data }) {
     <Card>
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900">Program Penyaluran Aktif</h3>
-        <button className="text-sm text-brand-600 font-medium hover:underline">
+        <Link
+          to="/dashboard/program"
+          className="text-sm text-brand-600 font-medium hover:underline"
+        >
           Lihat Semua
-        </button>
+        </Link>
       </div>
 
       <div className="space-y-5">
-        {data.map((prog) => {
-          const Icon = iconMap[prog.nama] || GraduationCap;
+        {data.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">Tidak ada program aktif.</p>
+        ) : data.map((prog) => {
+          const Icon = iconMap[prog.nama] ?? FolderKanban;
           return (
             <div key={prog.id}>
               <div className="flex items-center gap-3 mb-2">

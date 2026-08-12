@@ -15,6 +15,8 @@ import DashboardHome from "../pages/dashboard/DashboardHome";
 import Pengumpulan from "../pages/dashboard/Pengumpulan";
 import Penyaluran from "../pages/dashboard/Penyaluran";
 import MuzakkiMustahik from "../pages/dashboard/MuzakkiMustahik";
+import Mustahik from "../pages/dashboard/Mustahik";
+import Program from "../pages/dashboard/Program";
 import DonasiOnline from "../pages/dashboard/DonasiOnline";
 import Transaksi from "../pages/dashboard/Transaksi";
 import LaporanKeuangan from "../pages/dashboard/LaporanKeuangan";
@@ -42,7 +44,11 @@ export default function AppRoutes() {
           <Route index element={<DashboardHome />} />
           <Route path="pengumpulan" element={<Pengumpulan />} />
           <Route path="penyaluran" element={<Penyaluran />} />
+          <Route path="muzakki" element={<MuzakkiMustahik />} />
+          <Route path="mustahik" element={<Mustahik />} />
+          {/* legacy redirect tetap ada agar link lama tidak 404 */}
           <Route path="muzakki-mustahik" element={<MuzakkiMustahik />} />
+          <Route path="program" element={<Program />} />
           <Route path="donasi-online" element={<DonasiOnline />} />
           <Route path="transaksi" element={<Transaksi />} />
           <Route path="laporan-keuangan" element={<LaporanKeuangan />} />

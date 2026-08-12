@@ -73,13 +73,13 @@ export async function savePengumpulan({ muzakki_id, kategori, nominal, metode, k
 /**
  * POST /api/transaksi/penyaluran
  */
-export async function savePenyaluran({ muzakki_id, asnaf, program, nominal, metode, keterangan }) {
+export async function savePenyaluran({ mustahik_id, program_id, program, nominal, metode, keterangan }) {
   if (!API_URL) throw new Error("API tidak terkonfigurasi.");
 
   const res = await fetch(`${API_URL}/transaksi/penyaluran`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ muzakki_id, asnaf, program, nominal: Number(nominal), metode, keterangan }),
+    body: JSON.stringify({ mustahik_id, program_id, program, nominal: Number(nominal), metode, keterangan }),
   });
   handle401(res);
   if (!res.ok) {

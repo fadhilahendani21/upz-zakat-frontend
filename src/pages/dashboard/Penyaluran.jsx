@@ -8,30 +8,45 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Combobox from "../../components/common/Combobox";
 import { formatRupiah } from "../../utils/formatRupiah";
-import { getMuzakkiOptions } from "../../services/muzakkiService";
+import { getMustahikOptions } from "../../services/mustahikService";
 import { getPenyaluran, savePenyaluran } from "../../services/transaksiService";
-
-// ── Konstanta ─────────────────────────────────────────────────────────────────
-const PROGRAM_OPTIONS = ["Beasiswa Dhuafa", "Bantuan Sembako", "Bantuan Kesehatan", "Bantuan Modal Usaha", "Santunan Anak Yatim"];
-const MUSTAHIK_ASNAF  = ["Fakir", "Miskin", "Amil", "Mualaf", "Riqab", "Gharim", "Fisabilillah", "Ibnu Sabil"];
-
+import { getProgramOptions } from "../../services/programService";
+import { NumericFormat } from "react-number-format";
 // ── Modal Tambah ──────────────────────────────────────────────────────────────
 function ModalTambah({ onClose, onSaved }) {
   const [mustahik, setMustahik] = useState(null);
+  const [programOptions, setProgramOptions] = useState([]);
   const [form, setForm] = useState({
-    asnaf: "Fakir", program: PROGRAM_OPTIONS[0], nominal: "", metode: "Transfer Bank", keterangan: "",
+    program_id: "", nominal: "", metode: "Transfer Bank", keterangan: "",
   });
   const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    async function loadPrograms() {
+      try {
+        const year = new Date().getFullYear();
+        const data = await getProgramOptions(year);
+        setProgramOptions(data);
+        if (data.length > 0) {
+          setForm(f => ({ ...f, program_id: data[0].id }));
+        }
+      } catch (err) {
+        console.error("Gagal memuat program penyaluran:", err);
+      }
+    }
+    loadPrograms();
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!mustahik) { setError("Pilih mustahik / penerima terlebih dahulu."); return; }
+    if (!form.program_id) { setError("Pilih program terlebih dahulu."); return; }
     if (!form.nominal || Number(form.nominal) <= 0) { setError("Nominal harus diisi dan lebih dari 0."); return; }
     setError("");
     setLoading(true);
     try {
-      const result = await savePenyaluran({ muzakki_id: mustahik.id, ...form });
+      const result = await savePenyaluran({ mustahik_id: mustahik.id, ...form });
       onSaved?.(result);
       onClose();
     } catch (err) {
@@ -61,39 +76,40 @@ function ModalTambah({ onClose, onSaved }) {
               <Combobox
                 value={mustahik}
                 onChange={(v) => { setMustahik(v); setError(""); }}
-                onSearch={getMuzakkiOptions}
+                onSearch={getMustahikOptions}
                 placeholder="Ketik nama mustahik..."
               />
-              {mustahik?.unit_kerja && (
-                <p className="text-xs text-gray-400 mt-1 ml-1">{mustahik.unit_kerja}</p>
+              {mustahik?.kategori && (
+                <p className="text-xs text-gray-400 mt-1 ml-1">{mustahik.kategori}</p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Golongan Asnaf</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Program Penyaluran</label>
                 <select
-                  value={form.asnaf} onChange={(e) => setForm({ ...form, asnaf: e.target.value })}
+                  value={form.program_id} onChange={(e) => setForm({ ...form, program_id: e.target.value })}
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
                 >
-                  {MUSTAHIK_ASNAF.map((a) => <option key={a}>{a}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Program</label>
-                <select
-                  value={form.program} onChange={(e) => setForm({ ...form, program: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
-                >
-                  {PROGRAM_OPTIONS.map((p) => <option key={p}>{p}</option>)}
+                  {programOptions.length === 0 ? (
+                    <option value="">Tidak ada program aktif</option>
+                  ) : (
+                    programOptions.map((p) => (
+                      <option key={p.id} value={p.id}>{p.nama} ({p.kode})</option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Nominal (Rp)</label>
-                <input
-                  type="number" placeholder="0" min="1"
-                  value={form.nominal} onChange={(e) => setForm({ ...form, nominal: e.target.value })}
+                <NumericFormat
+                  placeholder="0"
+                  value={form.nominal}
+                  onValueChange={(values) => setForm({ ...form, nominal: values.value })}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="Rp "
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
                 />
               </div>
@@ -134,6 +150,7 @@ function ModalDetail({ row, onClose }) {
   const fields = [
     { label: "Kode",       value: row.kode },
     { label: "Mustahik",   value: row.nama },
+    { label: "Program",    value: row.program || "—" },
     { label: "Nominal",    value: formatRupiah(row.nominal) },
     { label: "Metode",     value: row.metode || "—" },
     { label: "Tanggal",    value: new Date(row.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) },
@@ -192,12 +209,13 @@ export default function Penyaluran() {
 
   function handleExport() {
     if (!data.length) return alert("Tidak ada data untuk diekspor");
-    const headers = ["Kode", "Mustahik", "Nominal", "Metode", "Tanggal", "Keterangan"];
+    const headers = ["Kode", "Mustahik", "Program", "Nominal", "Metode", "Tanggal", "Keterangan"];
     const csvContent = [
       headers.join(","),
       ...data.map(row => [
         row.kode,
         `"${row.nama}"`,
+        `"${row.program || "-"}"`,
         row.nominal,
         `"${row.metode || "-"}"`,
         `"${new Date(row.tanggal).toLocaleDateString("id-ID")}"`,
@@ -275,7 +293,7 @@ export default function Penyaluran() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                {["Kode", "Mustahik", "Nominal", "Metode", "Tanggal", ""].map((h) => (
+                {["Kode", "Mustahik", "Program", "Nominal", "Metode", "Tanggal", ""].map((h) => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
@@ -301,6 +319,11 @@ export default function Penyaluran() {
                   <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-5 py-3.5 font-mono text-xs text-gray-500">{row.kode}</td>
                     <td className="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">{row.nama}</td>
+                    <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium">
+                        {row.program || "—"}
+                      </span>
+                    </td>
                     <td className="px-5 py-3.5 font-semibold text-gray-900 whitespace-nowrap">
                       {formatRupiah(row.nominal)}
                     </td>
