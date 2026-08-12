@@ -9,17 +9,13 @@ import {
 } from "recharts";
 import Card from "../common/Card";
 
-export default function LineChartCard({ data }) {
+export default function LineChartCard({ data, isAllTime }) {
   return (
     <Card className="lg:col-span-2">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900">
-          Grafik Pengumpulan dan Penyaluran
+          Grafik Pengumpulan dan Penyaluran {isAllTime && "(Keseluruhan)"}
         </h3>
-        <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600">
-          <option>Tahun 2025</option>
-          <option>Tahun 2024</option>
-        </select>
       </div>
 
       <div className="flex items-center gap-5 mb-3 text-xs text-gray-500">

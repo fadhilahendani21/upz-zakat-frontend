@@ -10,7 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const USE_DUMMY = !API_URL;
 
 // Kredensial demo yang diterima saat mode dummy
-const DEMO_EMAIL = "admin@upz-unsil.ac.id";
+const DEMO_EMAIL = "admin@unsil.ac.id";
 
 /**
  * Login admin
@@ -32,7 +32,10 @@ export async function login(email, password) {
   // Mode real: kirim ke API
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
     body: JSON.stringify({ email, password }),
   });
 
@@ -60,6 +63,7 @@ export async function logout() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json",
         Authorization: `Bearer ${token}`,
       },
     }).catch(() => {}); // ignore error, tetap hapus lokal

@@ -148,7 +148,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         </div>
       </nav>
 
-      <div className="relative m-4 p-4 rounded-xl bg-brand-700 text-white text-xs leading-relaxed overflow-hidden">
+      {/* <div className="relative m-4 p-4 rounded-xl bg-brand-700 text-white text-xs leading-relaxed overflow-hidden">
         <MosqueIllustration className="pointer-events-none absolute -bottom-6 -right-4 w-32 text-white/10 -z-0" />
         <div className="relative z-10">
           <p className="text-lg leading-none mb-2">&ldquo;</p>
@@ -160,7 +160,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
             – QS. At-Taubah: 103
           </p>
         </div>
-      </div>
+      </div> */}
       </aside>
     </>
   );

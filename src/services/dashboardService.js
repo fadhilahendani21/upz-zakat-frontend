@@ -3,9 +3,10 @@
  *
  * Strategi:
  *  1. VITE_API_URL tidak di-set → mode demo (dummy data)
- *  2. VITE_API_URL di-set → 1 request ke /api/dashboard/all (bukan 5 terpisah)
- *     Ini menghilangkan 4 round-trip token verification ke Neon.
+ *  2. VITE_API_URL di-set → 1 request ke /api/dashboard/all
  *  3. Kalau API gagal → fallback ke dummy data
+ *
+ * Tidak ada caching — setiap kunjungan selalu fetch fresh dari API.
  */
 
 import { dummyStats, dummyRingkasanDana } from "../data/dummyStats";
@@ -23,51 +24,13 @@ if (USE_DUMMY) {
   );
 }
 
-// ─── Client-side SWR Cache (localStorage) ────────────────────────────────────
-
-const LS_KEY = "upz_dashboard_data";
-const LS_TTL = 5 * 60 * 1000; // 5 menit dalam ms
-
-/**
- * Baca cache dashboard dari localStorage — SYNCHRONOUS, instan.
- * Return null jika tidak ada atau sudah expired.
- */
-export function getCachedDashboardData() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return null;
-    const { data, savedAt } = JSON.parse(raw);
-    if (Date.now() - savedAt > LS_TTL) return null; // expired
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Simpan data dashboard ke localStorage setelah fetch berhasil.
- */
-function saveDashboardCache(data) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ data, savedAt: Date.now() }));
-  } catch {
-    // localStorage penuh atau private browsing — abaikan
-  }
-}
-
-/**
- * Hapus cache (dipanggil saat logout)
- */
-export function clearDashboardCache() {
-  localStorage.removeItem(LS_KEY);
-}
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function authHeaders() {
   const token = localStorage.getItem("token");
   return {
     "Content-Type": "application/json",
+    "Accept": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
@@ -77,13 +40,8 @@ function authHeaders() {
 /**
  * Ambil SEMUA data dashboard sekaligus dalam 1 request.
  * Mengembalikan object: { stats, ringkasanDana, grafik, transaksi, program }
- *
- * Keuntungan vs 5 endpoint terpisah:
- *  - 1x token verification (vs 5x)
- *  - 1x TCP connection (vs 5x sequential di php artisan serve)
- *  - Dashboard load dari ~5 detik → ~1 detik
  */
-export async function getAllDashboardData(tahun = 2025) {
+export async function getAllDashboardData(tahun = new Date().getFullYear()) {
   // Mode demo: langsung return dummy
   if (USE_DUMMY) {
     return {
@@ -111,9 +69,7 @@ export async function getAllDashboardData(tahun = 2025) {
       throw new Error("Gagal mengambil data dashboard.");
     }
 
-    const data = await res.json();
-    saveDashboardCache(data); // simpan untuk kunjungan berikutnya
-    return data;
+    return await res.json();
   } catch (err) {
     console.warn(
       `%c[UPZ Dashboard] API gagal, fallback ke dummy. Error: ${err.message}`,
@@ -133,19 +89,19 @@ export async function getAllDashboardData(tahun = 2025) {
 // ─── Legacy individual functions (tetap dipertahankan untuk kompatibilitas) ──
 
 /** @deprecated Gunakan getAllDashboardData() untuk performa lebih baik */
-export async function getDashboardStats(tahun = 2025) {
+export async function getDashboardStats(tahun = new Date().getFullYear()) {
   const data = await getAllDashboardData(tahun);
   return data.stats;
 }
 
 /** @deprecated Gunakan getAllDashboardData() */
-export async function getRingkasanDana(tahun = 2025) {
+export async function getRingkasanDana(tahun = new Date().getFullYear()) {
   const data = await getAllDashboardData(tahun);
   return data.ringkasanDana;
 }
 
 /** @deprecated Gunakan getAllDashboardData() */
-export async function getGrafikTahunan(tahun = 2025) {
+export async function getGrafikTahunan(tahun = new Date().getFullYear()) {
   const data = await getAllDashboardData(tahun);
   return data.grafik;
 }
@@ -157,7 +113,7 @@ export async function getTransaksiTerbaru(limit = 5) {
 }
 
 /** @deprecated Gunakan getAllDashboardData() */
-export async function getProgramAktif(tahun = 2025) {
+export async function getProgramAktif(tahun = new Date().getFullYear()) {
   const data = await getAllDashboardData(tahun);
   return data.program;
 }
