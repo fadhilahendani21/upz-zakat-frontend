@@ -24,6 +24,21 @@ const KATEGORI_COLORS = {
   "Amil":          "bg-yellow-50 text-yellow-700",
 };
 
+function Field({ label, field, type = "text", placeholder, value, onChange, error }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <input
+        type={type} value={value} placeholder={placeholder}
+        onChange={(e) => onChange(field, e.target.value)}
+        className={`w-full px-3 py-2.5 rounded-lg border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500
+          ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+      />
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+}
+
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
@@ -64,19 +79,6 @@ function ModalForm({ initial, onClose, onSaved }) {
     }
   }
 
-  const Field = ({ label, field, type = "text", placeholder }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
-      <input
-        type={type} value={form[field]} placeholder={placeholder}
-        onChange={(e) => set(field, e.target.value)}
-        className={`w-full px-3 py-2.5 rounded-lg border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500
-          ${errors[field] ? "border-red-400 bg-red-50" : "border-gray-200"}`}
-      />
-      {errors[field] && <p className="text-xs text-red-500 mt-1">{errors[field]}</p>}
-    </div>
-  );
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-[fadeInUp_0.2s_ease]">
@@ -97,9 +99,9 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             )}
 
-            <Field label="Nama Lengkap *" field="nama" placeholder="Nama mustahik" />
-            <Field label="No. HP" field="no_hp" placeholder="08xxxxxxxxxx" />
-            <Field label="Alamat" field="alamat" placeholder="Alamat lengkap mustahik" />
+            <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama mustahik" />
+            <Field label="No. HP" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
+            <Field label="Alamat" field="alamat" value={form.alamat} onChange={set} error={errors.alamat} placeholder="Alamat lengkap mustahik" />
 
             {/* Kategori Asnaf */}
             <div>
