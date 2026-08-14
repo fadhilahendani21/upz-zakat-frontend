@@ -1,19 +1,17 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/landing/Navbar";
+import Footer from "../components/common/Footer";
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen bg-linear-to-b from-white via-brand-50 to-brand-200">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <main>
+
+      <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="text-center py-6 text-sm text-gray-500 border-t border-gray-100 mt-2">
-        <p className="font-medium text-gray-700">
-          UPZ Zakat Universitas Siliwangi
-        </p>
-        <p>Transparan, Amanah, dan Memberi Manfaat</p>
-      </footer>
+
+      <Footer />
     </div>
   );
 }

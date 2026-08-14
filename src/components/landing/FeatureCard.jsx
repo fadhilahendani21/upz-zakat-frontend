@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   Calculator,
   CreditCard,
@@ -18,15 +19,25 @@ const icons = {
   Headphones,
 };
 
+const rute = {
+  "Hitung Zakat": "/hitung-zakat",
+  "Tunaikan Zakat": "/donasi",
+  "Program Penyaluran": "/program",
+  "Laporan Transparansi": "/laporan",
+  "Berita & Kegiatan": "/berita",
+  "Hubungi Kami": "/kontak",
+};
+
 export default function FeatureCard() {
   return (
     <section className="max-w-7xl mx-auto px-6 pt-2 pb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
       {dummyFitur.map((fitur) => {
         const Icon = icons[fitur.icon];
         return (
-          <div
+          <Link
+            to={rute[fitur.title] || "#"}
             key={fitur.title}
-            className="bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-shadow"
+            className="bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md hover:border-brand-200 transition-shadow"
           >
             <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3">
               <Icon size={19} />
@@ -38,7 +49,7 @@ export default function FeatureCard() {
               {fitur.desc}
             </p>
             <ArrowRight size={16} className="mt-3 text-brand-600" />
-          </div>
+          </Link>
         );
       })}
     </section>

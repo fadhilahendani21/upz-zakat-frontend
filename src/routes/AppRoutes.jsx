@@ -7,8 +7,11 @@ import LandingPage from "../pages/LandingPage";
 import TentangPage from "../pages/TentangPage";
 import ProgramPage from "../pages/ProgramPage";
 import BeritaPage from "../pages/BeritaPage";
+import BeritaDetailPage from "../pages/BeritaDetailPage";
 import LaporanPage from "../pages/LaporanPage";
 import KontakPage from "../pages/KontakPage";
+import DonasiPage from "../pages/DonasiPage";
+import HitungZakatPage from "../pages/HitungZakatPage";
 import LoginPage from "../pages/LoginPage";
 
 import DashboardHome from "../pages/dashboard/DashboardHome";
@@ -33,8 +36,11 @@ export default function AppRoutes() {
           <Route path="/tentang" element={<TentangPage />} />
           <Route path="/program" element={<ProgramPage />} />
           <Route path="/berita" element={<BeritaPage />} />
+          <Route path="/berita/:id" element={<BeritaDetailPage />} />
           <Route path="/laporan" element={<LaporanPage />} />
           <Route path="/kontak" element={<KontakPage />} />
+          <Route path="/donasi" element={<DonasiPage />} />
+          <Route path="/hitung-zakat" element={<HitungZakatPage />} />
         </Route>
 
         {/* Login (tanpa layout navbar/sidebar) */}

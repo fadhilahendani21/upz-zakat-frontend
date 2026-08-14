@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Wallet, FileSearch } from "lucide-react";
 import Button from "../common/Button";
 import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
 
 export default function Hero() {
+  const navigate = useNavigate();
+
   return (
     <section className="relative overflow-hidden">
       <div className="relative max-w-7xl w-full mx-auto px-6 py-8 sm:py-10 lg:py-24">
@@ -48,8 +51,14 @@ export default function Hero() {
           </p>
 
           <div className="mt-5 sm:mt-4 lg:mt-8 flex flex-wrap gap-3 sm:gap-2 lg:gap-4">
-            <Button icon={Wallet}>Tunaikan Zakat</Button>
-            <Button variant="outline" icon={FileSearch}>
+            <Button icon={Wallet} onClick={() => navigate("/donasi")}>
+              Tunaikan Zakat
+            </Button>
+            <Button
+              variant="outline"
+              icon={FileSearch}
+              onClick={() => navigate("/hitung-zakat")}
+            >
               Cek Perhitungan Zakat
             </Button>
           </div>
