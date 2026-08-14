@@ -46,6 +46,10 @@ export default function DashboardLayout() {
       topbarTitle = "Transaksi Umum";
       topbarSubtitle = "Riwayat seluruh transaksi yang tercatat di sistem.";
       break;
+    case "/dashboard/rekening-kas":
+      topbarTitle = "Rekening & Kas";
+      topbarSubtitle = "Manajemen likuiditas dan saldo kas UPZ.";
+      break;
     case "/dashboard/laporan-keuangan":
       topbarTitle = "Laporan Keuangan";
       topbarSubtitle = "Laporan dan pembukuan keuangan UPZ.";

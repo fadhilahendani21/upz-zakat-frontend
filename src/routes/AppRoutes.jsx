@@ -19,6 +19,7 @@ import Mustahik from "../pages/dashboard/Mustahik";
 import Program from "../pages/dashboard/Program";
 import DonasiOnline from "../pages/dashboard/DonasiOnline";
 import Transaksi from "../pages/dashboard/Transaksi";
+import RekeningKas from "../pages/dashboard/RekeningKas";
 import LaporanKeuangan from "../pages/dashboard/LaporanKeuangan";
 import Pengaturan from "../pages/dashboard/Pengaturan";
 
@@ -51,6 +52,7 @@ export default function AppRoutes() {
           <Route path="program" element={<Program />} />
           <Route path="donasi-online" element={<DonasiOnline />} />
           <Route path="transaksi" element={<Transaksi />} />
+          <Route path="rekening-kas" element={<RekeningKas />} />
           <Route path="laporan-keuangan" element={<LaporanKeuangan />} />
           <Route path="pengaturan" element={<Pengaturan />} />
         </Route>
