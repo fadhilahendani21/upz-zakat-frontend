@@ -89,3 +89,58 @@ export async function savePenyaluran({ mustahik_id, program_id, program, nominal
   }
   return res.json();
 }
+
+/**
+ * GET all transactions (masuk + keluar) combined for Transaksi page.
+ */
+export async function getAllTransaksi({ search = "", dateFrom = "", dateTo = "", jenis = "" } = {}) {
+  const params = new URLSearchParams({ per_page: 200 });
+  if (search) params.set("search", search);
+
+  const [resMasuk, resKeluar] = await Promise.all([
+    fetch(`${API_URL}/transaksi/pengumpulan?${params}`, { headers: authHeaders() }),
+    fetch(`${API_URL}/transaksi/penyaluran?${params}`, { headers: authHeaders() }),
+  ]);
+
+  handle401(resMasuk);
+  handle401(resKeluar);
+
+  const [masukJson, keluarJson] = await Promise.all([resMasuk.json(), resKeluar.json()]);
+
+  const masukRows = (masukJson.data || []).map((t) => ({ ...t, status: "Masuk" }));
+  const keluarRows = (keluarJson.data || []).map((t) => ({ ...t, status: "Keluar" }));
+
+  let rows = [...masukRows, ...keluarRows].sort((a, b) =>
+    new Date(b.tanggal) - new Date(a.tanggal)
+  );
+
+  if (jenis === "Masuk")  rows = masukRows.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  if (jenis === "Keluar") rows = keluarRows.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  if (dateFrom) rows = rows.filter((r) => r.tanggal >= dateFrom);
+  if (dateTo)   rows = rows.filter((r) => r.tanggal.slice(0, 10) <= dateTo);
+
+  return {
+    rows,
+    totalMasuk: masukJson.meta?.total_nominal ?? masukRows.reduce((s, r) => s + r.nominal, 0),
+    totalKeluar: keluarJson.meta?.total_nominal ?? keluarRows.reduce((s, r) => s + r.nominal, 0),
+    totalTransaksi: masukRows.length + keluarRows.length,
+  };
+}
+
+/**
+ * GET saldo kas: total masuk - total keluar dari seluruh transaksi.
+ */
+export async function getDashboardSaldo() {
+  const [resMasuk, resKeluar] = await Promise.all([
+    fetch(`${API_URL}/transaksi/pengumpulan?per_page=1`, { headers: authHeaders() }),
+    fetch(`${API_URL}/transaksi/penyaluran?per_page=1`, { headers: authHeaders() }),
+  ]);
+  handle401(resMasuk);
+  handle401(resKeluar);
+  const [masukJson, keluarJson] = await Promise.all([resMasuk.json(), resKeluar.json()]);
+  return {
+    totalMasuk:  masukJson.meta?.total_nominal  ?? 0,
+    totalKeluar: keluarJson.meta?.total_nominal ?? 0,
+    saldo: (masukJson.meta?.total_nominal ?? 0) - (keluarJson.meta?.total_nominal ?? 0),
+  };
+}

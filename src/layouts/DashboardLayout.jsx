@@ -36,7 +36,7 @@ export default function DashboardLayout() {
       break;
     case "/dashboard/donasi-online":
       topbarTitle = "Donasi Online";
-      topbarSubtitle = "Pantau dan kelola transaksi donasi online.";
+      topbarSubtitle = "Pantau dan kelola transaksi donasi online dari publik.";
       break;
     case "/dashboard/program":
       topbarTitle = "Program Penyaluran";

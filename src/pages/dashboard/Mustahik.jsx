@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Heart, UserCheck, UserX, Plus, Search,
-  ChevronLeft, ChevronRight, X, Pencil, Trash2,
+  Heart, UserCheck, UserX, Plus,
+  X, Pencil, Trash2,
   Phone, MapPin,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import StatCard from "../../components/dashboard/StatCard";
+import { Pagination, SearchInput } from "../../components/dashboard/ui";
 import {
   getMustahik, createMustahik, updateMustahik, deleteMustahik,
 } from "../../services/mustahikService";
@@ -81,13 +83,13 @@ function ModalForm({ initial, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-[fadeInUp_0.2s_ease]">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">
             {isEdit ? "Edit Mustahik" : "Tambah Mustahik"}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 transition">
+            <X size={16} />
           </button>
         </div>
 
@@ -161,7 +163,7 @@ function ModalHapus({ mustahik, onClose, onDeleted }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm animate-[fadeInUp_0.2s_ease] p-6">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
           <Trash2 size={22} className="text-red-500" />
         </div>
@@ -226,7 +228,7 @@ export default function Mustahik() {
   return (
     <div>
       {/* Header Actions */}
-      <div className="flex justify-end mb-4 -mt-3 relative z-20">
+      <div className="flex justify-end mb-5 -mt-1 gap-2 relative z-20">
         <Button icon={Plus} onClick={() => setModalForm({ mode: "add" })}>
           Tambah Mustahik
         </Button>
@@ -234,36 +236,20 @@ export default function Mustahik() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {[
-          { label: "Total Mustahik", value: meta.total, icon: Heart, color: "red", sub: "Terdaftar di sistem" },
-          { label: "Mustahik Aktif", value: aktif, icon: UserCheck, color: "green", sub: "Status aktif" },
-          { label: "Tidak Aktif",    value: tidakAktif, icon: UserX, color: "gray", sub: "Perlu ditinjau" },
-        ].map((s) => (
-          <Card key={s.label} className="!p-5">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3
-              ${s.color === "red" ? "bg-red-50 text-red-500" : s.color === "green" ? "bg-brand-50 text-brand-600" : "bg-gray-100 text-gray-500"}`}>
-              <s.icon size={20} />
-            </div>
-            <p className="text-sm text-gray-500">{s.label}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{s.value}</p>
-            <p className="text-xs text-gray-400 mt-1">{s.sub}</p>
-          </Card>
-        ))}
+        <StatCard icon={Heart}     label="Total Mustahik" value={meta.total}  color="red"     sub="Terdaftar di sistem" loading={loading} />
+        <StatCard icon={UserCheck} label="Mustahik Aktif" value={aktif}       color="emerald" sub="Status aktif"        loading={loading} />
+        <StatCard icon={UserX}     label="Tidak Aktif"    value={tidakAktif}  color="brand"   sub="Perlu ditinjau"      loading={loading} />
       </div>
 
       {/* Table Card */}
       <Card className="!p-0 overflow-hidden">
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className="relative flex-1 w-full">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text" placeholder="Cari nama, alamat, atau kategori..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Cari nama, alamat, atau kategori..."
+          />
           <div className="flex gap-2 flex-wrap">
             {[{ val: "", label: "Semua" }, { val: "aktif", label: "Aktif" }, { val: "tidak_aktif", label: "Tidak Aktif" }].map(({ val, label }) => (
               <button key={val} onClick={() => { setStatus(val); setPage(1); }}
@@ -275,7 +261,7 @@ export default function Mustahik() {
             <select
               value={kategoriFilter}
               onChange={(e) => { setKategori(e.target.value); setPage(1); }}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none bg-white"
             >
               <option value="">Semua Kategori</option>
               {KATEGORI_OPTIONS.map((k) => <option key={k} value={k}>{k}</option>)}
@@ -298,7 +284,7 @@ export default function Mustahik() {
             <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr><td colSpan={5} className="px-5 py-12 text-center">
-                  <div className="w-7 h-7 border-3 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
+                  <div className="w-7 h-7 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
                   <p className="text-gray-400 text-sm mt-3">Memuat data...</p>
                 </td></tr>
               ) : data.length === 0 ? (
@@ -334,12 +320,12 @@ export default function Mustahik() {
                     </div>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${KATEGORI_COLORS[row.kategori] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${KATEGORI_COLORS[row.kategori] ?? "bg-gray-100 text-gray-600"}`}>
                       {row.kategori ?? "—"}
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${row.status === "aktif" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${row.status === "aktif" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                       {row.status === "aktif" ? "Aktif" : "Tidak Aktif"}
                     </span>
                   </td>
@@ -361,35 +347,7 @@ export default function Mustahik() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {!loading && meta.last_page > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-              Halaman {meta.current_page} dari {meta.last_page} • Total {meta.total} mustahik
-            </p>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                <ChevronLeft size={15} />
-              </button>
-              {Array.from({ length: Math.min(meta.last_page, 5) }, (_, i) => {
-                const n = meta.current_page <= 3 ? i + 1
-                  : meta.current_page >= meta.last_page - 2 ? meta.last_page - 4 + i
-                  : meta.current_page - 2 + i;
-                return (
-                  <button key={n} onClick={() => setPage(n)}
-                    className={`w-8 h-8 rounded-lg text-xs font-medium transition ${n === page ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    {n}
-                  </button>
-                );
-              })}
-              <button onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                <ChevronRight size={15} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} label="mustahik" />
       </Card>
 
       {/* Modals */}

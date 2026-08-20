@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  ArrowUpFromLine, Plus, Search, Download,
-  TrendingUp, HandCoins, Users, Target,
-  ChevronLeft, ChevronRight, X,
+  ArrowUpFromLine, Plus, Download,
+  TrendingUp, HandCoins, Users,
+  X,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Combobox from "../../components/common/Combobox";
+import StatCard from "../../components/dashboard/StatCard";
+import { Pagination, SearchInput, inputCls } from "../../components/dashboard/ui";
 import { formatRupiah } from "../../utils/formatRupiah";
 import { getMustahikOptions } from "../../services/mustahikService";
 import { getPenyaluran, savePenyaluran } from "../../services/transaksiService";
@@ -58,11 +60,11 @@ function ModalTambah({ onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-[fadeInUp_0.2s_ease]">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">Tambah Penyaluran</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 transition">
+            <X size={16} />
           </button>
         </div>
 
@@ -158,10 +160,15 @@ function ModalDetail({ row, onClose }) {
   ];
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm animate-[fadeInUp_0.2s_ease]">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Detail Penyaluran</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors"><X size={20} /></button>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 mb-0.5">Detail</p>
+            <h2 className="font-semibold text-gray-900">Transaksi Penyaluran</h2>
+          </div>
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 transition">
+            <X size={16} />
+          </button>
         </div>
         <div className="px-6 py-5 space-y-3">
           {fields.map(({ label, value }) => (
@@ -246,46 +253,20 @@ export default function Penyaluran() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card className="!p-5">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-red-50 text-red-500 mb-3">
-            <HandCoins size={20} />
-          </div>
-          <p className="text-sm text-gray-500">Total Penyaluran</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{meta.total}</p>
-          <p className="text-xs text-gray-400 mt-1">Data dari database</p>
-        </Card>
-        <Card className="!p-5">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 mb-3">
-            <TrendingUp size={20} />
-          </div>
-          <p className="text-sm text-gray-500">Total Disalurkan</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">
-            {formatRupiah(meta.total_nominal || 0)}
-          </p>
-          <p className="text-xs text-gray-400 mt-1">Data dari database</p>
-        </Card>
-        <Card className="!p-5">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-purple-50 text-purple-600 mb-3">
-            <Users size={20} />
-          </div>
-          <p className="text-sm text-gray-500">Halaman</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{meta.current_page} / {meta.last_page}</p>
-          <p className="text-xs text-gray-400 mt-1">Navigasi tabel</p>
-        </Card>
+        <StatCard icon={HandCoins}  label="Total Penyaluran" value={meta.total}                          color="amber"   sub="Terdaftar di database" loading={loading} />
+        <StatCard icon={TrendingUp} label="Total Disalurkan" value={formatRupiah(meta.total_nominal || 0)} color="emerald" sub="Akumulasi penyaluran"   loading={loading} />
+        <StatCard icon={Users}      label="Halaman"          value={`${meta.current_page} / ${meta.last_page}`} color="blue" sub="Navigasi tabel"     loading={loading} />
       </div>
 
       {/* Table Card */}
       <Card className="!p-0 overflow-hidden">
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className="relative flex-1 w-full">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text" placeholder="Cari nama mustahik atau kode..."
-              value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Cari nama mustahik atau kode..."
+          />
         </div>
 
         {/* Table */}
@@ -344,39 +325,7 @@ export default function Penyaluran() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {!loading && meta.last_page > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-              Total {meta.total} transaksi • Halaman {meta.current_page} dari {meta.last_page}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
-                <ChevronLeft size={15} />
-              </button>
-              {Array.from({ length: Math.min(meta.last_page, 5) }, (_, i) => {
-                const n = meta.current_page <= 3 ? i + 1
-                  : meta.current_page >= meta.last_page - 2 ? meta.last_page - 4 + i
-                  : meta.current_page - 2 + i;
-                return (
-                  <button key={n} onClick={() => setPage(n)}
-                    className={`w-8 h-8 rounded-lg text-xs font-medium transition ${n === page ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    {n}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
-                <ChevronRight size={15} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} label="transaksi" />
       </Card>
 
       {showModal && (

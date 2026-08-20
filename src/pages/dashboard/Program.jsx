@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
-  Plus, Search, GraduationCap, HeartHandshake, HeartPulse, Store,
-  FolderKanban, ChevronLeft, ChevronRight, X, Pencil, Trash2,
-  Users, Target, TrendingUp,
+  Plus,
+  GraduationCap, HeartHandshake, HeartPulse, Store,
+  FolderKanban, X, Pencil, Trash2,
+  Users, Target,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import StatCard from "../../components/dashboard/StatCard";
+import { Pagination, SearchInput } from "../../components/dashboard/ui";
 import { formatRupiah } from "../../utils/formatRupiah";
 import { getProgram, createProgram, updateProgram, deleteProgram } from "../../services/programService";
 import { NumericFormat } from "react-number-format";
@@ -125,13 +128,13 @@ function ModalForm({ initial, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg animate-[fadeInUp_0.2s_ease] max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 className="font-semibold text-gray-900">
             {isEdit ? "Edit Program" : "Tambah Program"}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 transition">
+            <X size={16} />
           </button>
         </div>
 
@@ -206,7 +209,7 @@ function ModalHapus({ program, onClose, onDeleted }) {
   }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-[fadeInUp_0.2s_ease]">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
           <Trash2 size={22} className="text-red-500" />
         </div>
@@ -277,7 +280,7 @@ export default function Program() {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-end mb-4 -mt-3 relative z-20">
+      <div className="flex justify-end mb-5 -mt-1 gap-2 relative z-20">
         <Button icon={Plus} onClick={() => setModalForm({ mode: "add" })}>
           Tambah Program
         </Button>
@@ -285,35 +288,19 @@ export default function Program() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {[
-          { label: "Total Program",      value: meta.total,                            sub: "Terdaftar",         icon: FolderKanban, color: "brand" },
-          { label: "Total Penerima",     value: `${totalPenerima.toLocaleString("id-ID")} orang`, sub: "Pada halaman ini", icon: Users,       color: "blue"  },
-          { label: "Total Disalurkan",   value: formatRupiah(totalDisalurkan),          sub: `dari ${formatRupiah(totalTarget)}`, icon: Target, color: "green" },
-        ].map((s) => (
-          <Card key={s.label} className="!p-5">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3
-              ${s.color === "brand" ? "bg-brand-50 text-brand-600" : s.color === "blue" ? "bg-blue-50 text-blue-600" : "bg-green-50 text-green-600"}`}>
-              <s.icon size={20} />
-            </div>
-            <p className="text-sm text-gray-500">{s.label}</p>
-            <p className="text-xl font-bold text-gray-900 mt-1 truncate">{s.value}</p>
-            <p className="text-xs text-gray-400 mt-1">{s.sub}</p>
-          </Card>
-        ))}
+        <StatCard icon={FolderKanban} label="Total Program"    value={meta.total}                          color="brand"   sub="Terdaftar"            loading={loading} />
+        <StatCard icon={Users}        label="Total Penerima"   value={`${totalPenerima.toLocaleString("id-ID")} orang`} color="blue" sub="Pada halaman ini" loading={loading} />
+        <StatCard icon={Target}       label="Total Disalurkan" value={formatRupiah(totalDisalurkan)}       color="emerald" sub={`dari ${formatRupiah(totalTarget)}`} loading={loading} />
       </div>
 
       {/* Toolbar */}
       <Card className="!p-0 overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className="relative flex-1 w-full">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text" placeholder="Cari nama atau kode program..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Cari nama atau kode program..."
+          />
           <div className="flex gap-2 flex-wrap">
             {[{ val: "", label: "Semua Status" }, { val: "aktif", label: "Aktif" }, { val: "selesai", label: "Selesai" }, { val: "ditunda", label: "Ditunda" }]
               .map(({ val, label }) => (
@@ -324,7 +311,7 @@ export default function Program() {
                 </button>
               ))}
             <select value={tahunFilter} onChange={(e) => { setTahun(e.target.value); setPage(1); }}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none">
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none bg-white">
               <option value="">Semua Tahun</option>
               {Array.from({ length: 4 }, (_, i) => THIS_YEAR - i).map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -337,7 +324,7 @@ export default function Program() {
         <div className="p-5">
           {loading ? (
             <div className="py-16 text-center">
-              <div className="w-8 h-8 border-3 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
+              <div className="w-8 h-8 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
               <p className="text-gray-400 text-sm mt-3">Memuat program...</p>
             </div>
           ) : data.length === 0 ? (
@@ -362,7 +349,7 @@ export default function Program() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[prog.status] ?? "bg-gray-100 text-gray-600"}`}>
+                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[prog.status] ?? "bg-gray-100 text-gray-600"}`}>
                           {STATUS_LABEL[prog.status] ?? prog.status}
                         </span>
                       </div>
@@ -407,24 +394,7 @@ export default function Program() {
           )}
         </div>
 
-        {/* Pagination */}
-        {!loading && meta.last_page > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-              Halaman {meta.current_page} dari {meta.last_page} · Total {meta.total} program
-            </p>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                <ChevronLeft size={15} />
-              </button>
-              <button onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                <ChevronRight size={15} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} label="program" />
       </Card>
 
       {/* Modals */}

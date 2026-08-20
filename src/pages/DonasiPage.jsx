@@ -19,7 +19,7 @@ import {
   metodePembayaran,
 } from "../data/dummyDonasi";
 import { formatRupiah } from "../utils/formatRupiah";
-import { bayarZakat } from "../services/zakatService";
+import { submitDonasi } from "../services/donasiService";
 
 const METODE_ICON = {
   "transfer-bank": Landmark,
@@ -64,16 +64,25 @@ export default function DonasiPage() {
     if (!nominal || nominal < 10000) return;
 
     setStatus("loading");
-    const payload = {
-      jenis: jenisTerpilih.nama,
-      nominal,
-      metode: metodeId,
-      anonim,
-      ...(anonim ? {} : data),
-    };
-    const res = await bayarZakat(payload);
-    setHasil(res);
-    setStatus("success");
+    try {
+      const payload = {
+        kategori: jenisTerpilih.nama,
+        nominal,
+        metode: metodeId,
+        anonim: anonim,
+        ...(anonim ? {} : {
+          nama_donatur: data.nama,
+          email: data.email,
+          telepon: data.telepon,
+        }),
+      };
+      const res = await submitDonasi(payload);
+      setHasil(res);
+      setStatus("success");
+    } catch (err) {
+      alert(err.message ?? "Terjadi kesalahan. Silakan coba lagi.");
+      setStatus("idle");
+    }
   }
 
   if (status === "success") {
@@ -93,7 +102,7 @@ export default function DonasiPage() {
         <Card className="text-left">
           <div className="flex justify-between text-sm mb-3">
             <span className="text-gray-500">ID Transaksi</span>
-            <span className="font-medium text-gray-900">{hasil?.id}</span>
+            <span className="font-medium text-gray-900">{hasil?.kode}</span>
           </div>
           <div className="flex justify-between text-sm mb-3">
             <span className="text-gray-500">Jenis</span>
