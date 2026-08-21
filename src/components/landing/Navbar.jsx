@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Heart, User, Menu, X } from "lucide-react";
-import logoUpz from "../../assets/img/LOGO-UPZ.png";
+import logoUpz from "../../assets/img/logo-upz.png";
 import { useSettings } from "../../services/settingService";
 
 const menu = [

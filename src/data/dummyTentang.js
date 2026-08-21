@@ -1,8 +1,8 @@
 // Data buat halaman Tentang — visi misi, struktur pengurus, legalitas
-import ketuaImg from "../assets/img/Dr. H. Cucu Hidayat, M.Pd..jpg.jpeg";
-import wakilImg from "../assets/img/Dr. H. Acep Zoni Saefuk Mubarok, M.Ag..jpg.jpeg";
-import sekretarisImg from "../assets/img/Darwis Darmawan, S.Pd., M.Pd..jpg.jpeg";
-import bendaharaImg from "../assets/img/Hj. Euis Rosidah, S.E., M.Ak..jpg.jpeg";
+import ketuaImg from "../assets/img/Dr. H. Cucu Hidayat, M.Pd..jpg";
+import wakilImg from "../assets/img/Dr. H. Acep Zoni Saefuk Mubarok, M.Ag..jpg";
+import sekretarisImg from "../assets/img/Darwis Darmawan, S.Pd., M.Pd..jpg";
+import bendaharaImg from "../assets/img/Hj. Euis Rosidah, S.E., M.Ak..jpg";
 import logoUnsilImg from "../assets/images/logo-unsil.jpeg";
 
 export const visiMisi = {
