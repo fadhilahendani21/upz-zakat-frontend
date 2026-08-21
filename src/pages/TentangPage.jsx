@@ -226,26 +226,29 @@ export default function TentangPage() {
             </div>
 
             <div className="p-5">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-2">
                 <div className="min-w-0">
                   <p className="font-bold text-gray-900 text-base leading-snug">
                     {p.nama}
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-600">
-                    {p.jabatan}
-                  </p>
                 </div>
 
-                <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-green-700">
-                  {p.periode}
-                </span>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-brand-600">
+                    {p.jabatan}
+                  </p>
+
+                  <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-green-700 whitespace-nowrap">
+                    {p.periode}
+                  </span>
+                </div>
               </div>
 
               <p className="mt-3 text-sm leading-relaxed text-gray-600 line-clamp-3">
                 {p.deskripsi}
               </p>
 
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex items-center justify-center gap-2">
                 {socialLinks.map(([platform, url]) => {
                   const Icon = SOCIAL_ICONS[platform] || Globe;
 
