@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Heart, User, Menu, X } from "lucide-react";
-import logoUnsil from "../../assets/images/logo-unsil.jpeg";
+import logoUpz from "../../assets/img/LOGO-UPZ.png";
 import { useSettings } from "../../services/settingService";
 
 const menu = [
@@ -23,9 +23,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <img
-            src={logoUnsil}
+            src={logoUpz}
             alt={brandName}
-            className="w-11 h-11 rounded-full object-cover shrink-0"
+            className="h-11 w-11 object-contain shrink-0 rounded-md"
           />
           <div>
             <p className="font-bold text-gray-900 leading-tight">{brandName}</p>

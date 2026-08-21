@@ -1,4 +1,9 @@
 // Data buat halaman Tentang — visi misi, struktur pengurus, legalitas
+import ketuaImg from "../assets/img/Dr. H. Cucu Hidayat, M.Pd..jpg.jpeg";
+import wakilImg from "../assets/img/Dr. H. Acep Zoni Saefuk Mubarok, M.Ag..jpg.jpeg";
+import sekretarisImg from "../assets/img/Darwis Darmawan, S.Pd., M.Pd..jpg.jpeg";
+import bendaharaImg from "../assets/img/Hj. Euis Rosidah, S.E., M.Ak..jpg.jpeg";
+import logoUnsilImg from "../assets/images/logo-unsil.jpeg";
 
 export const visiMisi = {
   visi:
@@ -14,34 +19,52 @@ export const visiMisi = {
 
 export const dummyPengurus = [
   {
-    nama: "Prof. Dr. H. Ahmad Fauzi, M.Ag.",
+    nama: "Dr. H. Cucu Hidayat, M.Pd.",
     jabatan: "Ketua UPZ",
     periode: "2023 – 2026",
+    deskripsi: "Memimpin arah strategis, koordinasi program, dan pengelolaan zakat secara amanah, transparan, dan profesional.",
+    foto: ketuaImg,
+    socials: {
+      instagram: "https://instagram.com",
+      email: "mailto:ketua@upz.unsil.ac.id",
+      linkedin: "https://linkedin.com",
+    },
   },
   {
-    nama: "Dr. Hj. Siti Rahmawati, M.Pd.",
-    jabatan: "Wakil Ketua",
+    nama: "Dr. H. Acep Zoni Saefuk Mubarok, M.Ag.",
+    jabatan: "Wakil Ketua UPZ",
     periode: "2023 – 2026",
+    deskripsi: "Mendukung penguatan program dan koordinasi internal untuk mengoptimalkan pengumpulan serta penyaluran dana zakat secara efektif.",
+    foto: wakilImg,
+    socials: {
+      instagram: "https://instagram.com",
+      email: "mailto:wakil@upz.unsil.ac.id",
+      linkedin: "https://linkedin.com",
+    },
   },
   {
-    nama: "Muhammad Rizki Ramadhan, S.E.",
-    jabatan: "Sekretaris",
+    nama: "Darwis Darmawan, S.Pd., M.Pd.",
+    jabatan: "Sekretaris UPZ",
     periode: "2023 – 2026",
+    deskripsi: "Mengelola administrasi, dokumentasi, dan komunikasi organisasi agar tata kelola UPZ berjalan tertib, rapi, dan akuntabel.",
+    foto: sekretarisImg,
+    socials: {
+      instagram: "https://instagram.com",
+      email: "mailto:sekretaris@upz.unsil.ac.id",
+      linkedin: "https://linkedin.com",
+    },
   },
   {
-    nama: "Dewi Kartika Sari, S.Ak.",
-    jabatan: "Bendahara",
+    nama: "Hj. Euis Rosidah, S.E., M.Ak.",
+    jabatan: "Bendahara UPZ",
     periode: "2023 – 2026",
-  },
-  {
-    nama: "Ust. Abdul Malik, Lc.",
-    jabatan: "Koordinator Bidang Pengumpulan",
-    periode: "2023 – 2026",
-  },
-  {
-    nama: "Rina Nurhayati, S.Sos.",
-    jabatan: "Koordinator Bidang Penyaluran",
-    periode: "2023 – 2026",
+    deskripsi: "Mengelola laporan keuangan, anggaran, dan pengelolaan dana UPZ agar transparan, tepat sasaran, dan terkontrol.",
+    foto: bendaharaImg,
+    socials: {
+      instagram: "https://instagram.com",
+      email: "mailto:bendahara@upz.unsil.ac.id",
+      linkedin: "https://linkedin.com",
+    },
   },
 ];
 

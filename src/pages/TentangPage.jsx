@@ -1,24 +1,110 @@
-import { Eye, Target, ScrollText, ShieldCheck } from "lucide-react";
+import {
+  Eye,
+  Target,
+  ScrollText,
+  ShieldCheck,
+  Mail,
+  Globe,
+  X,
+  MessageCircle,
+} from "lucide-react";
+import { useState } from "react";
 import Card from "../components/common/Card";
 import {
   visiMisi,
   dummyPengurus,
   dummyLegalitas,
 } from "../data/dummyTentang";
-import { getInitials } from "../utils/getInitials";
 import { useSettings } from "../services/settingService";
 
-const AVATAR_COLORS = [
-  "bg-brand-100 text-brand-700",
-  "bg-blue-100 text-blue-700",
-  "bg-yellow-100 text-yellow-700",
-  "bg-purple-100 text-purple-700",
-  "bg-rose-100 text-rose-700",
-  "bg-cyan-100 text-cyan-700",
-];
+const InstagramIcon = ({ size = 16, className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+    <circle cx="12" cy="12" r="4.2" />
+    <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const LinkedinIcon = ({ size = 16, className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M7.5 10.5v6.5h-2.5v-6.5h2.5Zm-1.25-2.25a1.37 1.37 0 1 1 0-2.74 1.37 1.37 0 0 1 0 2.74ZM10.7 10.5h2.4v.9h.1c.3-.6 1.1-1.3 2.3-1.3 2.5 0 3 1.7 3 3.8v3.1h-2.5v-2.8c0-.9 0-2-1.2-2s-1.4 1-1.4 2v2.8h-2.5v-6.5Z" fill="white" />
+  </svg>
+);
+
+const FacebookIcon = ({ size = 16, className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M13.7 21v-8.2h2.8l.4-3.2h-3.2V7.4c0-.9.3-1.6 1.7-1.6h1.8V2.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.4 1.6-4.4 4.5v2.5H7.2v3.2h2.8V21h3.7Z" />
+  </svg>
+);
+
+const XIcon = ({ size = 16, className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
+    <path d="M4 4l16 16M20 4L4 20" />
+  </svg>
+);
+
+const WhatsAppIcon = ({ size = 16, className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M12.1 2.2a9.8 9.8 0 0 0-8.5 15.1L2.2 22l4.9-1.4A9.8 9.8 0 1 0 12.1 2.2Zm5.3 14.1c-.2.6-1.1 1.1-1.8 1.3-.5.1-1.1.1-3.4-.7-2.9-.9-4.7-3.6-4.8-3.8-.1-.2-1-1.3-1-2.6 0-1.2.6-1.8.8-2.1.2-.2.4-.3.6-.3h.4c.2 0 .4 0 .6.5l.7 1.7c.1.2 0 .5-.1.7l-.3.4c-.1.1-.2.3-.1.5.2.4.9 1.4 1.9 2.2 1.3 1.1 2.4 1.5 2.8 1.7.2.1.3.1.5 0l.8-.9c.2-.2.5-.2.8-.1l1.5.9c.2.1.3.3.3.5.1.4.1.7-.1 1.1Z" />
+  </svg>
+);
+
+const SOCIAL_ICONS = {
+  instagram: InstagramIcon,
+  email: Mail,
+  linkedin: LinkedinIcon,
+  facebook: FacebookIcon,
+  twitter: XIcon,
+  x: XIcon,
+  whatsapp: WhatsAppIcon,
+};
 
 export default function TentangPage() {
   const settings = useSettings();
+  const [selectedPengurus, setSelectedPengurus] = useState(null);
   const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
   const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
   const nomorSk = settings?.profil?.nomorSk || "SK Rektor & BAZNAS";
@@ -119,37 +205,131 @@ export default function TentangPage() {
   </p>
 </div>
 
-    {/* Daftar Pengurus */}
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {dummyPengurus.map((p, i) => (
-        <Card
-          key={p.nama}
-          className="flex items-start gap-4"
-        >
-          <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 ${
-              AVATAR_COLORS[i % AVATAR_COLORS.length]
-            }`}
+    <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      {dummyPengurus.map((p) => {
+        const socialLinks = Object.entries(p.socials || {});
+
+        return (
+          <button
+            key={p.nama}
+            type="button"
+            onClick={() => setSelectedPengurus(p)}
+            className="overflow-hidden rounded-2xl border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-200"
           >
-            {getInitials(p.nama)}
-          </div>
+            <div className="relative">
+              <img
+                src={p.foto}
+                alt={p.nama}
+                className="h-64 w-full object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/50 to-transparent" />
+            </div>
 
-          <div className="min-w-0">
-            <p className="font-semibold text-gray-900 text-sm leading-snug">
-              {p.nama}
-            </p>
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 text-base leading-snug">
+                    {p.nama}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-brand-600">
+                    {p.jabatan}
+                  </p>
+                </div>
 
-            <p className="text-brand-600 text-xs font-medium mt-1">
-              {p.jabatan}
-            </p>
+                <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-green-700">
+                  {p.periode}
+                </span>
+              </div>
 
-            <p className="text-gray-400 text-xs mt-1">
-              {p.periode}
-            </p>
-          </div>
-        </Card>
-      ))}
+              <p className="mt-3 text-sm leading-relaxed text-gray-600 line-clamp-3">
+                {p.deskripsi}
+              </p>
+
+              <div className="mt-4 flex items-center gap-2">
+                {socialLinks.map(([platform, url]) => {
+                  const Icon = SOCIAL_ICONS[platform] || Globe;
+
+                  return (
+                    <span
+                      key={platform}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-600"
+                      aria-label={platform}
+                      title={platform}
+                    >
+                      <Icon size={15} />
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </button>
+        );
+      })}
     </div>
+
+    {selectedPengurus && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm">
+        <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+            <h3 className="text-lg font-bold text-gray-900">Profil Pengurus</h3>
+            <button
+              type="button"
+              onClick={() => setSelectedPengurus(null)}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+              aria-label="Tutup detail pengurus"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="p-5 sm:p-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              <img
+                src={selectedPengurus.foto}
+                alt={selectedPengurus.nama}
+                className="h-52 w-full rounded-2xl object-cover sm:h-64 sm:w-52"
+              />
+
+              <div className="flex-1">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">
+                  {selectedPengurus.jabatan}
+                </p>
+                <h4 className="mt-2 text-2xl font-bold text-gray-900">
+                  {selectedPengurus.nama}
+                </h4>
+                <p className="mt-2 inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
+                  {selectedPengurus.periode}
+                </p>
+
+                <p className="mt-4 text-sm leading-relaxed text-gray-600">
+                  {selectedPengurus.deskripsi}
+                </p>
+
+                <div className="mt-5 flex items-center gap-2">
+                  {Object.entries(selectedPengurus.socials || {}).map(([platform, url]) => {
+                    const Icon = SOCIAL_ICONS[platform] || Globe;
+
+                    return (
+                      <a
+                        key={platform}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-brand-50 text-brand-700 transition hover:bg-brand-100"
+                        aria-label={platform}
+                        title={platform}
+                      >
+                        <Icon size={16} />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
 
   </div>
 </section>
