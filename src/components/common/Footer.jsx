@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import logoUnsil from "../../assets/images/logo-unsil.jpeg";
+import { useSettings } from "../../services/settingService";
 
 const navigasi = [
   { label: "Beranda", to: "/" },
@@ -19,6 +20,13 @@ const layanan = [
 ];
 
 export default function Footer() {
+  const settings = useSettings();
+  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
+  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
+  const alamat = settings?.profil?.alamat || "Universitas Siliwangi, Tasikmalaya";
+  const whatsapp = settings?.profil?.whatsapp || "+62-8123-4567-8910";
+  const email = settings?.profil?.email || "upz@unsil.ac.id";
+
   return (
     <footer className="bg-[#175621] text-white">
 
@@ -34,14 +42,14 @@ export default function Footer() {
               <div className="w-9 h-9 rounded-lg bg-white p-1 shadow-sm">
                 <img
                   src={logoUnsil}
-                  alt="Logo Universitas Siliwangi"
+                  alt={brandName}
                   className="w-full h-full object-contain rounded-md"
                 />
               </div>
 
               <div>
                 <h3 className="text-base font-bold">
-                  UPZ Zakat UNSIL
+                  {brandName}
                 </h3>
 
                 <p className="text-[11px] text-green-300 mt-0.5">
@@ -51,7 +59,7 @@ export default function Footer() {
             </div>
 
             <p className="mt-3 max-w-md text-xs text-green-100 leading-5">
-              Unit Pengumpul Zakat Universitas Siliwangi yang berkomitmen
+              {orgName} berkomitmen
               dalam mengelola dan menyalurkan zakat, infak, dan sedekah
               secara amanah, transparan, dan tepat sasaran.
             </p>
@@ -196,9 +204,7 @@ export default function Footer() {
                   </p>
 
                   <p className="text-xs text-green-100 leading-4">
-                    Universitas Siliwangi
-                    <br />
-                    Tasikmalaya
+                    {alamat}
                   </p>
                 </div>
               </div>
@@ -211,11 +217,11 @@ export default function Footer() {
 
                 <div>
                   <p className="text-[11px] text-green-300 mb-0.5">
-                    Telepon
+                    WhatsApp / Telepon
                   </p>
 
                   <p className="text-xs text-green-100">
-                    +62-8123-4567-8910
+                    {whatsapp}
                   </p>
                 </div>
               </div>
@@ -232,7 +238,7 @@ export default function Footer() {
                   </p>
 
                   <p className="text-xs text-green-100">
-                    Upz@unsil.ac.id
+                    {email}
                   </p>
                 </div>
               </div>
@@ -250,7 +256,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-1.5">
 
             <p className="text-[11px] text-green-200 text-center md:text-left">
-              © 2026 UPZ Zakat Universitas Siliwangi. All rights reserved.
+              © {new Date().getFullYear()} {orgName}. All rights reserved.
             </p>
 
             <div className="flex items-center gap-1.5 text-[11px] text-green-200">

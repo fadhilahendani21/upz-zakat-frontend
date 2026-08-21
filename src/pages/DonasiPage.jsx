@@ -20,6 +20,7 @@ import {
 } from "../data/dummyDonasi";
 import { formatRupiah } from "../utils/formatRupiah";
 import { submitDonasi } from "../services/donasiService";
+import { useSettings } from "../services/settingService";
 
 const METODE_ICON = {
   "transfer-bank": Landmark,
@@ -29,6 +30,7 @@ const METODE_ICON = {
 
 export default function DonasiPage() {
   const location = useLocation();
+  const settings = useSettings();
   const [jenisId, setJenisId] = useState(
     location.state?.jenisId || dummyJenisDonasi[0].id
   );
@@ -37,7 +39,7 @@ export default function DonasiPage() {
     location.state?.nominal ? String(location.state.nominal) : ""
   );
   const [metodeId, setMetodeId] = useState(metodePembayaran[0].id);
-  const [anonim, setAnonim] = useState(false);
+  const [anonim, setAnonim] = useState(settings?.privasi?.defaultAnonimPublik || false);
   const [data, setData] = useState({ nama: "", email: "", telepon: "" });
   const [status, setStatus] = useState("idle"); // idle | loading | success
   const [hasil, setHasil] = useState(null);
@@ -126,18 +128,21 @@ export default function DonasiPage() {
           {metodeId === "transfer-bank" && (
             <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Nomor Virtual Account</p>
-                <p className="font-mono font-semibold text-gray-900">
-                  8808 1234 5678 9012
+                <p className="text-xs text-gray-500">Rekening Tujuan</p>
+                <p className="font-mono font-semibold text-gray-900 text-xs sm:text-sm">
+                  {settings?.profil?.rekeningUtama || "BSI 7123456789 a.n UPZ Unsil"}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() =>
-                  navigator.clipboard?.writeText("880812345678902")
+                  navigator.clipboard?.writeText(
+                    settings?.profil?.rekeningUtama || "7123456789"
+                  )
                 }
-                className="text-brand-600 hover:text-brand-700"
-                aria-label="Salin nomor virtual account"
+                className="text-brand-600 hover:text-brand-700 p-2"
+                aria-label="Salin nomor rekening"
+                title="Salin rekening"
               >
                 <Copy size={18} />
               </button>
@@ -145,9 +150,24 @@ export default function DonasiPage() {
           )}
         </Card>
 
+        {/* WhatsApp Konfirmasi */}
+        {settings?.profil?.whatsapp && (
+          <a
+            href={`https://wa.me/${settings.profil.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+              `Assalamu'alaikum, saya ingin konfirmasi donasi/zakat sebesar ${formatRupiah(nominal)} untuk ${jenisTerpilih?.nama || "ZIS"} (Kode: ${hasil?.id || "DONASI-" + Date.now().toString().slice(-4)}). Terima kasih.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-2 transition"
+          >
+            <Phone size={16} />
+            Konfirmasi Bukti Transfer via WhatsApp
+          </a>
+        )}
+
         <Button
           variant="outline"
-          className="mt-6 w-full"
+          className="mt-4 w-full"
           onClick={() => setStatus("idle")}
         >
           Buat Donasi Lain

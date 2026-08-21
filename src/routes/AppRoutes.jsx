@@ -24,6 +24,8 @@ import DonasiOnline from "../pages/dashboard/DonasiOnline";
 import Transaksi from "../pages/dashboard/Transaksi";
 import RekeningKas from "../pages/dashboard/RekeningKas";
 import LaporanKeuangan from "../pages/dashboard/LaporanKeuangan";
+import Jurnal from "../pages/dashboard/Jurnal";
+import Pengguna from "../pages/dashboard/Pengguna";
 import Pengaturan from "../pages/dashboard/Pengaturan";
 
 export default function AppRoutes() {
@@ -60,6 +62,8 @@ export default function AppRoutes() {
           <Route path="transaksi" element={<Transaksi />} />
           <Route path="rekening-kas" element={<RekeningKas />} />
           <Route path="laporan-keuangan" element={<LaporanKeuangan />} />
+          <Route path="jurnal" element={<Jurnal />} />
+          <Route path="pengguna" element={<Pengguna />} />
           <Route path="pengaturan" element={<Pengaturan />} />
         </Route>
       </Routes>

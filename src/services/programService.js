@@ -46,3 +46,10 @@ export const getProgramOptions = (tahun = "") => {
   if (tahun) params.append("tahun", tahun);
   return request("GET", `/program/options?${params}`);
 };
+
+export const getPublicPrograms = () => {
+  if (!API_URL) return Promise.resolve({ data: [] });
+  return fetch(`${API_URL}/public/program`, {
+    headers: { Accept: "application/json" },
+  }).then((res) => (res.ok ? res.json() : { data: [] }));
+};

@@ -12,9 +12,9 @@ import { Pagination, SearchInput, FilterSelect, Modal, FormField, inputCls } fro
 import { formatRupiah } from "../../utils/formatRupiah";
 import { getMuzakkiOptions } from "../../services/muzakkiService";
 import { getPengumpulan, savePengumpulan } from "../../services/transaksiService";
+import { useSettings, getSettings } from "../../services/settingService";
 import { NumericFormat } from "react-number-format";
 // ── Konstanta ─────────────────────────────────────────────────────────────────
-const KATEGORI_OPTIONS = ["Zakat Fitrah", "Zakat Maal", "Infaq", "Sedekah", "Dana Lainnya"];
 const BULAN_OPTIONS = [
   { label: "Semua Bulan", value: 0 },
   { label: "Januari",   value: 1 },  { label: "Februari",  value: 2 },
@@ -36,8 +36,9 @@ const KATEGORI_BADGE = {
 // ── Modal Tambah ──────────────────────────────────────────────────────────────
 function ModalTambah({ onClose, onSaved }) {
   const [muzakki, setMuzakki] = useState(null);
+  const kategoriOptions = getSettings()?.kategori?.jenisDanaList || ["Zakat Fitrah", "Zakat Maal", "Infaq", "Sedekah", "Dana Lainnya"];
   const [form, setForm] = useState({
-    kategori: "Zakat Fitrah", nominal: "", metode: "Transfer Bank", keterangan: "",
+    kategori: kategoriOptions[0] || "Zakat Fitrah", nominal: "", metode: "Transfer Bank", keterangan: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -93,7 +94,7 @@ function ModalTambah({ onClose, onSaved }) {
                   value={form.kategori} onChange={(e) => setForm({ ...form, kategori: e.target.value })}
                   className={inputCls}
                 >
-                  {KATEGORI_OPTIONS.map((k) => <option key={k}>{k}</option>)}
+                  {kategoriOptions.map((k) => <option key={k}>{k}</option>)}
                 </select>
               </div>
               <div>
@@ -181,6 +182,8 @@ function ModalDetail({ row, onClose }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Pengumpulan() {
+  const settings = useSettings();
+  const kategoriOptions = settings?.kategori?.jenisDanaList || ["Zakat Fitrah", "Zakat Maal", "Infaq", "Sedekah", "Dana Lainnya"];
   const [data, setData]   = useState([]);
   const [meta, setMeta]   = useState({ total: 0, current_page: 1, last_page: 1 });
   const [loading, setLoading] = useState(true);
@@ -264,7 +267,7 @@ export default function Pengumpulan() {
           <div className="flex items-center gap-2">
             <FilterSelect value={kategori} onChange={(e) => { setKategori(e.target.value); setPage(1); }}>
               <option value="">Semua Kategori</option>
-              {KATEGORI_OPTIONS.map((k) => <option key={k} value={k}>{k}</option>)}
+              {kategoriOptions.map((k) => <option key={k} value={k}>{k}</option>)}
             </FilterSelect>
             <FilterSelect value={bulan} onChange={(e) => { setBulan(Number(e.target.value)); setPage(1); }}>
               {BULAN_OPTIONS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}

@@ -6,6 +6,7 @@ import {
   dummyLegalitas,
 } from "../data/dummyTentang";
 import { getInitials } from "../utils/getInitials";
+import { useSettings } from "../services/settingService";
 
 const AVATAR_COLORS = [
   "bg-brand-100 text-brand-700",
@@ -17,24 +18,29 @@ const AVATAR_COLORS = [
 ];
 
 export default function TentangPage() {
+  const settings = useSettings();
+  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
+  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
+  const nomorSk = settings?.profil?.nomorSk || "SK Rektor & BAZNAS";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
       {/* Header */}
- <section className="w-full bg-brand-700 text-white">
-  <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14">
-    <div className="text-center">
-      <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-        UPZ Zakat Universitas Siliwangi
-      </h1>
+      <section className="w-full bg-brand-700 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14">
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
+              {orgName}
+            </h1>
 
-      <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
-        Unit Pengumpul Zakat yang berkomitmen mengelola zakat, infak, dan
-        sedekah secara amanah, transparan, dan tepat sasaran demi
-        kesejahteraan umat.
-      </p>
-    </div>
-  </div>
+            <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
+              Unit Pengumpul Zakat yang berkomitmen mengelola zakat, infak, dan
+              sedekah secara amanah, transparan, dan tepat sasaran demi
+              kesejahteraan umat.
+            </p>
+          </div>
+        </div>
       </section>
 
      {/* Visi & Misi */}
@@ -166,6 +172,25 @@ export default function TentangPage() {
 
     {/* Daftar Legalitas */}
     <div className="space-y-4">
+      {settings?.profil?.nomorSk && (
+        <Card className="flex gap-4 items-start border-2 border-brand-200 bg-brand-50/40">
+          <div className="w-11 h-11 rounded-xl bg-brand-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+            <ShieldCheck size={22} />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
+              Legalitas Resmi Aktif
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm mt-1">
+              {settings.profil.nomorSk}
+            </h3>
+            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+              Dasar hukum operasional Unit Pengumpul Zakat (UPZ) yang berlaku dan terverifikasi pada sistem {brandName}.
+            </p>
+          </div>
+        </Card>
+      )}
+
       {dummyLegalitas.map((item) => (
         <Card
           key={item.judul}

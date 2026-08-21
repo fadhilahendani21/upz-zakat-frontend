@@ -5,9 +5,11 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FloatingLeaves from "../components/common/FloatingLeaves";
 import { login } from "../services/authService";
+import { useSettings } from "../services/settingService";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const settings = useSettings();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,10 +43,10 @@ export default function LoginPage() {
         </div>
 
         <h1 className="text-xl font-bold text-gray-900 mb-1 text-center">
-          Masuk Admin UPZ
+          Masuk Admin {settings?.profil?.namaSingkat || "UPZ"}
         </h1>
         <p className="text-sm text-gray-500 mb-6 text-center">
-          UPZ Zakat Universitas Siliwangi
+          {settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi"}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

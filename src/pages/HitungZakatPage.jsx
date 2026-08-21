@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calculator,
@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Info,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
@@ -16,6 +17,7 @@ import {
   hitungZakatPenghasilan,
   hitungZakatMaal,
   hitungZakatFitrah,
+  getZakatConfig,
 } from "../services/zakatService";
 
 const TABS = [
@@ -94,6 +96,16 @@ function HasilCard({ wajib, jumlah, keterangan }) {
 export default function HitungZakatPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("penghasilan");
+  const [config, setConfig] = useState(getZakatConfig());
+
+  // Listen to system settings changes
+  useEffect(() => {
+    function onSettingsUpdate() {
+      setConfig(getZakatConfig());
+    }
+    window.addEventListener("upz_settings_updated", onSettingsUpdate);
+    return () => window.removeEventListener("upz_settings_updated", onSettingsUpdate);
+  }, []);
 
   // Zakat Penghasilan
   const [penghasilan, setPenghasilan] = useState(0);
@@ -125,6 +137,11 @@ export default function HitungZakatPage() {
               Hitung kewajiban zakat Anda dengan mudah dan akurat berdasarkan
               nisab yang berlaku, sebelum menunaikannya.
             </p>
+
+            <div className="mt-4 inline-flex items-center gap-2 bg-brand-800/80 border border-brand-500/40 text-xs px-3.5 py-1.5 rounded-full text-green-100">
+              <Sparkles size={13} className="text-amber-400 shrink-0" />
+              <span>Acuan Harga Emas Sistem: <strong>{formatRupiah(config.hargaEmasPerGram)}/gram</strong> (Nisab 85 gr: {formatRupiah(config.hargaEmasPerGram * config.nisabGramEmas)})</span>
+            </div>
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import { Calendar, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSettings } from "../services/settingService";
 
 import berita1 from "../assets/images/berita 1.jpeg";
 import berita2 from "../assets/images/berita 2.jpeg";
@@ -66,6 +67,10 @@ const NEWS = [
 ];
 
 export default function BeritaPage() {
+  const settings = useSettings();
+  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
+  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
@@ -74,12 +79,12 @@ export default function BeritaPage() {
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14">
           <div className="text-center">
             <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-              Berita Terbaru UPZ Zakat
+              Berita Terbaru {brandName}
             </h1>
 
             <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
               Ikuti perkembangan kegiatan, laporan, dan pengumuman terbaru
-              seputar UPZ Zakat Universitas Siliwangi.
+              seputar {orgName}.
             </p>
           </div>
         </div>

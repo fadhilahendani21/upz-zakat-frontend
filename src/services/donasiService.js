@@ -72,3 +72,16 @@ export async function getLaporanRingkasan(tahun = new Date().getFullYear()) {
   if (!res.ok) throw new Error("Gagal memuat laporan keuangan.");
   return res.json();
 }
+
+/**
+ * GET /api/public/laporan?tahun=YYYY (PUBLIC — tanpa auth)
+ */
+export async function getPublicLaporan(tahun = new Date().getFullYear()) {
+  if (!API_URL) return null;
+  const res = await fetch(`${API_URL}/public/laporan?tahun=${tahun}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+

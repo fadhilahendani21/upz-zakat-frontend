@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import logoUnsil from "../../assets/images/logo-unsil.jpeg";
 import MosqueIllustration from "./MosqueIllustration";
+import { useSettings } from "../../services/settingService";
 import {
   LayoutDashboard,
   ArrowDownToLine,
@@ -60,6 +61,10 @@ function SidebarLink({ item }) {
 }
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
+  const settings = useSettings();
+  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
+  const orgName = settings?.profil?.namaLembaga || "Universitas Siliwangi";
+
   return (
     <>
       {/* Overlay gelap, cuma muncul di mobile pas sidebar kebuka */}
@@ -80,14 +85,14 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         <div className="h-20 flex items-center gap-3 px-6 border-b border-gray-100">
           <img
             src={logoUnsil}
-            alt="Logo UPZ Zakat Universitas Siliwangi"
+            alt={brandName}
             className="w-10 h-10 rounded-full object-cover shrink-0"
           />
-          <div className="flex-1">
-            <p className="font-bold text-gray-900 text-sm leading-tight">
-              UPZ Zakat
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-gray-900 text-sm leading-tight truncate">
+              {brandName}
             </p>
-            <p className="text-[11px] text-gray-500 leading-tight">
+            <p className="text-[11px] text-gray-500 leading-tight truncate">
               Universitas Siliwangi
             </p>
           </div>

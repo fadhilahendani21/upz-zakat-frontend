@@ -3,12 +3,15 @@ import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/dashboard/Sidebar";
 import Topbar from "../components/dashboard/Topbar";
 import MosqueIllustration from "../components/dashboard/MosqueIllustration";
+import { useSettings } from "../services/settingService";
 
 const APP_VERSION = "1.0.0";
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const settings = useSettings();
+  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
 
   let topbarTitle = "";
   let topbarSubtitle = "";
@@ -16,7 +19,7 @@ export default function DashboardLayout() {
   switch (location.pathname) {
     case "/dashboard":
       topbarTitle = null; // Tampilkan Assalamu'alaikum bawaan Topbar
-      topbarSubtitle = "Selamat datang di Sistem Keuangan UPZ Zakat Universitas Siliwangi";
+      topbarSubtitle = `Selamat datang di Sistem Keuangan ${settings?.profil?.namaSingkat || "UPZ Unsil"}`;
       break;
     case "/dashboard/pengumpulan":
       topbarTitle = "Pengumpulan";
@@ -28,11 +31,11 @@ export default function DashboardLayout() {
       break;
     case "/dashboard/muzakki":
       topbarTitle = "Muzakki";
-      topbarSubtitle = "Data induk muzakki (pemberi zakat) UPZ Universitas Siliwangi.";
+      topbarSubtitle = `Data induk muzakki (pemberi zakat) ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
       break;
     case "/dashboard/mustahik":
       topbarTitle = "Mustahik";
-      topbarSubtitle = "Data induk mustahik (penerima zakat) UPZ Universitas Siliwangi.";
+      topbarSubtitle = `Data induk mustahik (penerima zakat) ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
       break;
     case "/dashboard/donasi-online":
       topbarTitle = "Donasi Online";
@@ -40,7 +43,7 @@ export default function DashboardLayout() {
       break;
     case "/dashboard/program":
       topbarTitle = "Program Penyaluran";
-      topbarSubtitle = "Kelola program-program penyaluran zakat aktif UPZ Unsil.";
+      topbarSubtitle = `Kelola program-program penyaluran zakat aktif ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
       break;
     case "/dashboard/transaksi":
       topbarTitle = "Transaksi Umum";
@@ -54,9 +57,17 @@ export default function DashboardLayout() {
       topbarTitle = "Laporan Keuangan";
       topbarSubtitle = "Laporan dan pembukuan keuangan UPZ.";
       break;
+    case "/dashboard/jurnal":
+      topbarTitle = "Jurnal Umum";
+      topbarSubtitle = "Pencatatan debit dan kredit pembukuan transaksi UPZ.";
+      break;
+    case "/dashboard/pengguna":
+      topbarTitle = "Pengaturan Pengguna";
+      topbarSubtitle = "Kelola profil akun, keamanan kata sandi, dan status sesi.";
+      break;
     case "/dashboard/pengaturan":
-      topbarTitle = "Pengaturan";
-      topbarSubtitle = "Konfigurasi sistem dan manajemen akun admin.";
+      topbarTitle = "Pengaturan Sistem";
+      topbarSubtitle = "Konfigurasi sistem dan preferensi aplikasi.";
       break;
     default:
       topbarTitle = "Dashboard";
@@ -79,7 +90,7 @@ export default function DashboardLayout() {
 
         <footer className="relative z-10 mt-10 pt-5 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-gray-500">
           <p>
-            © 2025 UPZ Zakat Universitas Siliwangi
+            © {new Date().getFullYear()} {orgName}
             <span className="hidden sm:inline"> · </span>
             <span className="block sm:inline">
               Transparan, Amanah, dan Memberi Manfaat

@@ -1,63 +1,67 @@
-// const API_URL = import.meta.env.VITE_API_URL;
-
-const HARGA_EMAS_PER_GRAM = 1200000; // contoh, idealnya diambil dari API harga emas terkini
-const HARGA_BERAS_PER_KG = 15000; // contoh harga beras acuan zakat fitrah
-const NISAB_GRAM_EMAS = 85;
+import { getSettings } from "./settingService";
 
 /**
- * Hitung zakat penghasilan (contoh logic sementara di FE,
- * nanti sebaiknya perhitungan final divalidasi juga di BE)
+ * Mendapatkan parameter nisab zakat terkini dari pengaturan sistem
+ */
+export function getZakatConfig() {
+  const settings = getSettings();
+  const zakat = settings.zakat || {};
+  return {
+    hargaEmasPerGram: Number(zakat.hargaEmasPerGram) || 1350000,
+    nisabGramEmas: Number(zakat.nisabZakatMaalGram) || 85,
+    hargaBerasPerKg: Number(zakat.hargaBerasPerKg) || 15000,
+    kadarZakatPersen: Number(zakat.kadarZakatPersen) || 2.5,
+  };
+}
+
+/**
+ * Hitung zakat penghasilan berdasarkan harga emas acuan di pengaturan sistem
  * @param {number} penghasilanBulanan
- * @returns {{nisab: number, wajibZakat: boolean, jumlahZakat: number}}
+ * @returns {{nisab: number, wajibZakat: boolean, jumlahZakat: number, hargaEmas: number}}
  */
 export function hitungZakatPenghasilan(penghasilanBulanan) {
-  const nisab = NISAB_GRAM_EMAS * HARGA_EMAS_PER_GRAM;
-  const penghasilanSetahun = penghasilanBulanan * 12;
+  const { hargaEmasPerGram, nisabGramEmas, kadarZakatPersen } = getZakatConfig();
+  const nisab = nisabGramEmas * hargaEmasPerGram;
+  const penghasilanSetahun = (Number(penghasilanBulanan) || 0) * 12;
   const wajibZakat = penghasilanSetahun >= nisab;
-  const jumlahZakat = wajibZakat ? penghasilanBulanan * 0.025 : 0;
+  const jumlahZakat = wajibZakat ? (Number(penghasilanBulanan) || 0) * (kadarZakatPersen / 100) : 0;
 
-  return { nisab, wajibZakat, jumlahZakat };
+  return { nisab, wajibZakat, jumlahZakat, hargaEmas: hargaEmasPerGram };
 }
 
 /**
- * Hitung zakat maal (harta simpanan: tabungan, emas, aset lancar, dsb)
+ * Hitung zakat maal berdasarkan harga emas acuan di pengaturan sistem
  * @param {number} totalHarta - total harta yang sudah dimiliki 1 tahun (haul)
  * @param {number} totalUtang - utang jatuh tempo yang mengurangi harta wajib zakat
- * @returns {{nisab: number, wajibZakat: boolean, jumlahZakat: number, hartaBersih: number}}
+ * @returns {{nisab: number, wajibZakat: boolean, jumlahZakat: number, hartaBersih: number, hargaEmas: number}}
  */
 export function hitungZakatMaal(totalHarta, totalUtang = 0) {
-  const nisab = NISAB_GRAM_EMAS * HARGA_EMAS_PER_GRAM;
-  const hartaBersih = Math.max(totalHarta - totalUtang, 0);
+  const { hargaEmasPerGram, nisabGramEmas, kadarZakatPersen } = getZakatConfig();
+  const nisab = nisabGramEmas * hargaEmasPerGram;
+  const hartaBersih = Math.max((Number(totalHarta) || 0) - (Number(totalUtang) || 0), 0);
   const wajibZakat = hartaBersih >= nisab;
-  const jumlahZakat = wajibZakat ? hartaBersih * 0.025 : 0;
+  const jumlahZakat = wajibZakat ? hartaBersih * (kadarZakatPersen / 100) : 0;
 
-  return { nisab, wajibZakat, jumlahZakat, hartaBersih };
+  return { nisab, wajibZakat, jumlahZakat, hartaBersih, hargaEmas: hargaEmasPerGram };
 }
 
 /**
- * Hitung zakat fitrah (2,5 kg / 3,5 liter makanan pokok per jiwa,
- * dikonversi ke nilai uang berdasarkan harga beras acuan)
+ * Hitung zakat fitrah (2,5 kg beras per jiwa) berdasarkan harga beras acuan di pengaturan sistem
  * @param {number} jumlahJiwa
- * @returns {{jumlahZakat: number, perJiwa: number}}
+ * @returns {{jumlahZakat: number, perJiwa: number, hargaBeras: number}}
  */
 export function hitungZakatFitrah(jumlahJiwa) {
-  const perJiwa = 2.5 * HARGA_BERAS_PER_KG;
-  const jumlahZakat = Math.max(jumlahJiwa, 0) * perJiwa;
+  const { hargaBerasPerKg } = getZakatConfig();
+  const perJiwa = 2.5 * hargaBerasPerKg;
+  const jumlahZakat = Math.max(Number(jumlahJiwa) || 0, 0) * perJiwa;
 
-  return { jumlahZakat, perJiwa };
+  return { jumlahZakat, perJiwa, hargaBeras: hargaBerasPerKg };
 }
 
 /**
- * Kirim data pembayaran zakat ke server
- * TODO (BE): implementasikan endpoint POST /api/zakat/bayar
+ * Kirim data pembayaran zakat ke server (mock / API)
  */
 export async function bayarZakat(payload) {
-  // const res = await fetch(`${API_URL}/zakat/bayar`, {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload),
-  // });
-  // return await res.json();
   console.log("Dummy bayarZakat payload:", payload);
   return Promise.resolve({ success: true, id: "ZKT-" + Date.now() });
 }

@@ -4,18 +4,18 @@ import {
   Phone,
   Clock,
   MessageCircle,
+  Building2,
+  Landmark,
 } from "lucide-react";
-
 import Card from "../components/common/Card";
-
 import {
   FacebookIcon,
   InstagramIcon,
   TwitterIcon,
   YoutubeIcon,
 } from "../components/common/SocialIcons";
-
 import { dummyKontak } from "../data/dummyKontak";
+import { useSettings } from "../services/settingService";
 
 const SOSMED_ICON = {
   Facebook: FacebookIcon,
@@ -25,6 +25,14 @@ const SOSMED_ICON = {
 };
 
 export default function KontakPage() {
+  const settings = useSettings();
+  const profil = settings.profil || {};
+
+  const alamat = profil.alamat || dummyKontak.alamat;
+  const whatsapp = profil.whatsapp || dummyKontak.whatsapp;
+  const email = profil.email || dummyKontak.email;
+  const orgName = profil.namaLembaga || "UPZ Zakat Universitas Siliwangi";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
@@ -38,7 +46,7 @@ export default function KontakPage() {
 
             <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
               Ada pertanyaan seputar zakat, infak, sedekah, atau program
-              penyaluran? Hubungi tim UPZ Zakat Universitas Siliwangi lewat
+              penyaluran? Hubungi tim {orgName} lewat
               salah satu kanal di bawah.
             </p>
           </div>
@@ -54,11 +62,11 @@ export default function KontakPage() {
           </div>
 
           <h3 className="font-semibold text-gray-900 text-sm mb-1">
-            Alamat
+            Alamat Kantor
           </h3>
 
-          <p className="text-sm text-gray-600 leading-relaxed">
-            {dummyKontak.alamat}
+          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+            {alamat}
           </p>
         </Card>
 
@@ -68,15 +76,15 @@ export default function KontakPage() {
           </div>
 
           <h3 className="font-semibold text-gray-900 text-sm mb-1">
-            Telepon & WhatsApp
+            WhatsApp & Layanan
           </h3>
 
-          <p className="text-sm text-gray-600">
-            {dummyKontak.telepon}
+          <p className="text-sm text-gray-800 font-semibold mt-1">
+            {whatsapp}
           </p>
 
-          <p className="text-sm text-gray-600">
-            {dummyKontak.whatsapp}
+          <p className="text-xs text-gray-500 mt-1">
+            Layanan Aktif Jam Kerja
           </p>
         </Card>
 
@@ -86,11 +94,15 @@ export default function KontakPage() {
           </div>
 
           <h3 className="font-semibold text-gray-900 text-sm mb-1">
-            Email
+            Email Resmi
           </h3>
 
-          <p className="text-sm text-gray-600">
-            {dummyKontak.email}
+          <p className="text-sm text-gray-800 font-medium mt-1">
+            {email}
+          </p>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Respon Cepat 1x24 Jam
           </p>
         </Card>
 

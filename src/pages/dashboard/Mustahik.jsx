@@ -11,11 +11,7 @@ import { Pagination, SearchInput } from "../../components/dashboard/ui";
 import {
   getMustahik, createMustahik, updateMustahik, deleteMustahik,
 } from "../../services/mustahikService";
-
-// ── Konstanta ─────────────────────────────────────────────────────────────────
-const KATEGORI_OPTIONS = [
-  "Fakir Miskin", "Gharim", "Muallaf", "Ibnu Sabil", "Fi Sabilillah", "Amil",
-];
+import { useSettings, getSettings } from "../../services/settingService";
 
 const KATEGORI_COLORS = {
   "Fakir Miskin":  "bg-red-50 text-red-700",
@@ -44,11 +40,14 @@ function Field({ label, field, type = "text", placeholder, value, onChange, erro
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
+  const asnafOptions = getSettings()?.kategori?.asnafList || [
+    "Fakir Miskin", "Gharim", "Muallaf", "Ibnu Sabil", "Fi Sabilillah", "Amil",
+  ];
   const [form, setForm] = useState({
     nama:     initial?.nama ?? "",
     no_hp:    initial?.no_hp ?? "",
     alamat:   initial?.alamat ?? "",
-    kategori: initial?.kategori ?? "Fakir Miskin",
+    kategori: initial?.kategori ?? (asnafOptions[0] || "Fakir Miskin"),
     status:   initial?.status ?? "aktif",
   });
   const [loading, setLoading] = useState(false);
@@ -113,7 +112,7 @@ function ModalForm({ initial, onClose, onSaved }) {
                 onChange={(e) => set("kategori", e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
               >
-                {KATEGORI_OPTIONS.map((k) => <option key={k} value={k}>{k}</option>)}
+                {asnafOptions.map((k) => <option key={k} value={k}>{k}</option>)}
               </select>
             </div>
 
@@ -187,6 +186,10 @@ function ModalHapus({ mustahik, onClose, onDeleted }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Mustahik() {
+  const settings = useSettings();
+  const asnafOptions = settings?.kategori?.asnafList || [
+    "Fakir Miskin", "Gharim", "Muallaf", "Ibnu Sabil", "Fi Sabilillah", "Amil",
+  ];
   const [data, setData]           = useState([]);
   const [meta, setMeta]           = useState({ total: 0, current_page: 1, last_page: 1 });
   const [loading, setLoading]     = useState(true);
@@ -264,7 +267,7 @@ export default function Mustahik() {
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none bg-white"
             >
               <option value="">Semua Kategori</option>
-              {KATEGORI_OPTIONS.map((k) => <option key={k} value={k}>{k}</option>)}
+              {asnafOptions.map((k) => <option key={k} value={k}>{k}</option>)}
             </select>
           </div>
         </div>

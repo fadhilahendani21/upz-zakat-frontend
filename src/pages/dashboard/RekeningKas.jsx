@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import StatCard from "../../components/dashboard/StatCard";
 import { getDashboardSaldo } from "../../services/transaksiService";
+import { useSettings } from "../../services/settingService";
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", {
@@ -19,6 +20,7 @@ function formatRupiah(value) {
 }
 
 export default function RekeningKas() {
+  const settings = useSettings();
   const [saldo, setSaldo]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState("");
@@ -72,7 +74,9 @@ export default function RekeningKas() {
           <Landmark size={20} />
         </div>
         <div className="flex-1">
-          <p className="font-semibold text-brand-900">Saldo Kas UPZ Universitas Siliwangi</p>
+          <p className="font-semibold text-brand-900">
+            Saldo Kas {settings?.profil?.namaSingkat || "UPZ Unsil"}
+          </p>
           <p className="text-sm text-brand-700 mt-0.5">
             Saldo dihitung secara otomatis berdasarkan seluruh transaksi pengumpulan dan penyaluran yang tercatat di sistem.
           </p>

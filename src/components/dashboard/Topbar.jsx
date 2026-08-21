@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, HelpCircle, ChevronDown, Menu, LogOut, Settings, User, X, BookOpen, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { logout, getUser } from "../../services/authService";
+import { useSettings } from "../../services/settingService";
 
 // ── Notifikasi dummy (bisa disambung ke API nanti) ────────────────────────────
 const NOTIFIKASI = [
@@ -12,6 +13,7 @@ const NOTIFIKASI = [
 
 export default function Topbar({ title, subtitle, onMenuClick }) {
   const navigate  = useNavigate();
+  const settings  = useSettings();
   const user      = getUser();
   const userName  = user?.name ?? "Admin UPZ";
   const userRole  = user?.role ?? "administrator";
@@ -171,8 +173,8 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
               </div>
               <div className="py-1.5">
                 {[
-                  { icon: BookOpen, label: "Panduan Penggunaan", action: () => alert("Panduan belum tersedia.") },
-                  { icon: MessageCircle, label: "Hubungi Admin", action: () => window.open("mailto:upz@unsil.ac.id") },
+                  { icon: BookOpen, label: "Panduan Penggunaan", action: () => alert("Panduan sistem sedang disiapkan.") },
+                  { icon: MessageCircle, label: "Hubungi Admin", action: () => window.open(`mailto:${settings?.profil?.email || "upz@unsil.ac.id"}`) },
                 ].map(({ icon: Icon, label, action }) => (
                   <button
                     key={label}
@@ -185,7 +187,7 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
                 ))}
               </div>
               <div className="px-4 py-2.5 border-t border-gray-100">
-                <p className="text-xs text-gray-400 text-center">UPZ Universitas Siliwangi v1.0.0</p>
+                <p className="text-xs text-gray-400 text-center">{settings?.profil?.namaSingkat || "UPZ Unsil"} v1.0.0</p>
               </div>
             </div>
           )}

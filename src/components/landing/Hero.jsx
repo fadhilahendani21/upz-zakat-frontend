@@ -2,9 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Wallet, FileSearch } from "lucide-react";
 import Button from "../common/Button";
 import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
+import { useSettings } from "../../services/settingService";
 
 export default function Hero() {
   const navigate = useNavigate();
+  const settings = useSettings();
+  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
 
   return (
     <section className="relative overflow-hidden">
@@ -45,7 +48,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-3 sm:mt-3 lg:mt-5 text-sm sm:text-xs md:text-sm text-gray-600 leading-relaxed">
-            UPZ Zakat Universitas Siliwangi hadir untuk memudahkan sivitas
+            {orgName} hadir untuk memudahkan sivitas
             akademika dan masyarakat dalam menunaikan zakat, infak, dan
             sedekah secara aman, transparan, dan terpercaya.
           </p>

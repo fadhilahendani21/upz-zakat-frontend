@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Heart, User, Menu, X } from "lucide-react";
 import logoUnsil from "../../assets/images/logo-unsil.jpeg";
+import { useSettings } from "../../services/settingService";
 
 const menu = [
   { label: "Beranda", to: "/" },
@@ -14,6 +15,8 @@ const menu = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const settings = useSettings();
+  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
@@ -21,11 +24,11 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-3">
           <img
             src={logoUnsil}
-            alt="Logo UPZ Zakat Universitas Siliwangi"
+            alt={brandName}
             className="w-11 h-11 rounded-full object-cover shrink-0"
           />
           <div>
-            <p className="font-bold text-gray-900 leading-tight">UPZ Zakat</p>
+            <p className="font-bold text-gray-900 leading-tight">{brandName}</p>
             <p className="text-xs text-gray-500 leading-tight">
               Universitas Siliwangi
             </p>
