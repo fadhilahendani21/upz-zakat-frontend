@@ -3,7 +3,7 @@ import ketuaImg from "../assets/img/Dr. H. Cucu Hidayat, M.Pd..jpg";
 import wakilImg from "../assets/img/Dr. H. Acep Zoni Saefuk Mubarok, M.Ag..jpg";
 import sekretarisImg from "../assets/img/Darwis Darmawan, S.Pd., M.Pd..jpg";
 import bendaharaImg from "../assets/img/Hj. Euis Rosidah, S.E., M.Ak..jpg";
-import logoUnsilImg from "../assets/images/logo-unsil.jpeg";
+import logoUnsilImg from "../assets/img/logo-upz.png";
 
 export const visiMisi = {
   visi:

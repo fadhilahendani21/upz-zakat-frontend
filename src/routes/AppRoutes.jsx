@@ -5,6 +5,9 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 import LandingPage from "../pages/LandingPage";
 import TentangPage from "../pages/TentangPage";
+import VisiMisiPage from "../pages/VisiMisiPage";
+import KepengurusanPage from "../pages/KepengurusanPage";
+import ProfilUnsilPage from "../pages/ProfilUnsilPage";
 import ProgramPage from "../pages/ProgramPage";
 import BeritaPage from "../pages/BeritaPage";
 import BeritaDetailPage from "../pages/BeritaDetailPage";
@@ -36,6 +39,9 @@ export default function AppRoutes() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/tentang" element={<TentangPage />} />
+          <Route path="/tentang/kepengurusan" element={<KepengurusanPage />} />
+          <Route path="/tentang/visi-misi" element={<VisiMisiPage />}/>
+          <Route path="/tentang/profil-unsil" element={<ProfilUnsilPage />}/>
           <Route path="/program" element={<ProgramPage />} />
           <Route path="/berita" element={<BeritaPage />} />
           <Route path="/berita/:id" element={<BeritaDetailPage />} />

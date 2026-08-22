@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import logoUnsil from "../../assets/images/logo-unsil.jpeg";
+import logoUpz from "../../assets/img/logo-upz.png";
 import { useSettings } from "../../services/settingService";
 
 const navigasi = [
@@ -21,32 +21,47 @@ const layanan = [
 
 export default function Footer() {
   const settings = useSettings();
-  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
-  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
-  const alamat = settings?.profil?.alamat || "Universitas Siliwangi, Tasikmalaya";
-  const whatsapp = settings?.profil?.whatsapp || "+62-8123-4567-8910";
-  const email = settings?.profil?.email || "upz@unsil.ac.id";
+
+  const brandName =
+    settings?.profil?.namaSingkat || "UPZ Unsil";
+
+  const orgName =
+    settings?.profil?.namaLembaga ||
+    "UPZ Zakat Universitas Siliwangi";
+
+  const alamat =
+    settings?.profil?.alamat ||
+    "Universitas Siliwangi, Tasikmalaya";
+
+  // Nomor WhatsApp UPZ
+  const whatsapp = "085171014303";
+
+  const email =
+    settings?.profil?.email || "upz@unsil.ac.id";
 
   return (
     <footer className="bg-[#175621] text-white">
 
       {/* ================= MAIN FOOTER ================= */}
       <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-6 pb-4">
+
         <div className="grid grid-cols-3 lg:grid-cols-12 gap-x-4 gap-y-6 lg:gap-7">
 
-          {/* BRAND */}
+          {/* ================= BRAND ================= */}
           <div className="col-span-3 lg:col-span-5">
+
             <div className="flex items-center gap-3">
 
-              {/* Logo */}
+              {/* Logo UPZ */}
               <div className="w-9 h-9 rounded-lg bg-white p-1 shadow-sm">
                 <img
-                  src={logoUnsil}
-                  alt={brandName}
+                  src={logoUpz}
+                  alt="Logo UPZ Unsil"
                   className="w-full h-full object-contain rounded-md"
                 />
               </div>
 
+              {/* Nama */}
               <div>
                 <h3 className="text-base font-bold">
                   {brandName}
@@ -56,6 +71,7 @@ export default function Footer() {
                   Universitas Siliwangi
                 </p>
               </div>
+
             </div>
 
             <p className="mt-3 max-w-md text-xs text-green-100 leading-5">
@@ -64,12 +80,11 @@ export default function Footer() {
               secara amanah, transparan, dan tepat sasaran.
             </p>
 
-            {/* Social */}
+            {/* ================= SOCIAL MEDIA ================= */}
             <div className="flex items-center gap-2 mt-3">
 
               {/* Instagram */}
-
-             <a 
+              <a
                 href="#"
                 aria-label="Instagram"
                 className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-green-800 transition-all duration-300"
@@ -85,14 +100,24 @@ export default function Footer() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <rect width="20" height="20" x="2" y="2" rx="5" />
+                  <rect
+                    width="20"
+                    height="20"
+                    x="2"
+                    y="2"
+                    rx="5"
+                  />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                  <line
+                    x1="17.5"
+                    x2="17.51"
+                    y1="6.5"
+                    y2="6.5"
+                  />
                 </svg>
               </a>
 
               {/* Facebook */}
-              
               <a
                 href="#"
                 aria-label="Facebook"
@@ -114,7 +139,6 @@ export default function Footer() {
               </a>
 
               {/* YouTube */}
-              
               <a
                 href="#"
                 aria-label="YouTube"
@@ -131,7 +155,8 @@ export default function Footer() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"
+                  />
                   <path d="m10 15 5-3-5-3z" />
                 </svg>
               </a>
@@ -139,8 +164,9 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* NAVIGASI */}
+          {/* ================= NAVIGASI ================= */}
           <div className="col-span-1 lg:col-span-2">
+
             <h4 className="font-semibold text-white text-sm">
               Navigasi
             </h4>
@@ -159,31 +185,36 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
+
           </div>
 
-          {/* LAYANAN */}
-<div className="col-span-1 lg:col-span-2">
-  <h4 className="font-semibold text-white text-sm">
-    Layanan
-  </h4>
+          {/* ================= LAYANAN ================= */}
+          <div className="col-span-1 lg:col-span-2">
 
-  <div className="w-7 h-0.5 bg-green-400 rounded-full mt-1.5 mb-2.5" />
+            <h4 className="font-semibold text-white text-sm">
+              Layanan
+            </h4>
 
-  <ul className="space-y-1.5">
-    {layanan.map((item) => (
-      <li key={item.to}>
-        <Link
-          to={item.to}
-          className="relative z-10 text-xs text-green-100 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
-        >
-          {item.label}
-        </Link>
-      </li>
-    ))}
-  </ul>
-</div>
-          {/* KONTAK */}
+            <div className="w-7 h-0.5 bg-green-400 rounded-full mt-1.5 mb-2.5" />
+
+            <ul className="space-y-1.5">
+              {layanan.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className="relative z-10 text-xs text-green-100 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+          </div>
+
+          {/* ================= KONTAK ================= */}
           <div className="col-span-1 lg:col-span-3">
+
             <h4 className="font-semibold text-white text-sm">
               Hubungi Kami
             </h4>
@@ -194,6 +225,7 @@ export default function Footer() {
 
               {/* Address */}
               <div className="flex gap-2.5">
+
                 <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
                   <MapPin size={13} />
                 </div>
@@ -207,12 +239,16 @@ export default function Footer() {
                     {alamat}
                   </p>
                 </div>
+
               </div>
 
               {/* Phone */}
               <div className="flex gap-2.5">
+
                 <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
-                  <span className="text-xs">☎</span>
+                  <span className="text-xs">
+                    ☎
+                  </span>
                 </div>
 
                 <div>
@@ -220,16 +256,25 @@ export default function Footer() {
                     WhatsApp / Telepon
                   </p>
 
-                  <p className="text-xs text-green-100">
+                  <a
+                    href="https://wa.me/6285171014303"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-green-100 hover:text-white transition-colors"
+                  >
                     {whatsapp}
-                  </p>
+                  </a>
                 </div>
+
               </div>
 
               {/* Email */}
               <div className="flex gap-2.5">
+
                 <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
-                  <span className="text-xs">✉</span>
+                  <span className="text-xs">
+                    ✉
+                  </span>
                 </div>
 
                 <div>
@@ -237,10 +282,14 @@ export default function Footer() {
                     Email
                   </p>
 
-                  <p className="text-xs text-green-100">
+                  <a
+                    href={`mailto:${email}`}
+                    className="text-xs text-green-100 hover:text-white transition-colors"
+                  >
                     {email}
-                  </p>
+                  </a>
                 </div>
+
               </div>
 
             </div>
@@ -251,23 +300,36 @@ export default function Footer() {
 
       {/* ================= BOTTOM ================= */}
       <div className="border-t border-white/10">
+
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-2.5">
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-1.5">
 
             <p className="text-[11px] text-green-200 text-center md:text-left">
-              © {new Date().getFullYear()} {orgName}. All rights reserved.
+              © {new Date().getFullYear()} {orgName}.
+              All rights reserved.
             </p>
 
             <div className="flex items-center gap-1.5 text-[11px] text-green-200">
+
               <span>Amanah</span>
-              <span className="text-green-400">•</span>
+
+              <span className="text-green-400">
+                •
+              </span>
+
               <span>Transparan</span>
-              <span className="text-green-400">•</span>
+
+              <span className="text-green-400">
+                •
+              </span>
+
               <span>Tepat Sasaran</span>
+
             </div>
 
           </div>
+
         </div>
       </div>
 

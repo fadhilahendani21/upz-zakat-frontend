@@ -12,91 +12,96 @@ const NEWS = [
   {
     id: 1,
     category: "Kegiatan",
-    title: "Penyaluran Beasiswa Semester Ganjil 2026 Resmi Dimulai",
-    date: "12 Agustus 2026",
+    title: "Gerai Zakat UPZ Unsil Hadirkan Kemudahan Berzakat",
+    date: "15 Agustus 2026",
     image: berita1,
-    content: `UPZ Zakat Universitas Siliwangi resmi memulai penyaluran beasiswa untuk semester ganjil tahun akademik 2026/2027. Sebanyak 85 mahasiswa kurang mampu dan berprestasi menerima bantuan biaya pendidikan pada tahap ini.
+    content: `UPZ Zakat Universitas Siliwangi menghadirkan layanan Gerai Zakat sebagai salah satu upaya untuk memberikan kemudahan kepada sivitas akademika dan masyarakat dalam menunaikan zakat, infak, dan sedekah.
 
-Ketua UPZ Zakat menyampaikan bahwa program ini merupakan wujud komitmen dalam mengoptimalkan penghimpunan dan penyaluran zakat, infak, serta sedekah di lingkungan UNSIL agar tepat sasaran dan memberi manfaat nyata bagi mahasiswa.
+Gerai Zakat menjadi salah satu layanan yang dapat dimanfaatkan oleh masyarakat untuk memperoleh informasi mengenai zakat sekaligus menyalurkan dana zakat dengan lebih mudah. Kehadiran layanan ini diharapkan dapat meningkatkan kesadaran masyarakat untuk menunaikan kewajiban zakat serta memperkuat budaya berbagi di lingkungan Universitas Siliwangi.
 
-Proses seleksi penerima beasiswa dilakukan secara transparan dengan mempertimbangkan kondisi ekonomi keluarga serta prestasi akademik masing-masing mahasiswa.`,
+Melalui Gerai Zakat, UPZ Zakat Universitas Siliwangi terus berkomitmen untuk memberikan pelayanan yang amanah, transparan, dan mudah dijangkau oleh masyarakat. Dana yang dihimpun selanjutnya akan dikelola dan disalurkan kepada penerima manfaat sesuai dengan ketentuan yang berlaku.`,
   },
 
   {
     id: 2,
-    category: "Laporan",
-    title: "Laporan Transparansi Dana Zakat Triwulan II 2026",
-    date: "5 Agustus 2026",
+    category: "Penyaluran",
+    title: "UPZ Unsil Salurkan Bantuan Beras bagi Keluarga Membutuhkan",
+    date: "10 Agustus 2026",
     image: berita2,
-    content: `Total dana zakat, infak, dan sedekah yang terkumpul pada triwulan kedua tahun 2026 mencapai Rp 1,55 miliar, meningkat 25,6% dibandingkan periode yang sama tahun sebelumnya.
+    content: `UPZ Zakat Universitas Siliwangi kembali melaksanakan penyaluran bantuan beras kepada sejumlah keluarga yang membutuhkan. Kegiatan ini merupakan bentuk kepedulian UPZ terhadap kondisi masyarakat, khususnya keluarga yang memiliki keterbatasan dalam memenuhi kebutuhan pangan sehari-hari.
 
-Peningkatan ini didorong oleh bertambahnya jumlah muzakki tetap di lingkungan sivitas akademika serta program donasi online yang semakin dikenal luas.
+Bantuan beras diberikan kepada penerima manfaat yang telah melalui proses pendataan dan verifikasi. Penyaluran dilakukan secara langsung agar bantuan dapat diterima oleh masyarakat yang benar-benar membutuhkan.
 
-Laporan lengkap dapat diakses melalui halaman Laporan Keuangan di website ini untuk menjaga transparansi kepada seluruh muzakki dan masyarakat.`,
+Program bantuan pangan ini diharapkan dapat membantu meringankan beban pengeluaran keluarga penerima manfaat. UPZ Zakat Universitas Siliwangi akan terus berupaya menghadirkan program penyaluran yang memberikan manfaat nyata dan tepat sasaran bagi masyarakat.`,
   },
 
   {
     id: 3,
-    category: "Kegiatan",
-    title: "Bedah Rumah Dhuafa di Kecamatan Cibeureum",
-    date: "28 Juli 2026",
+    category: "Penyaluran",
+    title: "Penyaluran Rutin UPZ Unsil Terus Berikan Manfaat",
+    date: "5 Agustus 2026",
     image: berita3,
-    content: `Tim UPZ Zakat Universitas Siliwangi bersama relawan mahasiswa menyelesaikan renovasi rumah milik salah satu mustahik yang tidak layak huni di Kecamatan Cibeureum, Tasikmalaya.
+    content: `UPZ Zakat Universitas Siliwangi secara rutin melaksanakan penyaluran dana zakat kepada masyarakat yang telah ditetapkan sebagai penerima manfaat. Program ini menjadi salah satu bentuk komitmen UPZ dalam memastikan dana zakat yang telah dihimpun dapat memberikan manfaat secara langsung.
 
-Proses renovasi berlangsung selama dua minggu, meliputi perbaikan atap, dinding, dan sanitasi rumah yang sebelumnya dalam kondisi memprihatinkan.
+Penyaluran dilakukan berdasarkan data penerima manfaat yang telah dikumpulkan dan diverifikasi oleh tim UPZ. Bantuan diberikan sesuai dengan kebutuhan dan kondisi masing-masing penerima sehingga diharapkan dapat memberikan dampak yang lebih tepat sasaran.
 
-Program bedah rumah ini merupakan bagian dari upaya UPZ Zakat dalam menyalurkan dana zakat secara langsung kepada mustahik yang paling membutuhkan, khususnya di sekitar lingkungan kampus.`,
+Kegiatan penyaluran rutin ini juga menjadi bagian dari upaya UPZ untuk menjaga kepercayaan para muzakki. Dengan pengelolaan dan penyaluran yang dilakukan secara berkelanjutan, dana zakat diharapkan dapat membantu meningkatkan kesejahteraan masyarakat yang membutuhkan.`,
   },
 
   {
     id: 4,
-    category: "Pengumuman",
-    title: "Pembukaan Pendaftaran Muzakki Baru Tahun 2026",
-    date: "20 Juli 2026",
+    category: "Kegiatan",
+    title: "UPZ Unsil Salurkan Al-Qur’an untuk Masyarakat",
+    date: "28 Juli 2026",
     image: berita4,
-    content: `UPZ Zakat Universitas Siliwangi membuka pendaftaran bagi sivitas akademika yang ingin mendaftar sebagai muzakki tetap. Pendaftaran dibuka mulai 1 Agustus hingga 31 Agustus 2026.
+    content: `UPZ Zakat Universitas Siliwangi menyalurkan bantuan Al-Qur’an kepada masyarakat dan lembaga yang membutuhkan. Program ini menjadi salah satu bentuk kepedulian UPZ dalam mendukung kegiatan keagamaan serta meningkatkan akses masyarakat terhadap Al-Qur’an.
 
-Muzakki tetap akan mendapatkan kemudahan dalam pemotongan zakat penghasilan secara otomatis setiap bulan, beserta laporan penyaluran dana secara berkala.
+Bantuan Al-Qur’an disalurkan kepada beberapa penerima yang membutuhkan, termasuk tempat-tempat yang digunakan untuk kegiatan pembelajaran dan pengajian masyarakat. Penyaluran dilakukan sebagai bagian dari pemanfaatan dana zakat, infak, dan sedekah untuk kegiatan yang memberikan manfaat bagi masyarakat.
 
-Pendaftaran dapat dilakukan secara online melalui halaman Donasi Online, atau langsung datang ke Kantor UPZ Zakat di lingkungan kampus Universitas Siliwangi.`,
+Melalui program ini, UPZ berharap bantuan yang diberikan tidak hanya memenuhi kebutuhan sarana keagamaan, tetapi juga dapat mendorong semangat masyarakat untuk membaca, mempelajari, dan mengamalkan nilai-nilai yang terkandung dalam Al-Qur’an.`,
   },
 
   {
     id: 5,
-    category: "Kegiatan",
-    title: "Pelatihan Kewirausahaan untuk Penerima Manfaat",
-    date: "10 Juli 2026",
+    category: "Pemberdayaan",
+    title: "Bantuan Modal Usaha Dorong Kemandirian Mustahik",
+    date: "20 Juli 2026",
     image: berita5,
-    content: `Sebanyak 30 mustahik mengikuti pelatihan kewirausahaan sebagai bagian dari program pemberdayaan ekonomi UPZ Zakat Universitas Siliwangi.
+    content: `UPZ Zakat Universitas Siliwangi memberikan bantuan modal usaha kepada sejumlah mustahik sebagai bagian dari program pemberdayaan ekonomi masyarakat. Bantuan ini ditujukan untuk membantu penerima manfaat dalam memulai maupun mengembangkan usaha yang telah dijalankan.
 
-Pelatihan yang berlangsung selama tiga hari ini mencakup materi dasar manajemen usaha, strategi pemasaran digital, dan pengelolaan keuangan sederhana bagi pelaku usaha mikro.
+Bantuan modal diberikan berdasarkan kondisi dan kebutuhan penerima manfaat. Selain memberikan bantuan berupa modal, UPZ juga mendorong penerima manfaat agar dapat mengelola usaha secara mandiri dan berkelanjutan sehingga mampu meningkatkan pendapatan keluarga.
 
-Setelah mengikuti pelatihan, peserta yang memenuhi kriteria akan mendapatkan bantuan modal usaha dari dana zakat untuk memulai atau mengembangkan usahanya secara mandiri.`,
+Program pemberdayaan ekonomi ini diharapkan dapat menjadi langkah awal bagi mustahik untuk meningkatkan kesejahteraan dan kemandirian ekonomi. UPZ Zakat Universitas Siliwangi berkomitmen untuk terus mengembangkan program yang tidak hanya bersifat konsumtif, tetapi juga memberikan manfaat jangka panjang bagi penerima zakat.`,
   },
 
   {
     id: 6,
-    category: "Laporan",
-    title: "Audit Syariah Tahunan UPZ Zakat Unsil Tuntas Dilaksanakan",
-    date: "2 Juli 2026",
+    category: "Penyaluran",
+    title: "UPZ Unsil Bantu Renovasi Rumah Tidak Layak Huni",
+    date: "12 Juli 2026",
     image: berita6,
-    content: `Proses audit syariah tahunan UPZ Zakat Universitas Siliwangi telah selesai dilaksanakan oleh lembaga pengawas syariah independen.
+    content: `UPZ Zakat Universitas Siliwangi turut membantu renovasi rumah tidak layak huni melalui program Rutilahu. Program ini ditujukan bagi keluarga yang memiliki keterbatasan ekonomi dan tinggal di rumah dengan kondisi yang kurang layak.
 
-Hasil audit menyatakan bahwa seluruh proses pengelolaan dana zakat, mulai dari penghimpunan hingga penyaluran, telah sesuai dengan ketentuan syariat Islam dan regulasi yang berlaku.
+Proses renovasi dilakukan pada beberapa bagian rumah yang membutuhkan perbaikan, seperti atap, dinding, lantai, dan fasilitas dasar lainnya. Bantuan diberikan agar penerima manfaat dapat memiliki tempat tinggal yang lebih aman, nyaman, dan layak untuk ditempati bersama keluarga.
 
-Audit ini rutin dilakukan setiap tahun sebagai bentuk komitmen UPZ Zakat dalam menjaga kepercayaan muzakki dan memastikan pengelolaan dana yang amanah dan akuntabel.`,
+Program Rutilahu merupakan salah satu bentuk kepedulian UPZ terhadap kesejahteraan masyarakat. Melalui penyaluran dana zakat yang tepat sasaran, UPZ berharap program ini dapat memberikan perubahan positif bagi kehidupan keluarga penerima manfaat.`,
   },
 ];
 
 export default function BeritaDetailPage() {
   const { id } = useParams();
-  const news = NEWS.find((item) => String(item.id) === id);
+
+  const news = NEWS.find(
+    (item) => String(item.id) === id
+  );
 
   if (!news) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="text-center">
-          <p className="text-gray-600">Berita tidak ditemukan.</p>
+          <p className="text-gray-600">
+            Berita tidak ditemukan.
+          </p>
 
           <Link
             to="/berita"
@@ -114,6 +119,7 @@ export default function BeritaDetailPage() {
     <div className="bg-gray-50 min-h-screen">
       <article className="max-w-6xl mx-auto px-6 lg:px-10 pt-8 pb-16">
 
+        {/* Kembali */}
         <Link
           to="/berita"
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-700 transition-colors"
@@ -122,27 +128,36 @@ export default function BeritaDetailPage() {
           Kembali ke daftar berita
         </Link>
 
-
+        {/* Judul */}
         <h1 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">
           {news.title}
         </h1>
 
-        <span className="mt-3 flex items-center gap-1.5 text-sm text-gray-500">
-          <Calendar size={14} />
-          {news.date}
-        </span>
+        {/* Kategori + Tanggal */}
+        <div className="mt-3 flex items-center gap-4">
 
-        {/* FOTO BERITA SESUAI ID */}
+          <span className="inline-flex items-center text-xs font-semibold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
+            {news.category}
+          </span>
+
+          <span className="flex items-center gap-1.5 text-sm text-gray-500">
+            <Calendar size={14} />
+            {news.date}
+          </span>
+
+        </div>
+
+        {/* Foto Berita */}
         <img
           src={news.image}
           alt={news.title}
           className="mt-6 w-full h-72 sm:h-96 object-cover rounded-2xl"
         />
 
-        {/* ISI BERITA */}
-        <div className="mt-6 text-gray-700 leading-relaxed whitespace-pre-line text-justify">
+        {/* Isi Berita */}
+        <div className="mt-8 max-w-4xl text-gray-700 leading-relaxed whitespace-pre-line text-justify">
           {news.content}
-          </div>
+        </div>
 
       </article>
     </div>

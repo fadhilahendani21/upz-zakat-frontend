@@ -4,8 +4,6 @@ import {
   Phone,
   Clock,
   MessageCircle,
-  Building2,
-  Landmark,
 } from "lucide-react";
 import Card from "../components/common/Card";
 import {
@@ -29,9 +27,13 @@ export default function KontakPage() {
   const profil = settings.profil || {};
 
   const alamat = profil.alamat || dummyKontak.alamat;
-  const whatsapp = profil.whatsapp || dummyKontak.whatsapp;
+
+  // Nomor WhatsApp
+  const whatsapp = "085171014303";
+
   const email = profil.email || dummyKontak.email;
-  const orgName = profil.namaLembaga || "UPZ Zakat Universitas Siliwangi";
+  const orgName =
+    profil.namaLembaga || "UPZ Zakat Universitas Siliwangi";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
@@ -46,8 +48,7 @@ export default function KontakPage() {
 
             <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
               Ada pertanyaan seputar zakat, infak, sedekah, atau program
-              penyaluran? Hubungi tim {orgName} lewat
-              salah satu kanal di bawah.
+              penyaluran? Hubungi tim {orgName} lewat salah satu kanal di bawah.
             </p>
           </div>
         </div>
@@ -56,6 +57,7 @@ export default function KontakPage() {
       {/* Info Kontak Singkat */}
       <section className="max-w-5xl mx-auto px-6 pt-12 pb-10 grid sm:grid-cols-3 gap-5">
 
+        {/* Alamat */}
         <Card className="text-center">
           <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3 mx-auto">
             <MapPin size={20} />
@@ -70,6 +72,7 @@ export default function KontakPage() {
           </p>
         </Card>
 
+        {/* WhatsApp */}
         <Card className="text-center">
           <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3 mx-auto">
             <Phone size={20} />
@@ -88,6 +91,7 @@ export default function KontakPage() {
           </p>
         </Card>
 
+        {/* Email */}
         <Card className="text-center">
           <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3 mx-auto">
             <Mail size={20} />
@@ -111,17 +115,17 @@ export default function KontakPage() {
       {/* Peta + Jam Operasional & Sosial Media */}
       <section className="max-w-5xl mx-auto px-6 pb-16 grid lg:grid-cols-3 gap-5">
 
-       {/* Peta */}
-<Card className="lg:col-span-2 p-0 overflow-hidden">
-  <iframe
-    title="Lokasi Universitas Siliwangi"
-    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3261.4603646424735!2d108.22021287404235!3d-7.350249372311004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f5765c64bb1f9%3A0xd8b04746f0f62ad4!2sUniversitas%20Siliwangi!5e1!3m2!1sid!2sid!4v1786676648205!5m2!1sid!2sid"
-    className="w-full h-72 lg:h-full min-h-[280px] border-0"
-    allowFullScreen
-    loading="lazy"
-    referrerPolicy="strict-origin-when-cross-origin"
-  />
-</Card>
+        {/* Peta */}
+        <Card className="lg:col-span-2 p-0 overflow-hidden">
+          <iframe
+            title="Lokasi Universitas Siliwangi"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3261.4603646424735!2d108.22021287404235!3d-7.350249372311004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f5765c64bb1f9%3A0xd8b04746f0f62ad4!2sUniversitas%20Siliwangi!5e1!3m2!1sid!2sid!4v1786676648205!5m2!1sid!2sid"
+            className="w-full h-72 lg:h-full min-h-[280px] border-0"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </Card>
 
         {/* Jam Operasional + Sosial Media */}
         <div className="space-y-5">
@@ -137,18 +141,23 @@ export default function KontakPage() {
             </div>
 
             <ul className="space-y-2">
-              {dummyKontak.jamOperasional.map((item) => (
-                <li
-                  key={item.hari}
-                  className="flex justify-between text-sm text-gray-600 gap-3"
-                >
-                  <span>{item.hari}</span>
 
-                  <span className="font-medium text-gray-800 text-right">
-                    {item.jam}
-                  </span>
-                </li>
-              ))}
+              <li className="flex justify-between text-sm text-gray-600 gap-3">
+                <span>Senin – Jumat</span>
+
+                <span className="font-medium text-gray-800 text-right">
+                  09.00 – 16.00 WIB
+                </span>
+              </li>
+
+              <li className="flex justify-between text-sm text-gray-600 gap-3">
+                <span>Sabtu, Minggu, & Hari Libur</span>
+
+                <span className="font-medium text-gray-800 text-right">
+                  Tutup
+                </span>
+              </li>
+
             </ul>
           </Card>
 

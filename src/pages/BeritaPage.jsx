@@ -13,63 +13,69 @@ const NEWS = [
   {
     id: 1,
     category: "Kegiatan",
-    title: "Penyaluran Beasiswa Semester Ganjil 2026 Resmi Dimulai",
+    title: "Gerai Zakat UPZ Unsil Hadirkan Kemudahan Berzakat",
     excerpt:
-      "UPZ Zakat Universitas Siliwangi menyalurkan beasiswa kepada 85 mahasiswa kurang mampu untuk semester ganjil tahun akademik 2026/2027.",
-    date: "12 Agustus 2026",
+      "UPZ Zakat Universitas Siliwangi membuka layanan Gerai Zakat sebagai sarana bagi sivitas akademika dan masyarakat untuk menunaikan zakat, infak, dan sedekah dengan lebih mudah.",
+    date: "15 Agustus 2026",
     image: berita1,
   },
   {
     id: 2,
-    category: "Laporan",
-    title: "Laporan Transparansi Dana Zakat Triwulan II 2026",
+    category: "Penyaluran",
+    title: "UPZ Unsil Salurkan Bantuan Beras bagi Keluarga Membutuhkan",
     excerpt:
-      "Total dana zakat, infak, dan sedekah yang terkumpul pada triwulan kedua mencapai Rp 1,55 miliar, meningkat 25,6% dari periode sebelumnya.",
-    date: "5 Agustus 2026",
+      "Sebagai bentuk kepedulian terhadap masyarakat, UPZ Zakat Universitas Siliwangi menyalurkan bantuan beras kepada sejumlah keluarga penerima manfaat untuk membantu memenuhi kebutuhan pangan sehari-hari.",
+    date: "10 Agustus 2026",
     image: berita2,
   },
   {
     id: 3,
-    category: "Kegiatan",
-    title: "Bedah Rumah Dhuafa di Kecamatan Cibeureum",
+    category: "Penyaluran",
+    title: "Penyaluran Rutin UPZ Unsil Terus Berikan Manfaat",
     excerpt:
-      "Tim UPZ bersama relawan mahasiswa menyelesaikan renovasi rumah milik salah satu mustahik yang tidak layak huni di Cibeureum, Tasikmalaya.",
-    date: "28 Juli 2026",
+      "UPZ Zakat Universitas Siliwangi secara rutin menyalurkan dana zakat kepada penerima manfaat yang telah terdata sebagai bagian dari komitmen untuk memastikan dana zakat tepat sasaran.",
+    date: "5 Agustus 2026",
     image: berita3,
   },
   {
     id: 4,
-    category: "Pengumuman",
-    title: "Pembukaan Pendaftaran Muzakki Baru Tahun 2026",
+    category: "Kegiatan",
+    title: "UPZ Unsil Salurkan Al-Qur’an untuk Masyarakat",
     excerpt:
-      "Bagi sivitas akademika yang ingin mendaftar sebagai muzakki tetap, pendaftaran dibuka mulai 1 Agustus hingga 31 Agustus 2026.",
-    date: "20 Juli 2026",
+      "UPZ Zakat Universitas Siliwangi menyalurkan bantuan Al-Qur’an kepada masyarakat dan lembaga yang membutuhkan sebagai bentuk dukungan terhadap kegiatan keagamaan.",
+    date: "28 Juli 2026",
     image: berita4,
   },
   {
     id: 5,
-    category: "Kegiatan",
-    title: "Pelatihan Kewirausahaan untuk Penerima Manfaat",
+    category: "Pemberdayaan",
+    title: "Bantuan Modal Usaha Dorong Kemandirian Mustahik",
     excerpt:
-      "Sebanyak 30 mustahik mengikuti pelatihan kewirausahaan sebagai bagian dari program pemberdayaan ekonomi UPZ Zakat Unsil.",
-    date: "10 Juli 2026",
+      "UPZ Zakat Universitas Siliwangi memberikan bantuan modal usaha kepada sejumlah mustahik untuk membantu mengembangkan usaha kecil dan meningkatkan kemandirian ekonomi.",
+    date: "20 Juli 2026",
     image: berita5,
   },
   {
     id: 6,
-    category: "Laporan",
-    title: "Audit Syariah Tahunan UPZ Zakat Unsil Tuntas Dilaksanakan",
+    category: "Penyaluran",
+    title: "UPZ Unsil Bantu Renovasi Rumah Tidak Layak Huni",
     excerpt:
-      "Proses audit syariah tahunan telah selesai dilaksanakan dan menyatakan pengelolaan dana zakat UPZ sesuai dengan ketentuan syariat Islam.",
-    date: "2 Juli 2026",
+      "Melalui program Rutilahu, UPZ Zakat Universitas Siliwangi membantu renovasi rumah tidak layak huni agar keluarga penerima manfaat dapat memiliki tempat tinggal yang lebih aman dan nyaman.",
+    date: "12 Juli 2026",
     image: berita6,
   },
 ];
 
 export default function BeritaPage() {
   const settings = useSettings();
-  const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
-  const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
+
+  const orgName =
+    settings?.profil?.namaLembaga ||
+    "UPZ Zakat Universitas Siliwangi";
+
+  const brandName =
+    settings?.profil?.namaSingkat ||
+    "UPZ Unsil";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
@@ -98,26 +104,34 @@ export default function BeritaPage() {
               key={news.id}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col"
             >
+              {/* Gambar Berita */}
               <img
                 src={news.image}
                 alt={news.title}
                 className="w-full h-40 object-cover"
               />
 
+              {/* Isi Card */}
               <div className="p-5 flex flex-col flex-1">
+
+                {/* Kategori */}
                 <span className="inline-flex w-fit items-center text-[11px] font-semibold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">
                   {news.category}
                 </span>
 
+                {/* Judul */}
                 <h3 className="mt-3 text-base font-bold text-gray-900 leading-snug">
                   {news.title}
                 </h3>
 
+                {/* Deskripsi */}
                 <p className="mt-2 text-sm text-gray-600 leading-relaxed flex-1">
                   {news.excerpt}
                 </p>
 
+                {/* Tanggal + Baca */}
                 <div className="mt-4 flex items-center justify-between pt-3 border-t border-gray-100">
+                  
                   <span className="flex items-center gap-1.5 text-xs text-gray-500">
                     <Calendar size={13} />
                     {news.date}
@@ -130,6 +144,7 @@ export default function BeritaPage() {
                     Baca
                     <ArrowRight size={13} />
                   </Link>
+
                 </div>
               </div>
             </div>
