@@ -20,8 +20,8 @@
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/fariezzz/upz-zakat-frontend.git
-cd upz-zakat-frontend
+git clone https://github.com/ndiecyber/UPZ-Frontend.git
+cd UPZ-Frontend
 ```
 
 ### 2. Install Dependencies
@@ -70,7 +70,7 @@ Di mode ini:
 - Login memerlukan akun yang valid di database
 - Jika API tidak dapat dijangkau, otomatis fallback ke data dummy
 
-Lihat panduan setup backend: [upz-zakat-backend](https://github.com/fariezzz/upz-zakat-backend)
+Lihat panduan setup backend: [UPZ-Backend](https://github.com/ndiecyber/UPZ-Backend)
 
 ---
 
@@ -90,31 +90,41 @@ Aplikasi berjalan di **http://localhost:5173**
 
 | URL | Halaman |
 |---|---|
-| `/` | Landing Page |
+| `/` | Landing Page / Beranda |
 | `/tentang` | Tentang UPZ |
+| `/tentang/kepengurusan` | Susunan Kepengurusan UPZ |
+| `/tentang/visi-misi` | Visi & Misi |
+| `/tentang/profil-unsil` | Profil Universitas Siliwangi |
 | `/program` | Program Penyaluran |
 | `/berita` | Berita & Kegiatan |
-| `/laporan` | Laporan Keuangan |
-| `/kontak` | Kontak |
+| `/laporan` | Laporan Keuangan Publik |
+| `/hitung-zakat` | Kalkulator Zakat (Penghasilan, Maal, Fitrah) |
+| `/donasi` | Form Donasi Online |
+| `/kontak` | Kontak & Alamat |
 
 ### Autentikasi
 
 | URL | Halaman |
 |---|---|
-| `/masuk` | Halaman Login Admin |
+| `/masuk` | Halaman Login Admin & Operator |
 
-### Dashboard Admin (butuh login)
+### Dashboard Admin & Operator (butuh login)
 
 | URL | Halaman |
 |---|---|
 | `/dashboard` | Ringkasan & Statistik Utama |
-| `/dashboard/pengumpulan` | Manajemen Pengumpulan |
-| `/dashboard/penyaluran` | Manajemen Penyaluran |
-| `/dashboard/muzakki-mustahik` | Data Muzakki & Mustahik |
-| `/dashboard/donasi-online` | Donasi Online |
-| `/dashboard/transaksi` | Riwayat Transaksi |
-| `/dashboard/laporan-keuangan` | Laporan Keuangan |
-| `/dashboard/pengaturan` | Pengaturan |
+| `/dashboard/pengumpulan` | Manajemen Pengumpulan Zakat & Infaq |
+| `/dashboard/penyaluran` | Manajemen Penyaluran Zakat |
+| `/dashboard/muzakki-mustahik` | Data Muzakki |
+| `/dashboard/mustahik` | Data Mustahik & Kategori Asnaf |
+| `/dashboard/program` | Kelola Program Penyaluran |
+| `/dashboard/donasi-online` | Verifikasi Donasi Online |
+| `/dashboard/transaksi` | Riwayat & Pencatatan Transaksi |
+| `/dashboard/rekening-kas` | Manajemen Rekening & Kas |
+| `/dashboard/laporan-keuangan` | Laporan Keuangan Detail |
+| `/dashboard/jurnal` | Jurnal Akuntansi |
+| `/dashboard/pengguna` | Manajemen Pengguna & Hak Akses |
+| `/dashboard/pengaturan` | Pengaturan Sistem, Profil & Nisab |
 
 ---
 
@@ -122,30 +132,29 @@ Aplikasi berjalan di **http://localhost:5173**
 
 ```
 src/
-├── assets/          # Gambar, ikon, font
+├── assets/          # Gambar, logo, foto pengurus
 ├── components/
-│   ├── common/      # Button, Card, dll. (reusable)
-│   ├── dashboard/   # StatCard, LineChartCard, DonutChartCard, dll.
-│   └── landing/     # Komponen halaman publik
+│   ├── common/      # Button, Card, Modal, dll. (reusable)
+│   ├── dashboard/   # StatCard, LineChartCard, DonutChartCard, Topbar, Sidebar
+│   └── landing/     # Navbar, Footer, HeroSection, dll.
 ├── data/            # Data dummy (fallback / mode demo)
-│   ├── dummyStats.js
-│   ├── dummyChart.js
-│   ├── dummyTransaksi.js
-│   └── dummyProgram.js
 ├── hooks/
 │   └── useAuth.js   # Hook cek status login
 ├── layouts/
 │   ├── PublicLayout.jsx    # Layout halaman publik (Navbar + Footer)
 │   └── DashboardLayout.jsx # Layout dashboard (Sidebar + Topbar)
 ├── pages/
-│   ├── dashboard/   # Halaman-halaman dashboard
+│   ├── dashboard/   # Halaman-halaman dashboard admin
 │   └── *.jsx        # Halaman publik
 ├── routes/
-│   └── AppRoutes.jsx # Definisi semua routing
+│   └── AppRoutes.jsx # Definisi semua routing aplikasi
 ├── services/
-│   ├── authService.js      # Login, logout, cek token
+│   ├── authService.js      # Login, logout, profil
 │   ├── dashboardService.js # Fetch data dashboard (dengan fallback)
-│   └── zakatService.js     # Kalkulasi & pembayaran zakat
+│   ├── donasiService.js    # Submisi donasi online & laporan publik
+│   ├── programService.js   # Fetch & kelola program penyaluran
+│   ├── settingService.js   # Manajemen pengaturan sistem & nisab
+│   └── zakatService.js     # Kalkulasi zakat & konfigurasi nisab
 └── utils/
     └── formatRupiah.js     # Helper format angka ke Rupiah
 ```
@@ -185,7 +194,7 @@ npm run lint
 ## Tech Stack
 
 - **React 19** — UI library
-- **Vite 8** — Build tool & dev server
+- **Vite 6** — Build tool & dev server
 - **Tailwind CSS 4** — Utility-first CSS
 - **React Router 7** — Client-side routing
 - **Recharts** — Library grafik (line chart, donut chart)
