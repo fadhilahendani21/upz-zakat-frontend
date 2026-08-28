@@ -21,18 +21,36 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from "../../services/notificationService";
+import { getProfile } from "../../services/penggunaService";
 import HelpModal from "./HelpModal";
 import NotificationModal from "./NotificationModal";
 
 export default function Topbar({ title, subtitle, onMenuClick }) {
   const navigate  = useNavigate();
   const settings  = useSettings();
-  const user      = getUser();
-  const userName  = user?.name ?? "Admin UPZ";
-  const userRole  = user?.role ?? "administrator";
+
+  // Baca dari localStorage dulu lalu sinkronkan dengan API
+  const [currentUser, setCurrentUser] = useState(() => getUser());
+  const userName    = currentUser?.name  ?? "Admin UPZ";
+  const userRole    = currentUser?.role  ?? "administrator";
   const userInitial = userName.charAt(0).toUpperCase();
 
-  const [today, setToday] = useState(new Date());
+  useEffect(() => {
+    let cancelled = false;
+    async function refreshUser() {
+      try {
+        const fresh = await getProfile();
+        if (cancelled) return;
+        const existing = getUser() || {};
+        const updated = { ...existing, ...fresh };
+        localStorage.setItem("user", JSON.stringify(updated));
+        setCurrentUser(updated);
+      } catch { /* tetap pakai cache */ }
+    }
+    refreshUser();
+    return () => { cancelled = true; };
+  }, []);
+
   const [openDropdown, setOpenDropdown] = useState(null); // "notif" | "help" | "profile" | null
   const [notifs, setNotifs] = useState([]);
   

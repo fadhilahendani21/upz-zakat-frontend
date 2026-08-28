@@ -501,8 +501,10 @@ export default function Pengguna() {
     setProfileSuccess("");
     setProfileError("");
     try {
-      const updated = await updateProfile({ name, email });
-      setProfile(updated);
+      const res = await updateProfile({ name, email });
+      // updateProfile mengembalikan { message, user } — ambil user-nya
+      const updatedUser = res?.user || res;
+      setProfile(updatedUser);
       setProfileSuccess("Profil berhasil diperbarui!");
       setTimeout(() => setProfileSuccess(""), 4000);
     } catch (err) {
@@ -528,8 +530,8 @@ export default function Pengguna() {
     try {
       await updatePassword({
         current_password: currentPassword,
-        password: newPassword,
-        password_confirmation: confirmPassword,
+        new_password: newPassword,                    // ← sesuai nama field di backend
+        new_password_confirmation: confirmPassword,   // ← sesuai nama field di backend
       });
       setPasswordSuccess("Password berhasil diubah!");
       setCurrentPassword("");
