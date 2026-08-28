@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { getUser } from "../services/authService";
 
 import PublicLayout from "../layouts/PublicLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -31,6 +32,21 @@ import Jurnal from "../pages/dashboard/Jurnal";
 import Pengguna from "../pages/dashboard/Pengguna";
 import Pengaturan from "../pages/dashboard/Pengaturan";
 
+/**
+ * Guard route: hanya Administrator yang boleh masuk.
+ * Operator akan diarahkan ke /dashboard/pengguna.
+ * Jika role belum diketahui (null / belum load), biarkan masuk dulu —
+ * backend sudah menjaga keamanan di sisi server.
+ */
+function AdminRoute({ children }) {
+  const user = getUser();
+  // Hanya blokir jika role EKSPLISIT bukan administrator
+  if (user && user.role && user.role !== "administrator") {
+    return <Navigate to="/dashboard/pengguna" replace />;
+  }
+  return children;
+}
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -54,7 +70,7 @@ export default function AppRoutes() {
         {/* Login (tanpa layout navbar/sidebar) */}
         <Route path="/masuk" element={<LoginPage />} />
 
-        {/* Dashboard admin (nanti bisa dibungkus proteksi auth) */}
+        {/* Dashboard — dibungkus DashboardLayout */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="pengumpulan" element={<Pengumpulan />} />
@@ -66,11 +82,25 @@ export default function AppRoutes() {
           <Route path="program" element={<Program />} />
           <Route path="donasi-online" element={<DonasiOnline />} />
           <Route path="transaksi" element={<Transaksi />} />
-          <Route path="rekening-kas" element={<RekeningKas />} />
-          <Route path="laporan-keuangan" element={<LaporanKeuangan />} />
-          <Route path="jurnal" element={<Jurnal />} />
           <Route path="pengguna" element={<Pengguna />} />
-          <Route path="pengaturan" element={<Pengaturan />} />
+
+          {/* Halaman khusus Administrator */}
+          <Route
+            path="rekening-kas"
+            element={<AdminRoute><RekeningKas /></AdminRoute>}
+          />
+          <Route
+            path="laporan-keuangan"
+            element={<AdminRoute><LaporanKeuangan /></AdminRoute>}
+          />
+          <Route
+            path="jurnal"
+            element={<AdminRoute><Jurnal /></AdminRoute>}
+          />
+          <Route
+            path="pengaturan"
+            element={<AdminRoute><Pengaturan /></AdminRoute>}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

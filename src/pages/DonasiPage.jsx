@@ -41,12 +41,13 @@ export default function DonasiPage() {
   const [metodeId, setMetodeId] = useState(metodePembayaran[0].id);
   const [anonim, setAnonim] = useState(settings?.privasi?.defaultAnonimPublik || false);
   const [data, setData] = useState({ nama: "", email: "", telepon: "" });
-  const [status, setStatus] = useState("idle"); // idle | loading | success
+  const [status, setStatus] = useState("idle");
   const [hasil, setHasil] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const jenisTerpilih = dummyJenisDonasi.find((j) => j.id === jenisId);
 
-  function pilihNominalCepat(value) {
+  function handlePilihNominal(value) {
     setNominal(value);
     setNominalCustom("");
   }
@@ -66,6 +67,7 @@ export default function DonasiPage() {
     if (!nominal || nominal < 10000) return;
 
     setStatus("loading");
+    setErrorMsg("");
     try {
       const payload = {
         kategori: jenisTerpilih.nama,
@@ -82,7 +84,7 @@ export default function DonasiPage() {
       setHasil(res);
       setStatus("success");
     } catch (err) {
-      alert(err.message ?? "Terjadi kesalahan. Silakan coba lagi.");
+      setErrorMsg(err.message ?? "Terjadi kesalahan saat memproses donasi. Silakan coba lagi.");
       setStatus("idle");
     }
   }
@@ -392,6 +394,11 @@ export default function DonasiPage() {
 
         {/* Ringkasan & Submit */}
         <Card className="sticky bottom-4">
+          {errorMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
+              {errorMsg}
+            </div>
+          )}
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm text-gray-500">Total donasi</span>
             <span className="text-xl font-bold text-brand-700">

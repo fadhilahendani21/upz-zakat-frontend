@@ -147,29 +147,36 @@ function ModalForm({ initial, onClose, onSaved }) {
 // ── Modal Hapus ───────────────────────────────────────────────────────────────
 function ModalHapus({ mustahik, onClose, onDeleted }) {
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   async function handleDelete() {
     setLoading(true);
+    setErrorMsg("");
     try {
       await deleteMustahik(mustahik.id);
       onDeleted();
     } catch (err) {
-      alert(err.message);
+      setErrorMsg(err.message || "Gagal menghapus mustahik.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-[fadeIn_0.15s_ease]">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm p-6 animate-[scaleUp_0.15s_ease]">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
           <Trash2 size={22} className="text-red-500" />
         </div>
         <h3 className="text-center font-semibold text-gray-900 mb-1">Hapus Mustahik?</h3>
-        <p className="text-center text-sm text-gray-500 mb-6">
+        <p className="text-center text-sm text-gray-500 mb-4">
           <span className="font-medium text-gray-800">{mustahik.nama}</span> akan dihapus dari sistem.
         </p>
+        {errorMsg && (
+          <div className="mb-4 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs text-center">
+            {errorMsg}
+          </div>
+        )}
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={loading}>Batal</Button>
           <button

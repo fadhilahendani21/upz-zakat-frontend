@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import logoUnsil from "../../assets/img/logo-upz.png";
 import MosqueIllustration from "./MosqueIllustration";
 import { useSettings } from "../../services/settingService";
+import { getUser } from "../../services/authService";
+import { getProfile } from "../../services/penggunaService";
 import {
   LayoutDashboard,
   ArrowDownToLine,
@@ -35,11 +38,6 @@ const keuangan = [
   { label: "Jurnal", icon: BookOpen, to: "/dashboard/jurnal" },
 ];
 
-const pengaturan = [
-  { label: "Pengguna", icon: UserCog, to: "/dashboard/pengguna" },
-  { label: "Pengaturan Sistem", icon: Settings, to: "/dashboard/pengaturan" },
-];
-
 function SidebarLink({ item }) {
   return (
     <NavLink
@@ -63,7 +61,34 @@ function SidebarLink({ item }) {
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const settings = useSettings();
   const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
-  const orgName = settings?.profil?.namaLembaga || "Universitas Siliwangi";
+
+  // Baca dari localStorage dulu (cepat), lalu refresh dari API
+  const [user, setUser] = useState(() => getUser());
+  const isAdmin = user?.role === "administrator";
+
+  useEffect(() => {
+    let cancelled = false;
+    async function refreshUser() {
+      try {
+        const fresh = await getProfile();
+        if (cancelled) return;
+        // Simpan ulang ke localStorage dengan data terbaru dari API
+        const existing = getUser() || {};
+        const updated = { ...existing, ...fresh };
+        localStorage.setItem("user", JSON.stringify(updated));
+        setUser(updated);
+      } catch {
+        // Abaikan error, tetap gunakan data localStorage
+      }
+    }
+    refreshUser();
+    return () => { cancelled = true; };
+  }, []);
+
+  const pengaturan = [
+    { label: isAdmin ? "Pengguna & Akses" : "Profil Pengguna", icon: UserCog, to: "/dashboard/pengguna" },
+    ...(isAdmin ? [{ label: "Pengaturan Sistem", icon: Settings, to: "/dashboard/pengaturan" }] : []),
+  ];
 
   return (
     <>
@@ -106,6 +131,14 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         </div>
 
       <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+        {/* Role badge */}
+        {!isAdmin && (
+          <div className="px-3 py-2 rounded-xl bg-blue-50 border border-blue-100 text-[11px] text-blue-700 font-medium flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Masuk sebagai Operator
+          </div>
+        )}
+
         <NavLink
           to="/dashboard"
           end
@@ -132,14 +165,20 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           </div>
         </div>
 
+        {/* Keuangan: Transaksi untuk semua, sisanya admin only */}
         <div>
           <p className="px-4 text-[11px] font-semibold text-gray-400 mb-2 tracking-wide">
             KEUANGAN
           </p>
           <div className="space-y-1">
-            {keuangan.map((item) => (
-              <SidebarLink key={item.to} item={item} />
-            ))}
+            <SidebarLink item={{ label: "Transaksi", icon: Receipt, to: "/dashboard/transaksi" }} />
+            {isAdmin && (
+              <>
+                <SidebarLink item={{ label: "Rekening & Kas", icon: Wallet, to: "/dashboard/rekening-kas" }} />
+                <SidebarLink item={{ label: "Laporan Keuangan", icon: BarChart3, to: "/dashboard/laporan-keuangan" }} />
+                <SidebarLink item={{ label: "Jurnal", icon: BookOpen, to: "/dashboard/jurnal" }} />
+              </>
+            )}
           </div>
         </div>
 

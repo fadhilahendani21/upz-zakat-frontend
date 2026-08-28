@@ -31,11 +31,13 @@ import {
   importBackupData,
 } from "../../services/settingService";
 import { NumericFormat } from "react-number-format";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 export default function Pengaturan() {
   const [activeTab, setActiveTab] = useState("profil");
   const [settings, setSettings] = useState(getSettings());
   const [saving, setSaving] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -64,17 +66,12 @@ export default function Pengaturan() {
     }
   }
 
-  function handleReset() {
-    if (
-      window.confirm(
-        "Apakah Anda yakin ingin mereset semua pengaturan ke nilai default pabrik?"
-      )
-    ) {
-      const def = resetSettings();
-      setSettings(def);
-      setSuccessMsg("Pengaturan telah dikembalikan ke nilai default.");
-      setTimeout(() => setSuccessMsg(""), 4000);
-    }
+  function handleConfirmReset() {
+    const def = resetSettings();
+    setSettings(def);
+    setShowResetConfirm(false);
+    setSuccessMsg("Pengaturan telah dikembalikan ke nilai default pabrik.");
+    setTimeout(() => setSuccessMsg(""), 4000);
   }
 
   function handleImportBackup(e) {
@@ -907,7 +904,7 @@ export default function Pengaturan() {
         <Button
           type="button"
           variant="outline"
-          onClick={handleReset}
+          onClick={() => setShowResetConfirm(true)}
           className="!py-2.5 !px-4 text-xs"
         >
           <RotateCcw size={14} />
@@ -923,6 +920,17 @@ export default function Pengaturan() {
           {saving ? "Menyimpan Perubahan..." : "Simpan Semua Pengaturan"}
         </Button>
       </div>
+
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={handleConfirmReset}
+        title="Reset Pengaturan ke Default?"
+        message="Apakah Anda yakin ingin mengembalikan semua konfigurasi lembaga, zakat, nisab, dan rekening ke nilai default bawaan pabrik? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Ya, Reset Default"
+        cancelText="Batal"
+        variant="warning"
+      />
     </div>
   );
 }

@@ -214,8 +214,14 @@ export default function Penyaluran() {
     return () => clearTimeout(t);
   }, [fetchData, search]);
 
+  const [toastMsg, setToastMsg] = useState("");
+
   function handleExport() {
-    if (!data.length) return alert("Tidak ada data untuk diekspor");
+    if (!data.length) {
+      setToastMsg("Tidak ada data penyaluran untuk diekspor.");
+      setTimeout(() => setToastMsg(""), 3000);
+      return;
+    }
     const headers = ["Kode", "Mustahik", "Program", "Nominal", "Metode", "Tanggal", "Keterangan"];
     const csvContent = [
       headers.join(","),
@@ -237,10 +243,19 @@ export default function Penyaluran() {
     link.download = `Data_Penyaluran_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    setToastMsg("Data penyaluran berhasil diekspor ke CSV!");
+    setTimeout(() => setToastMsg(""), 3000);
   }
 
   return (
     <div>
+      {/* Toast Notice */}
+      {toastMsg && (
+        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-xs font-medium shadow-lg animate-[fadeIn_0.15s_ease] flex items-center gap-2">
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
       {/* Header Actions */}
       <div className="flex justify-end mb-4 -mt-3 relative z-20">
         <div className="flex items-center gap-2">
