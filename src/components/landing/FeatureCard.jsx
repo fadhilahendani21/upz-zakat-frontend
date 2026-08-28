@@ -21,7 +21,7 @@ const icons = {
 
 const rute = {
   "Hitung Zakat": "/hitung-zakat",
-  "Tunaikan Zakat": "/donasi",
+  "Tunaikan Zakat": "/zakat",
   "Program Penyaluran": "/program",
   "Laporan Transparansi": "/laporan",
   "Berita & Kegiatan": "/berita",
