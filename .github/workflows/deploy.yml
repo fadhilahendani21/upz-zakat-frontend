@@ -27,14 +27,112 @@ jobs:
 
       - name: Build Vite Application
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://api.upz.unsil.ac.id/api' }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://upz.unsil.ac.id/upz-api/api' }}
         run: npm run build
 
-      - name: Deploy to cPanel via FTP
+      - name: Prepare Zip Package & Extractor
+        run: |
+          TOKEN=$(openssl rand -hex 16)
+          echo "DEPLOY_TOKEN=${TOKEN}" >> $GITHUB_ENV
+
+          mkdir -p deploy-pkg
+
+          # Compress built assets inside dist/ into release.zip
+          cd dist
+          zip -r ../deploy-pkg/release.zip .
+          cd ..
+
+          cat << 'EOF' > deploy-pkg/unzip.php
+          <?php
+          $token = $_GET['token'] ?? '';
+          $expectedToken = '__TOKEN_PLACEHOLDER__';
+
+          if (empty($token) || !hash_equals($expectedToken, $token)) {
+              http_response_code(403);
+              header('Content-Type: application/json');
+              echo json_encode(['status' => 'error', 'message' => 'Forbidden: Invalid token']);
+              exit;
+          }
+
+          $zipFile = __DIR__ . '/release.zip';
+          $extractPath = __DIR__;
+
+          if (!file_exists($zipFile)) {
+              http_response_code(404);
+              header('Content-Type: application/json');
+              echo json_encode(['status' => 'error', 'message' => 'release.zip not found']);
+              exit;
+          }
+
+          $zip = new ZipArchive();
+          if ($zip->open($zipFile) === TRUE) {
+              $zip->extractTo($extractPath);
+              $zip->close();
+
+              @unlink($zipFile);
+              @unlink(__FILE__);
+
+              header('Content-Type: application/json');
+              echo json_encode(['status' => 'success', 'message' => 'Frontend extracted & deployed successfully!']);
+          } else {
+              http_response_code(500);
+              header('Content-Type: application/json');
+              echo json_encode(['status' => 'error', 'message' => 'Failed to extract release.zip']);
+          }
+          EOF
+
+          sed -i 's/^[ \t]*//' deploy-pkg/unzip.php
+          sed -i "s/__TOKEN_PLACEHOLDER__/${TOKEN}/g" deploy-pkg/unzip.php
+
+          echo "📦 Package size: $(du -sh deploy-pkg/release.zip | cut -f1)"
+
+      - name: Upload Package via FTP (Only 2 Files!)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ./
-          local-dir: ./dist/
+          local-dir: ./deploy-pkg/
+
+      - name: Trigger Remote Auto-Extraction
+        run: |
+          echo "🚀 Triggering remote unzip on frontend server..."
+
+          SERVER_INPUT="${{ secrets.FTP_SERVER }}"
+          SERVER_IP=$(getent ahosts "$SERVER_INPUT" 2>/dev/null | awk '{print $1}' | head -n 1)
+          if [ -z "$SERVER_IP" ]; then
+            SERVER_IP="$SERVER_INPUT"
+          fi
+
+          RESOLVE_ARGS=""
+          if [ -n "$SERVER_IP" ]; then
+            RESOLVE_ARGS="--resolve upz.unsil.ac.id:443:$SERVER_IP --resolve upz.unsil.ac.id:80:$SERVER_IP"
+          fi
+
+          ENDPOINTS=(
+            "https://upz.unsil.ac.id/upz-new/unzip.php?token=${{ env.DEPLOY_TOKEN }}"
+            "http://upz.unsil.ac.id/upz-new/unzip.php?token=${{ env.DEPLOY_TOKEN }}"
+          )
+
+          SUCCESS=false
+          for URL in "${ENDPOINTS[@]}"; do
+            echo "Trying trigger URL: $URL"
+            RESPONSE=$(curl -s -k $RESOLVE_ARGS -w "\nHTTP_STATUS:%{http_code}" "$URL" 2>&1 || true)
+            HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2 | tr -d ' \r\n')
+            BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS")
+
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Server Response: $BODY"
+              SUCCESS=true
+              break
+            else
+              echo "Status $HTTP_STATUS: $BODY"
+            fi
+          done
+
+          if [ "$SUCCESS" != "true" ]; then
+            echo "❌ Extraction failed! Could not trigger unzip.php on frontend endpoint."
+            exit 1
+          fi
+          echo "✅ Frontend successfully deployed and extracted in seconds!"
