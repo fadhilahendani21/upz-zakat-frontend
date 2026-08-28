@@ -31,6 +31,7 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
 
   // Baca dari localStorage dulu lalu sinkronkan dengan API
   const [currentUser, setCurrentUser] = useState(() => getUser());
+  const [today, setToday] = useState(new Date());
   const userName    = currentUser?.name  ?? "Admin UPZ";
   const userRole    = currentUser?.role  ?? "administrator";
   const userInitial = userName.charAt(0).toUpperCase();
