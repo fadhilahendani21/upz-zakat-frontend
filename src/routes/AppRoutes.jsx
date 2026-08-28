@@ -49,7 +49,7 @@ function AdminRoute({ children }) {
 
 export default function AppRoutes() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         {/* Halaman publik */}
         <Route element={<PublicLayout />}>
