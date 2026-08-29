@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Heart,
@@ -10,6 +10,7 @@ import {
   User,
   Mail,
   Phone,
+  Calculator,
 } from "lucide-react";
 
 import Card from "../components/common/Card";
@@ -32,37 +33,72 @@ const METODE_ICON = {
 };
 
 // ======================================================
-// KHUSUS DONASI: INFAK & SEDEKAH
+// KHUSUS ZAKAT
 // ======================================================
-const JENIS_DONASI = dummyJenisDonasi.filter(
-  (j) => j.id === "infak" || j.id === "sedekah"
+const JENIS_ZAKAT = dummyJenisDonasi.filter(
+  (j) =>
+    j.id === "zakat-penghasilan" ||
+    j.id === "zakat-maal" ||
+    j.id === "zakat-fitrah"
 );
 
-export default function DonasiPage() {
+export default function ZakatPage() {
   const location = useLocation();
   const settings = useSettings();
 
+  // ======================================================
+  // DATA DARI HALAMAN HITUNG ZAKAT
+  // ======================================================
+
+  const stateDariPerhitungan = location.state;
+
+  const nominalDariPerhitungan =
+    stateDariPerhitungan?.nominal || null;
+
+  const jenisIdDariPerhitungan =
+    stateDariPerhitungan?.jenisId || null;
+
+  // ======================================================
+  // JENIS ZAKAT
+  // ======================================================
+
   const [jenisId, setJenisId] = useState(
-    location.state?.jenisId || JENIS_DONASI[0]?.id
+    jenisIdDariPerhitungan || JENIS_ZAKAT[0]?.id
   );
 
+  // ======================================================
+  // NOMINAL
+  // ======================================================
+
   const [nominal, setNominal] = useState(
-    location.state?.nominal || 100000
+    nominalDariPerhitungan || 100000
   );
 
   const [nominalCustom, setNominalCustom] = useState(
-    location.state?.nominal
-      ? String(location.state.nominal)
+    nominalDariPerhitungan
+      ? String(nominalDariPerhitungan)
       : ""
   );
+
+  // ======================================================
+  // METODE PEMBAYARAN
+  // ======================================================
 
   const [metodeId, setMetodeId] = useState(
     metodePembayaran[0].id
   );
 
+  // ======================================================
+  // ANONIM
+  // ======================================================
+
   const [anonim, setAnonim] = useState(
     settings?.privasi?.defaultAnonimPublik || false
   );
+
+  // ======================================================
+  // DATA DIRI
+  // ======================================================
 
   const [data, setData] = useState({
     nama: "",
@@ -70,16 +106,39 @@ export default function DonasiPage() {
     telepon: "",
   });
 
+  // ======================================================
+  // STATUS
+  // ======================================================
+
   const [status, setStatus] = useState("idle");
   const [hasil, setHasil] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const jenisTerpilih = JENIS_DONASI.find(
+  // ======================================================
+  // SINKRONISASI DARI HALAMAN HITUNG ZAKAT
+  // ======================================================
+
+  useEffect(() => {
+    if (location.state?.jenisId) {
+      setJenisId(location.state.jenisId);
+    }
+
+    if (location.state?.nominal) {
+      setNominal(location.state.nominal);
+      setNominalCustom(String(location.state.nominal));
+    }
+  }, [location.state]);
+
+  // ======================================================
+  // JENIS TERPILIH
+  // ======================================================
+
+  const jenisTerpilih = JENIS_ZAKAT.find(
     (j) => j.id === jenisId
   );
 
   // ======================================================
-  // NOMINAL CEPAT
+  // NOMINAL
   // ======================================================
 
   function handlePilihNominal(value) {
@@ -106,7 +165,7 @@ export default function DonasiPage() {
   }
 
   // ======================================================
-  // SUBMIT DONASI
+  // SUBMIT ZAKAT
   // ======================================================
 
   async function handleSubmit(e) {
@@ -140,7 +199,7 @@ export default function DonasiPage() {
     } catch (err) {
       setErrorMsg(
         err.message ||
-          "Terjadi kesalahan saat memproses donasi. Silakan coba lagi."
+          "Terjadi kesalahan saat memproses pembayaran zakat. Silakan coba lagi."
       );
 
       setStatus("idle");
@@ -148,12 +207,13 @@ export default function DonasiPage() {
   }
 
   // ======================================================
-  // HALAMAN SUKSES
+  // SUCCESS
   // ======================================================
 
   if (status === "success") {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
+
         <div className="max-w-lg mx-auto px-6 py-20 text-center">
 
           <div className="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-5">
@@ -161,13 +221,12 @@ export default function DonasiPage() {
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Terima kasih atas donasi Anda
+            Terima kasih
           </h1>
 
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            Selesaikan pembayaran dengan mengikuti instruksi
-            yang tersedia. Konfirmasi akan dilakukan setelah
-            pembayaran berhasil diverifikasi.
+            Pembayaran zakat Anda telah berhasil dibuat.
+            Silakan ikuti instruksi pembayaran berikutnya.
           </p>
 
           <Card className="text-left">
@@ -184,7 +243,7 @@ export default function DonasiPage() {
 
             <div className="flex justify-between text-sm mb-3 gap-4">
               <span className="text-gray-500">
-                Jenis
+                Jenis Zakat
               </span>
 
               <span className="font-medium text-gray-900 text-right">
@@ -255,11 +314,9 @@ export default function DonasiPage() {
                 /[^0-9]/g,
                 ""
               )}?text=${encodeURIComponent(
-                `Assalamu'alaikum, saya ingin konfirmasi donasi sebesar ${formatRupiah(
+                `Assalamu'alaikum, saya ingin konfirmasi pembayaran ${jenisTerpilih?.nama} sebesar ${formatRupiah(
                   nominal
-                )} untuk ${
-                  jenisTerpilih?.nama || "Infaq/Sedekah"
-                }. Kode transaksi: ${
+                )}. Kode transaksi: ${
                   hasil?.kode || hasil?.id || "-"
                 }.`
               )}`}
@@ -280,98 +337,134 @@ export default function DonasiPage() {
               setHasil(null);
             }}
           >
-            Buat Donasi Lain
+            Tunaikan Zakat Lain
           </Button>
 
         </div>
+
       </div>
     );
   }
 
   // ======================================================
-  // FORM DONASI
+  // FORM
   // ======================================================
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
-      {/* HEADER */}
+      {/* ==================================================
+          HEADER
+      ================================================== */}
+
       <section className="w-full bg-brand-700 text-white">
-        <div className="max-w-5xl mx-auto px-6 py-12 lg:py-14 text-center">
+
+        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14 text-center">
 
           <span className="inline-flex items-center gap-2 text-xs font-medium bg-white/10 px-3 py-1.5 rounded-full">
-            <Heart size={14} />
-            Donasi Sekarang
+            <Calculator size={14} />
+            Tunaikan Zakat
           </span>
 
           <h1 className="mt-5 text-3xl lg:text-4xl font-extrabold leading-tight">
-            Donasi Infaq & Sedekah
+            Tunaikan Zakat
           </h1>
 
           <p className="mt-4 text-green-50 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
-            Salurkan infaq dan sedekah Anda dengan mudah,
-            aman, dan tepat sasaran untuk membantu masyarakat
-            yang membutuhkan.
+            Tunaikan zakat Anda melalui UPZ Zakat Universitas
+            Siliwangi dengan mudah, aman, dan terpercaya.
           </p>
 
         </div>
+
       </section>
 
-      <form
-  onSubmit={handleSubmit}
-  className="w-full max-w-7xl mx-auto px-6 py-12 space-y-5"
->
+      {/* ==================================================
+          FORM
+      ================================================== */}
 
-        {/* JENIS DONASI */}
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-7xl mx-auto px-6 py-12 space-y-5"
+      >
+
+        {/* ==================================================
+            JENIS ZAKAT
+        ================================================== */}
+
         <Card>
 
           <h2 className="font-semibold text-gray-900 mb-4">
-            Pilih Jenis Donasi
+            Pilih Jenis Zakat
           </h2>
 
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
 
-            {JENIS_DONASI.map((j) => (
+            {JENIS_ZAKAT.map((j) => (
+
               <button
                 type="button"
                 key={j.id}
                 onClick={() => setJenisId(j.id)}
-                className={`text-left rounded-xl border p-4 transition-colors ${
+                className={`w-full text-left rounded-xl border p-4 transition-colors ${
                   jenisId === j.id
                     ? "border-brand-600 bg-brand-50"
                     : "border-gray-200 hover:border-brand-300"
                 }`}
               >
 
-                <p className="text-[11px] font-medium text-brand-600 uppercase tracking-wide">
-                  {j.kategori}
-                </p>
+                <div className="flex items-start gap-3">
 
-                <p className="font-semibold text-gray-900 text-sm mt-1">
-                  {j.nama}
-                </p>
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      jenisId === j.id
+                        ? "bg-white text-brand-600"
+                        : "bg-brand-50 text-brand-600"
+                    }`}
+                  >
+                    <Heart size={17} />
+                  </div>
 
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                  {j.deskripsi}
-                </p>
+                  <div>
+
+                    <p className="text-[11px] font-medium text-brand-600 uppercase tracking-wide">
+                      {j.kategori}
+                    </p>
+
+                    <p className="font-semibold text-gray-900 text-sm mt-1">
+                      {j.nama}
+                    </p>
+
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      {j.deskripsi}
+                    </p>
+
+                  </div>
+
+                </div>
 
               </button>
+
             ))}
 
           </div>
 
         </Card>
 
-        {/* NOMINAL */}
+        {/* ==================================================
+            NOMINAL
+        ================================================== */}
+
         <Card>
 
           <h2 className="font-semibold text-gray-900 mb-4">
-            Nominal Donasi
+            Nominal Zakat
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
 
             {nominalCepat.map((n) => (
+
               <button
                 type="button"
                 key={n}
@@ -384,12 +477,13 @@ export default function DonasiPage() {
               >
                 {formatRupiah(n)}
               </button>
+
             ))}
 
           </div>
 
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Atau masukkan nominal lain
+            Atau masukkan nominal zakat
           </label>
 
           <div className="relative">
@@ -401,7 +495,11 @@ export default function DonasiPage() {
             <input
               type="text"
               inputMode="numeric"
-              value={nominalCustom}
+              value={
+                nominalCustom
+                  ? Number(nominalCustom).toLocaleString("id-ID")
+                  : ""
+              }
               onChange={handleNominalCustomChange}
               placeholder="100.000"
               className="w-full border border-gray-200 rounded-lg pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
@@ -410,18 +508,21 @@ export default function DonasiPage() {
           </div>
 
           <p className="text-xs text-gray-400 mt-2">
-            Minimal donasi Rp10.000
+            Minimal pembayaran Rp10.000
           </p>
 
         </Card>
 
-        {/* DATA DIRI */}
+        {/* ==================================================
+            DATA DIRI
+        ================================================== */}
+
         <Card>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
 
             <h2 className="font-semibold text-gray-900">
-              Data Diri
+              Data Muzakki
             </h2>
 
             <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
@@ -435,13 +536,14 @@ export default function DonasiPage() {
                 className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
               />
 
-              Donasi sebagai hamba Allah (anonim)
+              Tampilkan sebagai hamba Allah (anonim)
 
             </label>
 
           </div>
 
           {!anonim && (
+
             <div className="grid sm:grid-cols-2 gap-4">
 
               <div className="sm:col-span-2">
@@ -463,7 +565,7 @@ export default function DonasiPage() {
                     required
                     value={data.nama}
                     onChange={handleDataChange}
-                    placeholder="Nama Anda"
+                    placeholder="Nama lengkap"
                     className="w-full border border-gray-200 rounded-lg pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
 
@@ -526,11 +628,15 @@ export default function DonasiPage() {
               </div>
 
             </div>
+
           )}
 
         </Card>
 
-        {/* METODE PEMBAYARAN */}
+        {/* ==================================================
+            METODE PEMBAYARAN
+        ================================================== */}
+
         <Card>
 
           <h2 className="font-semibold text-gray-900 mb-4">
@@ -544,6 +650,7 @@ export default function DonasiPage() {
               const Icon = METODE_ICON[m.id];
 
               return (
+
                 <label
                   key={m.id}
                   className={`flex items-center gap-3 rounded-lg border p-3.5 cursor-pointer ${
@@ -581,6 +688,7 @@ export default function DonasiPage() {
                   </span>
 
                 </label>
+
               );
             })}
 
@@ -588,19 +696,24 @@ export default function DonasiPage() {
 
         </Card>
 
-        {/* RINGKASAN */}
+        {/* ==================================================
+            RINGKASAN
+        ================================================== */}
+
         <Card>
 
           {errorMsg && (
+
             <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
               {errorMsg}
             </div>
+
           )}
 
           <div className="flex items-center justify-between mb-4">
 
             <span className="text-sm text-gray-500">
-              Total donasi
+              Total zakat
             </span>
 
             <span className="text-xl font-bold text-brand-700">
@@ -622,16 +735,18 @@ export default function DonasiPage() {
           >
             {status === "loading"
               ? "Memproses..."
-              : "Lanjutkan Pembayaran"}
+              : "Tunaikan Zakat"}
           </Button>
 
           <p className="text-xs text-gray-400 text-center mt-3">
-            Transaksi aman dan diawasi sesuai prinsip syariah.
+            Transaksi aman dan dikelola secara amanah dan
+            transparan.
           </p>
 
         </Card>
 
       </form>
+
     </div>
   );
 }
