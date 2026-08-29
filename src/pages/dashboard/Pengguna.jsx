@@ -33,6 +33,7 @@ import {
 } from "../../services/penggunaService";
 import { logout, getUser } from "../../services/authService";
 import ConfirmModal from "../../components/common/ConfirmModal";
+import StatCard from "../../components/dashboard/StatCard";
 
 // ─── Komponen Modal Tambah / Edit Pengguna ────────────────────────────────────
 function UserModal({ isOpen, onClose, onSaved, editData = null }) {
@@ -270,17 +271,10 @@ function TabManajemenPengguna({ currentUserId }) {
     <div className="space-y-4">
       {/* Stat mini */}
       {meta && (
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Total Pengguna", value: meta.total, color: "bg-brand-50 text-brand-700" },
-            { label: "Administrator", value: meta.total_admin, color: "bg-amber-50 text-amber-700" },
-            { label: "Operator", value: meta.total_operator, color: "bg-blue-50 text-blue-700" },
-          ].map((s) => (
-            <div key={s.label} className={`rounded-xl p-3 ${s.color} border border-current/10`}>
-              <p className="text-2xl font-bold">{s.value}</p>
-              <p className="text-[11px] font-medium mt-0.5 opacity-80">{s.label}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard icon={Users}     label="Total Pengguna" value={meta.total}          color="brand" loading={loading} />
+          <StatCard icon={Crown}     label="Administrator"  value={meta.total_admin}    color="amber" loading={loading} />
+          <StatCard icon={UserCheck} label="Operator"       value={meta.total_operator} color="blue"  loading={loading} />
         </div>
       )}
 
@@ -813,7 +807,7 @@ export default function Pengguna() {
                 <span className="text-emerald-600 font-medium">Baca & Tulis</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-500">Izin Jurnal & Rekening:</span>
+                <span className="text-gray-500">Izin Rekening & Kas:</span>
                 <span className={`font-medium ${isAdmin ? "text-emerald-600" : "text-red-500"}`}>
                   {isAdmin ? "Penuh (Full Access)" : "Tidak Ada Akses"}
                 </span>

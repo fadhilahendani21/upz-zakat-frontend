@@ -176,7 +176,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               <>
                 <SidebarLink item={{ label: "Rekening & Kas", icon: Wallet, to: "/dashboard/rekening-kas" }} />
                 <SidebarLink item={{ label: "Laporan Keuangan", icon: BarChart3, to: "/dashboard/laporan-keuangan" }} />
-                <SidebarLink item={{ label: "Jurnal", icon: BookOpen, to: "/dashboard/jurnal" }} />
               </>
             )}
           </div>

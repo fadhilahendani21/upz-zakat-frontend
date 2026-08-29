@@ -24,15 +24,15 @@ function handle401(res) {
 }
 
 /**
- * GET /api/muzakki?search=&status=&page=&per_page=
+ * GET /api/muzakki?search=&kategori=&page=&per_page=
  * Mengembalikan { data, meta }
  */
-export async function getMuzakki({ search = "", status = "", page = 1, perPage = 10 } = {}) {
-  if (!API_URL) return { data: [], meta: { total: 0, current_page: 1, last_page: 1 } };
+export async function getMuzakki({ search = "", kategori = "", page = 1, perPage = 10 } = {}) {
+  if (!API_URL) return { data: [], meta: { total: 0, total_dosen_staf: 0, total_umum: 0, current_page: 1, last_page: 1 } };
 
   const params = new URLSearchParams({ page, per_page: perPage });
   if (search) params.set("search", search);
-  if (status) params.set("status", status);
+  if (kategori) params.set("kategori", kategori);
 
   const res = await fetch(`${API_URL}/muzakki?${params}`, { headers: authHeaders() });
   handle401(res);

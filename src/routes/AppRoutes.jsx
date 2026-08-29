@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { getUser } from "../services/authService";
+import ScrollToTop from "../components/common/ScrollToTop";
 
 import PublicLayout from "../layouts/PublicLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -50,6 +51,7 @@ function AdminRoute({ children }) {
 export default function AppRoutes() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ScrollToTop />
       <Routes>
         {/* Halaman publik */}
         <Route element={<PublicLayout />}>

@@ -34,8 +34,7 @@ export const getMustahik = ({ search = "", status = "", kategori = "", page = 1,
 
 export const getMustahikOptions = async (search = "") => {
   const res = await getMustahik({ search, perPage: 30 });
-  // Format agar sama dengan muzakkiOptions: [{id, nama, kategori}]
-  return res.data.map((m) => ({ id: m.id, nama: m.nama, kategori: m.kategori }));
+  return res.data.map((m) => ({ id: m.id, nama: m.nama, no_hp: m.no_hp, alamat: m.alamat }));
 };
 
 export const createMustahik = (data) => request("POST", "/mustahik", data);

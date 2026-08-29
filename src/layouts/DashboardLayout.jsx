@@ -79,7 +79,7 @@ export default function DashboardLayout() {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 p-4 sm:p-6 lg:p-8 relative overflow-hidden flex flex-col min-w-0">
         <MosqueIllustration className="pointer-events-none absolute -top-4 right-0 w-80 lg:w-96 text-brand-100/80 -z-0" />
-        <div className="relative z-10 flex-1">
+        <div className="relative flex-1">
           <Topbar
             title={topbarTitle}
             subtitle={topbarSubtitle}

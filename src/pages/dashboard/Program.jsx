@@ -294,7 +294,7 @@ export default function Program() {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-end mb-5 -mt-1 gap-2 relative z-20">
+      <div className="flex justify-end mb-4 -mt-3 relative z-20">
         <Button icon={Plus} onClick={() => setModalForm({ mode: "add" })}>
           Tambah Program
         </Button>
@@ -302,9 +302,9 @@ export default function Program() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={FolderKanban} label="Total Program"    value={meta.total}                          color="brand"   sub="Terdaftar"            loading={loading} />
-        <StatCard icon={Users}        label="Total Penerima"   value={`${totalPenerima.toLocaleString("id-ID")} orang`} color="blue" sub="Pada halaman ini" loading={loading} />
-        <StatCard icon={Target}       label="Total Disalurkan" value={formatRupiah(totalDisalurkan)}       color="emerald" sub={`dari ${formatRupiah(totalTarget)}`} loading={loading} />
+        <StatCard icon={FolderKanban} label="Total Program"    value={meta.total}                                        color="brand"   loading={loading} />
+        <StatCard icon={Users}        label="Total Penerima"   value={`${totalPenerima.toLocaleString("id-ID")} orang`} color="blue"    loading={loading} />
+        <StatCard icon={Target}       label="Total Disalurkan" value={formatRupiah(totalDisalurkan)}                    color="emerald" loading={loading} />
       </div>
 
       {/* Toolbar */}

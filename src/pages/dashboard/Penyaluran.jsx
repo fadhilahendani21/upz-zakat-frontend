@@ -8,12 +8,32 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Combobox from "../../components/common/Combobox";
 import StatCard from "../../components/dashboard/StatCard";
-import { Pagination, SearchInput, inputCls } from "../../components/dashboard/ui";
+import { Pagination, SearchInput, FilterSelect, inputCls } from "../../components/dashboard/ui";
 import { formatRupiah } from "../../utils/formatRupiah";
 import { getMustahikOptions } from "../../services/mustahikService";
 import { getPenyaluran, savePenyaluran } from "../../services/transaksiService";
 import { getProgramOptions } from "../../services/programService";
 import { NumericFormat } from "react-number-format";
+
+// ── Konstanta ─────────────────────────────────────────────────────────────────
+const THIS_YEAR = new Date().getFullYear();
+const TAHUN_OPTIONS = [
+  { label: "Semua Tahun", value: 0 },
+  ...Array.from({ length: 5 }, (_, i) => ({
+    label: `Tahun ${THIS_YEAR - i}`,
+    value: THIS_YEAR - i,
+  })),
+];
+
+const BULAN_OPTIONS = [
+  { label: "Semua Bulan", value: 0 },
+  { label: "Januari",   value: 1 },  { label: "Februari",  value: 2 },
+  { label: "Maret",     value: 3 },  { label: "April",     value: 4 },
+  { label: "Mei",       value: 5 },  { label: "Juni",      value: 6 },
+  { label: "Juli",      value: 7 },  { label: "Agustus",   value: 8 },
+  { label: "September", value: 9 },  { label: "Oktober",   value: 10 },
+  { label: "November",  value: 11 }, { label: "Desember",  value: 12 },
+];
 // ── Modal Tambah ──────────────────────────────────────────────────────────────
 function ModalTambah({ onClose, onSaved }) {
   const [mustahik, setMustahik] = useState(null);
@@ -81,8 +101,8 @@ function ModalTambah({ onClose, onSaved }) {
                 onSearch={getMustahikOptions}
                 placeholder="Ketik nama mustahik..."
               />
-              {mustahik?.kategori && (
-                <p className="text-xs text-gray-400 mt-1 ml-1">{mustahik.kategori}</p>
+              {mustahik?.no_hp && (
+                <p className="text-xs text-gray-400 mt-1 ml-1">{mustahik.no_hp} {mustahik.alamat ? `· ${mustahik.alamat}` : ""}</p>
               )}
             </div>
             <div className="grid grid-cols-1 gap-3">
@@ -192,6 +212,8 @@ export default function Penyaluran() {
   const [meta, setMeta]     = useState({ total: 0, current_page: 1, last_page: 1 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [bulan, setBulan]   = useState(0);
+  const [tahun, setTahun]   = useState(0);
   const [page, setPage]     = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [detailRow, setDetailRow] = useState(null);
@@ -199,7 +221,7 @@ export default function Penyaluran() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getPenyaluran({ search, page, perPage: 10 });
+      const res = await getPenyaluran({ search, bulan, tahun, page, perPage: 10 });
       setData(res.data);
       setMeta(res.meta);
     } catch (err) {
@@ -207,7 +229,7 @@ export default function Penyaluran() {
     } finally {
       setLoading(false);
     }
-  }, [search, page]);
+  }, [search, bulan, tahun, page]);
 
   useEffect(() => {
     const t = setTimeout(fetchData, search ? 400 : 0);
@@ -260,7 +282,7 @@ export default function Penyaluran() {
       <div className="flex justify-end mb-4 -mt-3 relative z-20">
         <div className="flex items-center gap-2">
           <Button variant="outline" icon={Download} onClick={handleExport} className="hidden sm:inline-flex">Ekspor</Button>
-          <Button icon={Plus} className="!bg-red-500 hover:!bg-red-600" onClick={() => setShowModal(true)}>
+          <Button icon={Plus} onClick={() => setShowModal(true)}>
             Tambah
           </Button>
         </div>
@@ -268,9 +290,9 @@ export default function Penyaluran() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={HandCoins}  label="Total Penyaluran" value={meta.total}                          color="amber"   sub="Terdaftar di database" loading={loading} />
-        <StatCard icon={TrendingUp} label="Total Disalurkan" value={formatRupiah(meta.total_nominal || 0)} color="emerald" sub="Akumulasi penyaluran"   loading={loading} />
-        <StatCard icon={Users}      label="Halaman"          value={`${meta.current_page} / ${meta.last_page}`} color="blue" sub="Navigasi tabel"     loading={loading} />
+        <StatCard icon={HandCoins}  label="Total Penyaluran" value={meta.total}                          color="amber"   loading={loading} />
+        <StatCard icon={TrendingUp} label="Total Disalurkan" value={formatRupiah(meta.total_nominal || 0)} color="emerald" loading={loading} />
+        <StatCard icon={Users}      label="Halaman"          value={`${meta.current_page} / ${meta.last_page}`} color="blue" loading={loading} />
       </div>
 
       {/* Table Card */}
@@ -282,6 +304,14 @@ export default function Penyaluran() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Cari nama mustahik atau kode..."
           />
+          <div className="flex items-center gap-2">
+            <FilterSelect value={bulan} onChange={(e) => { setBulan(Number(e.target.value)); setPage(1); }}>
+              {BULAN_OPTIONS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+            </FilterSelect>
+            <FilterSelect value={tahun} onChange={(e) => { setTahun(Number(e.target.value)); setPage(1); }}>
+              {TAHUN_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </FilterSelect>
+          </div>
         </div>
 
         {/* Table */}

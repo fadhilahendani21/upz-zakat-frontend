@@ -7,6 +7,7 @@ import { getAllDashboardData } from "./dashboardService";
 
 const STORAGE_KEY_READ = "upz_read_notif_ids";
 const STORAGE_KEY_CUSTOM = "upz_custom_notifications";
+const STORAGE_KEY_CLEARED = "upz_notifs_cleared";
 
 // Notifikasi bawaan / default
 const DEFAULT_NOTIFICATIONS = [
@@ -67,6 +68,76 @@ const DEFAULT_NOTIFICATIONS = [
   },
 ];
 
+function getClearedTimestamp() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_CLEARED);
+    return raw ? Number(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setClearedTimestamp(ts) {
+  try {
+    localStorage.setItem(STORAGE_KEY_CLEARED, String(ts));
+  } catch (err) {
+    console.error('Gagal menyimpan timestamp bersihkan notifikasi:', err);
+  }
+}
+
+export function clearAllNotifications() {
+  localStorage.removeItem(STORAGE_KEY_CUSTOM);
+  localStorage.removeItem(STORAGE_KEY_READ);
+  setClearedTimestamp(Date.now());
+  emitUpdate();
+}
+
+export async function getNotifications() {
+  const readIds = getReadIds();
+  const custom = getCustomNotifs();
+  const clearedTs = getClearedTimestamp();
+
+  let dynamicNotifs = [];
+
+  try {
+    const dash = await getAllDashboardData().catch(() => null);
+    if (dash?.transaksi && Array.isArray(dash.transaksi)) {
+      dynamicNotifs = dash.transaksi.slice(0, 3).map((trx, idx) => {
+        const isMasuk = trx.jenis === "masuk";
+        const id = `trx-notif-${trx.kode || idx}`;
+        return {
+          id,
+          type: isMasuk ? "pengumpulan" : "penyaluran",
+          icon: isMasuk ? "💰" : "📤",
+          title: isMasuk ? "Transaksi Pengumpulan" : "Transaksi Penyaluran",
+          desc: `${trx.kategori || "Zakat"} sebesar Rp ${(trx.nominal || 0).toLocaleString("id-ID")}`,
+          time: trx.tanggal || "Baru saja",
+          timestamp: Date.now() - (idx + 1) * 15 * 60 * 1000,
+          targetUrl: isMasuk ? "/dashboard/pengumpulan" : "/dashboard/penyaluran",
+          actionLabel: isMasuk ? "Lihat Pengumpulan" : "Lihat Penyaluran",
+        };
+      });
+    }
+  } catch {}
+
+  // Combine all without duplicate ID, but filter out cleared items
+  const allMap = new Map();
+  [...custom, ...dynamicNotifs, ...DEFAULT_NOTIFICATIONS].forEach((item) => {
+    // If cleared timestamp exists, skip items older or equal to it
+    if (clearedTs && item.timestamp && item.timestamp <= clearedTs) {
+      return;
+    }
+    if (!allMap.has(item.id)) {
+      allMap.set(item.id, {
+        ...item,
+        unread: !readIds.includes(item.id),
+      });
+    }
+  });
+
+  return Array.from(allMap.values());
+}
+
 function getReadIds() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_READ);
@@ -105,51 +176,7 @@ function emitUpdate() {
   window.dispatchEvent(new CustomEvent("upz_notifs_updated"));
 }
 
-/**
- * Mengambil semua notifikasi yang digabung (transaksi dinamis + default)
- */
-export async function getNotifications() {
-  const readIds = getReadIds();
-  const custom = getCustomNotifs();
 
-  let dynamicNotifs = [];
-
-  try {
-    const dash = await getAllDashboardData().catch(() => null);
-    if (dash?.transaksi && Array.isArray(dash.transaksi)) {
-      dynamicNotifs = dash.transaksi.slice(0, 3).map((trx, idx) => {
-        const isMasuk = trx.jenis === "masuk";
-        const id = `trx-notif-${trx.kode || idx}`;
-        return {
-          id,
-          type: isMasuk ? "pengumpulan" : "penyaluran",
-          icon: isMasuk ? "💰" : "📤",
-          title: isMasuk ? "Transaksi Pengumpulan" : "Transaksi Penyaluran",
-          desc: `${trx.kategori || "Zakat"} sebesar Rp ${(trx.nominal || 0).toLocaleString("id-ID")}`,
-          time: trx.tanggal || "Baru saja",
-          timestamp: Date.now() - (idx + 1) * 15 * 60 * 1000,
-          targetUrl: isMasuk ? "/dashboard/pengumpulan" : "/dashboard/penyaluran",
-          actionLabel: isMasuk ? "Lihat Pengumpulan" : "Lihat Penyaluran",
-        };
-      });
-    }
-  } catch {
-    // Ignore error, fallback to defaults
-  }
-
-  // Gabungkan semua tanpa duplikasi ID
-  const allMap = new Map();
-  [...custom, ...dynamicNotifs, ...DEFAULT_NOTIFICATIONS].forEach((item) => {
-    if (!allMap.has(item.id)) {
-      allMap.set(item.id, {
-        ...item,
-        unread: !readIds.includes(item.id),
-      });
-    }
-  });
-
-  return Array.from(allMap.values());
-}
 
 /**
  * Tandai satu notifikasi sebagai telah dibaca
@@ -173,14 +200,7 @@ export async function markAllNotificationsAsRead() {
   emitUpdate();
 }
 
-/**
- * Hapus / bersihkan semua riwayat notifikasi
- */
-export function clearAllNotifications() {
-  localStorage.removeItem(STORAGE_KEY_CUSTOM);
-  saveReadIds(DEFAULT_NOTIFICATIONS.map((n) => n.id));
-  emitUpdate();
-}
+
 
 /**
  * Tambah notifikasi baru secara programatik (misal saat transaksi sukses dibuat)

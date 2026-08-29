@@ -127,36 +127,29 @@ export default function DashboardHome() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
           icon={Wallet}
           label="Total Dana Terkumpul"
           value={formatRupiah(stats?.totalDanaTerkumpul ?? 0)}
-          sub={tahun === "all" ? "Semua waktu" : `Tahun ${tahun}`}
-          change={stats?.perubahanDanaTerkumpul}
           color="green"
         />
         <StatCard
           icon={HandCoins}
           label="Total Dana Disalurkan"
           value={formatRupiah(stats?.totalDanaDisalurkan ?? 0)}
-          sub={tahun === "all" ? "Semua waktu" : `Tahun ${tahun}`}
-          change={stats?.perubahanDanaDisalurkan}
           color="blue"
         />
         <StatCard
           icon={Landmark}
           label="Saldo Kas & Bank"
           value={formatRupiah(stats?.saldoKasBank ?? 0)}
-          sub="Per hari ini (all time)"
           color="yellow"
         />
         <StatCard
           icon={Users}
           label="Total Muzakki"
           value={`${(stats?.totalMuzakki ?? 0).toLocaleString("id-ID")} Orang`}
-          sub={tahun === "all" ? "Semua waktu" : `Tahun ${tahun}`}
-          change={stats?.perubahanMuzakki}
           color="purple"
         />
       </div>

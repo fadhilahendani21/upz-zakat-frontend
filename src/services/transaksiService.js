@@ -25,11 +25,12 @@ function handle401(res) {
 /**
  * GET /api/transaksi/pengumpulan
  */
-export async function getPengumpulan({ search = "", kategori = "", bulan = 0, page = 1, perPage = 10 } = {}) {
+export async function getPengumpulan({ search = "", kategori = "", bulan = 0, tahun = 0, page = 1, perPage = 10 } = {}) {
   const params = new URLSearchParams({ page, per_page: perPage });
   if (search)  params.set("search", search);
   if (kategori) params.set("kategori", kategori);
   if (bulan && bulan !== 0) params.set("bulan", bulan);
+  if (tahun && tahun !== 0) params.set("tahun", tahun);
 
   const res = await fetch(`${API_URL}/transaksi/pengumpulan?${params}`, { headers: authHeaders() });
   handle401(res);
@@ -40,9 +41,11 @@ export async function getPengumpulan({ search = "", kategori = "", bulan = 0, pa
 /**
  * GET /api/transaksi/penyaluran
  */
-export async function getPenyaluran({ search = "", page = 1, perPage = 10 } = {}) {
+export async function getPenyaluran({ search = "", bulan = 0, tahun = 0, page = 1, perPage = 10 } = {}) {
   const params = new URLSearchParams({ page, per_page: perPage });
   if (search) params.set("search", search);
+  if (bulan && bulan !== 0) params.set("bulan", bulan);
+  if (tahun && tahun !== 0) params.set("tahun", tahun);
 
   const res = await fetch(`${API_URL}/transaksi/penyaluran?${params}`, { headers: authHeaders() });
   handle401(res);

@@ -99,10 +99,10 @@ export default function RekeningKas() {
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <StatCard icon={Wallet}       label="Saldo Kas Bersih" value={saldo ? formatRupiah(saldo.saldo)       : "—"} color={saldo && saldo.saldo < 0 ? "red" : "brand"} sub="Total masuk dikurangi total keluar"        loading={loading} />
-        <StatCard icon={ArrowDownLeft} label="Total Dana Masuk" value={saldo ? formatRupiah(saldo.totalMasuk) : "—"} color="emerald" sub="Akumulasi seluruh pengumpulan zakat & infaq"  loading={loading} />
-        <StatCard icon={ArrowUpRight}  label="Total Dana Keluar" value={saldo ? formatRupiah(saldo.totalKeluar) : "—"} color="amber" sub="Akumulasi seluruh penyaluran kepada mustahik" loading={loading} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard icon={Wallet}       label="Saldo Kas Bersih" value={saldo ? formatRupiah(saldo.saldo)       : "—"} color={saldo && saldo.saldo < 0 ? "red" : "brand"} loading={loading} />
+        <StatCard icon={ArrowDownLeft} label="Total Dana Masuk" value={saldo ? formatRupiah(saldo.totalMasuk) : "—"} color="emerald" loading={loading} />
+        <StatCard icon={ArrowUpRight}  label="Total Dana Keluar" value={saldo ? formatRupiah(saldo.totalKeluar) : "—"} color="amber" loading={loading} />
       </div>
 
       {/* Detail breakdown */}

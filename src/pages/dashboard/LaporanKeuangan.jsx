@@ -112,17 +112,17 @@ export default function LaporanKeuangan() {
       ) : laporan && (
         <>
           {/* KPI Cards — row 1: financial */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-            <StatCard icon={ArrowDownLeft} label="Total Dana Masuk"  value={formatRupiah(laporan.total_masuk)}  color="emerald" sub="Akumulasi pengumpulan"    loading={false} />
-            <StatCard icon={ArrowUpRight}  label="Total Dana Keluar" value={formatRupiah(laporan.total_keluar)} color="amber"   sub="Akumulasi penyaluran"     loading={false} />
-            <StatCard icon={Wallet}        label="Saldo Bersih"      value={formatRupiah(laporan.saldo_bersih)} color={laporan.saldo_bersih >= 0 ? "brand" : "red"} sub="Masuk − Keluar" loading={false} />
-            <StatCard icon={Globe}         label="Donasi Online"     value={formatRupiah(laporan.total_donasi)} color="purple"  sub="Total donasi diterima"    loading={false} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard icon={ArrowDownLeft} label="Total Dana Masuk"  value={formatRupiah(laporan.total_masuk)}  color="emerald" loading={false} />
+            <StatCard icon={ArrowUpRight}  label="Total Dana Keluar" value={formatRupiah(laporan.total_keluar)} color="amber"   loading={false} />
+            <StatCard icon={Wallet}        label="Saldo Bersih"      value={formatRupiah(laporan.saldo_bersih)} color={laporan.saldo_bersih >= 0 ? "brand" : "red"} loading={false} />
+            <StatCard icon={Globe}         label="Donasi Online"     value={formatRupiah(laporan.total_donasi)} color="purple"  loading={false} />
           </div>
           {/* KPI Cards — row 2: activity */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <StatCard icon={Users}    label="Muzakki Aktif"       value={`${laporan.total_muzakki} orang`}   color="blue"   sub="Terdaftar & aktif"       loading={false} />
-            <StatCard icon={Heart}    label="Mustahik Aktif"      value={`${laporan.total_mustahik} orang`}  color="pink"   sub="Terdaftar & aktif"       loading={false} />
-            <StatCard icon={BarChart3} label="Jumlah Donasi Online" value={`${laporan.jumlah_donasi} donasi`} color="indigo" sub="Transaksi donasi publik" loading={false} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard icon={Users}    label="Muzakki Aktif"       value={`${laporan.total_muzakki} orang`}   color="blue"   loading={false} />
+            <StatCard icon={Heart}    label="Mustahik Aktif"      value={`${laporan.total_mustahik} orang`}  color="pink"   loading={false} />
+            <StatCard icon={BarChart3} label="Jumlah Donasi Online" value={`${laporan.jumlah_donasi} donasi`} color="indigo" loading={false} />
           </div>
 
           {/* Per Bulan Bar Chart */}

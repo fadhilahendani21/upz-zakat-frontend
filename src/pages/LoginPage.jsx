@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FloatingLeaves from "../components/common/FloatingLeaves";
-import { login } from "../services/authService";
+import { login, getToken } from "../services/authService";
 import { useSettings } from "../services/settingService";
 
 export default function LoginPage() {
@@ -14,6 +14,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (getToken()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();

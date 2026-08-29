@@ -59,10 +59,10 @@ export default function DonasiOnline() {
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <StatCard icon={TrendingUp}  label="Total Donasi Diterima" value={formatRupiah(meta.total_nominal ?? 0)} color="emerald" sub="Akumulasi seluruh donasi online" loading={loading} />
-        <StatCard icon={CheckCircle2} label="Jumlah Transaksi"      value={`${meta.total ?? 0} Transaksi`}        color="brand"   sub="Total donasi yang masuk"       loading={loading} />
-        <StatCard icon={CreditCard}  label="Metode Terbanyak"      value="Transfer Bank"                          color="purple"  sub="Metode pembayaran favorit"    loading={loading} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard icon={TrendingUp}  label="Total Donasi Diterima" value={formatRupiah(meta.total_nominal ?? 0)} color="emerald" loading={loading} />
+        <StatCard icon={CheckCircle2} label="Jumlah Transaksi"      value={`${meta.total ?? 0} Transaksi`}        color="brand"   loading={loading} />
+        <StatCard icon={CreditCard}  label="Metode Terbanyak"      value="Transfer Bank"                          color="purple"  loading={loading} />
       </div>
 
       {/* Table */}

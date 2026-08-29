@@ -25,7 +25,7 @@ const TABS = [
   { id: "pengumpulan", label: "Pengumpulan", icon: ArrowDownToLine },
   { id: "penyaluran", label: "Penyaluran & Asnaf", icon: ArrowUpFromLine },
   { id: "donasi", label: "Donasi Online", icon: Globe },
-  { id: "keuangan", label: "Jurnal & Laporan", icon: Receipt },
+  { id: "keuangan", label: "Keuangan & Laporan", icon: Receipt },
   { id: "pengaturan", label: "Pengaturan & Nisab", icon: Settings },
   { id: "faq", label: "Tanya Jawab (FAQ)", icon: QuestionIcon },
   { id: "kontak", label: "Kontak Bantuan", icon: Phone },

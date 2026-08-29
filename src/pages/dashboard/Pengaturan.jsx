@@ -176,7 +176,7 @@ export default function Pengaturan() {
             <Button
               type="button"
               variant="outline"
-              onClick={handleReset}
+              onClick={() => setShowResetConfirm(true)}
               className="!py-2 !px-3 text-xs"
               title="Reset ke pengaturan awal"
             >

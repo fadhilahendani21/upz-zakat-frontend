@@ -1,24 +1,90 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Users, UserCheck, UserX, Plus,
+  Users, Plus, GraduationCap, Globe,
   X, Pencil, Trash2,
-  Phone, Mail, Building2,
+  Phone, Mail, Building2, BookOpen,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import StatCard from "../../components/dashboard/StatCard";
 import { Pagination, SearchInput } from "../../components/dashboard/ui";
-import { formatRupiah } from "../../utils/formatRupiah";
 import {
   getMuzakki, createMuzakki, updateMuzakki, deleteMuzakki,
 } from "../../services/muzakkiService";
 
-// ── Konstanta ─────────────────────────────────────────────────────────────────
-const UNIT_KERJA_OPTIONS = [
-  "Rektorat", "FKIP", "Fakultas Hukum", "Fakultas Ekonomi & Bisnis",
-  "Fakultas Pertanian", "Fakultas Teknik", "Fakultas Ilmu Kesehatan",
-  "Fakultas MIPA", "Pascasarjana", "Unit Kerja Lainnya",
-];
+// ── Struktur Data Fakultas & Jurusan Universitas Siliwangi ────────────────────
+export const FAKULTAS_JURUSAN_UNSIL = {
+  "Fakultas Keguruan dan Ilmu Pendidikan (FKIP)": [
+    "Pendidikan Masyarakat",
+    "Pendidikan Bahasa Indonesia",
+    "Pendidikan Bahasa Inggris",
+    "Pendidikan Matematika",
+    "Pendidikan Biologi",
+    "Pendidikan Ekonomi",
+    "Pendidikan Geografi",
+    "Pendidikan Jasmani",
+    "Pendidikan Sejarah",
+    "Pendidikan Fisika",
+    "Pendidikan Profesi Guru",
+    "Pendidikan Kepelatihan Olahraga",
+    "Pendidikan Seni Pertunjukan",
+  ],
+  "Fakultas Ekonomi dan Bisnis": [
+    "Ekonomi Pembangunan",
+    "Manajemen",
+    "Akuntansi",
+    "Perbankan dan Keuangan (D3)",
+    "Perbankan dan Keuangan Digital (D4)",
+  ],
+  "Fakultas Teknik": [
+    "Teknik Sipil",
+    "Teknik Elektro",
+    "Informatika",
+    "Sistem Informasi",
+    "Sains Data",
+  ],
+  "Fakultas Pertanian": [
+    "Agroteknologi",
+    "Agribisnis",
+    "Teknologi Pangan dan Hasil Pertanian",
+  ],
+  "Fakultas Agama Islam": [
+    "Ekonomi Syariah",
+    "Manajemen Mutu Halal",
+  ],
+  "Fakultas Ilmu Kesehatan": [
+    "Kesehatan Masyarakat",
+    "Gizi",
+  ],
+  "Fakultas Ilmu Sosial dan Ilmu Politik (FISIP)": [
+    "Ilmu Politik",
+    "Hukum Bisnis",
+  ],
+};
+
+const FAKULTAS_LIST = Object.keys(FAKULTAS_JURUSAN_UNSIL);
+
+function parseUnitKerja(unitKerjaStr) {
+  if (!unitKerjaStr || unitKerjaStr === "Masyarakat Umum" || unitKerjaStr === "Umum") {
+    return { isDosenStaf: false, fakultas: "", jurusan: "" };
+  }
+  
+  // Format tersimpan: "Fakultas ... · Jurusan ..." atau "Fakultas ... - Jurusan ..."
+  for (const fak of FAKULTAS_LIST) {
+    if (unitKerjaStr.startsWith(fak)) {
+      const remainder = unitKerjaStr.replace(fak, "").replace(/^[\s·\-\:]+/, "").trim();
+      return { isDosenStaf: true, fakultas: fak, jurusan: remainder || FAKULTAS_JURUSAN_UNSIL[fak][0] };
+    }
+  }
+
+  // Cek apakah kecocokan parsial
+  const foundFak = FAKULTAS_LIST.find((f) => unitKerjaStr.toLowerCase().includes(f.toLowerCase()));
+  if (foundFak) {
+    return { isDosenStaf: true, fakultas: foundFak, jurusan: FAKULTAS_JURUSAN_UNSIL[foundFak][0] };
+  }
+
+  return { isDosenStaf: true, fakultas: FAKULTAS_LIST[0], jurusan: unitKerjaStr };
+}
 
 function Field({ label, field, type = "text", placeholder, value, onChange, error }) {
   return (
@@ -38,19 +104,35 @@ function Field({ label, field, type = "text", placeholder, value, onChange, erro
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
+  const parsed = parseUnitKerja(initial?.unit_kerja);
+  
+  const [kategoriType, setKategoriType] = useState(
+    initial ? (parsed.isDosenStaf ? "dosen_staf" : "umum") : "dosen_staf"
+  );
+  const [selectedFakultas, setSelectedFakultas] = useState(parsed.fakultas || FAKULTAS_LIST[0]);
+  const [selectedJurusan, setSelectedJurusan]   = useState(
+    parsed.jurusan || FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]
+  );
   const [form, setForm] = useState({
     nama: initial?.nama ?? "",
+    nik: initial?.nik ?? "",
+    nip: initial?.nip ?? "",
     email: initial?.email ?? "",
     no_hp: initial?.no_hp ?? "",
-    unit_kerja: initial?.unit_kerja ?? "",
-    status: initial?.status ?? "aktif",
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors]   = useState({});
 
   function set(field, val) {
     setForm((f) => ({ ...f, [field]: val }));
     setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  function handleFakultasChange(e) {
+    const fak = e.target.value;
+    setSelectedFakultas(fak);
+    const jurusanList = FAKULTAS_JURUSAN_UNSIL[fak] || [];
+    setSelectedJurusan(jurusanList[0] || "");
   }
 
   function validate() {
@@ -58,6 +140,10 @@ function ModalForm({ initial, onClose, onSaved }) {
     if (!form.nama.trim()) errs.nama = "Nama wajib diisi.";
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       errs.email = "Format email tidak valid.";
+    if (kategoriType === "dosen_staf") {
+      if (!selectedFakultas) errs.fakultas = "Fakultas wajib dipilih.";
+      if (!selectedJurusan)  errs.jurusan = "Jurusan wajib dipilih.";
+    }
     return errs;
   }
 
@@ -68,10 +154,23 @@ function ModalForm({ initial, onClose, onSaved }) {
 
     setLoading(true);
     try {
+      const finalUnitKerja = kategoriType === "umum"
+        ? "Masyarakat Umum"
+        : `${selectedFakultas} · ${selectedJurusan}`;
+
+      const payload = {
+        nama: form.nama,
+        nik: kategoriType === "umum" ? (form.nik || null) : null,
+        nip: kategoriType === "dosen_staf" ? (form.nip || null) : null,
+        email: form.email || null,
+        no_hp: form.no_hp || null,
+        unit_kerja: finalUnitKerja,
+      };
+
       if (isEdit) {
-        await updateMuzakki(initial.id, form);
+        await updateMuzakki(initial.id, payload);
       } else {
-        await createMuzakki(form);
+        await createMuzakki(payload);
       }
       onSaved();
     } catch (err) {
@@ -81,9 +180,11 @@ function ModalForm({ initial, onClose, onSaved }) {
     }
   }
 
+  const currentJurusanOptions = FAKULTAS_JURUSAN_UNSIL[selectedFakultas] || [];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-lg">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">
             {isEdit ? "Edit Muzakki" : "Tambah Muzakki"}
@@ -94,53 +195,97 @@ function ModalForm({ initial, onClose, onSaved }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="px-6 py-5 space-y-4">
+          <div className="px-6 py-5 space-y-4 max-h-[75vh] overflow-y-auto">
             {errors._global && (
               <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                 {errors._global}
               </div>
             )}
 
-            <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama muzakki" />
+            <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama lengkap muzakki" />
+
             <div className="grid grid-cols-2 gap-3">
               <Field label="Email" field="email" type="email" value={form.email} onChange={set} error={errors.email} placeholder="email@unsil.ac.id" />
-              <Field label="No. HP" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
+              <Field label="No. HP / WA" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
             </div>
 
-            {/* Unit Kerja — select bisa diketik via datalist */}
+            {/* Pilihan Kategori Muzakki */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Unit Kerja / Fakultas</label>
-              <div className="relative">
-                <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  list="unit-kerja-list"
-                  value={form.unit_kerja}
-                  onChange={(e) => set("unit_kerja", e.target.value)}
-                  placeholder="Pilih atau ketik unit kerja..."
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
-                />
-                <datalist id="unit-kerja-list">
-                  {UNIT_KERJA_OPTIONS.map((u) => <option key={u} value={u} />)}
-                </datalist>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-              <div className="flex gap-3">
-                {[{ val: "aktif", label: "Aktif" }, { val: "tidak_aktif", label: "Tidak Aktif" }].map(({ val, label }) => (
-                  <label key={val} className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer text-sm font-medium transition
-                    ${form.status === val ? "bg-brand-50 border-brand-500 text-brand-700" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    <input type="radio" name="status" value={val} checked={form.status === val}
-                      onChange={() => set("status", val)} className="sr-only" />
-                    {label}
-                  </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori Muzakki *</label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { val: "dosen_staf", label: "Dosen / Staf Civitas", icon: GraduationCap },
+                  { val: "umum", label: "Masyarakat Umum", icon: Globe },
+                ].map(({ val, label, icon: Icon }) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setKategoriType(val)}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${
+                      kategoriType === val
+                        ? "bg-brand-50 border-brand-500 text-brand-700 shadow-xs"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    <span>{label}</span>
+                  </button>
                 ))}
               </div>
             </div>
+
+            {/* Field NIP / NIK sesuai Kategori */}
+            {kategoriType === "dosen_staf" ? (
+              <Field label="NIP (Nomor Induk Pegawai)" field="nip" value={form.nip} onChange={set} error={errors.nip} placeholder="Contoh: 198501302012121009" />
+            ) : (
+              <Field label="NIK (Nomor Induk Kependudukan)" field="nik" value={form.nik} onChange={set} error={errors.nik} placeholder="Contoh: 3278011204850001" />
+            )}
+
+            {/* Fakultas & Jurusan Bertingkat (Jika Dosen / Staf) */}
+            {kategoriType === "dosen_staf" && (
+              <div className="space-y-3 p-4 bg-gray-50/80 rounded-xl border border-gray-200">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    1. Pilih Fakultas *
+                  </label>
+                  <div className="relative">
+                    <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                      value={selectedFakultas}
+                      onChange={handleFakultasChange}
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 bg-white"
+                    >
+                      {FAKULTAS_LIST.map((f) => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.fakultas && <p className="text-xs text-red-500 mt-1">{errors.fakultas}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    2. Pilih Jurusan / Program Studi *
+                  </label>
+                  <div className="relative">
+                    <BookOpen size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                      value={selectedJurusan}
+                      onChange={(e) => setSelectedJurusan(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 bg-white"
+                    >
+                      {currentJurusanOptions.map((j) => (
+                        <option key={j} value={j}>{j}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.jurusan && <p className="text-xs text-red-500 mt-1">{errors.jurusan}</p>}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white rounded-b-2xl">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Batal</Button>
             <Button type="submit" disabled={loading}>
               {loading ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah"}
@@ -178,7 +323,7 @@ function ModalHapus({ muzakki, onClose, onDeleted }) {
         </div>
         <h3 className="text-center font-semibold text-gray-900 mb-1">Hapus Muzakki?</h3>
         <p className="text-center text-sm text-gray-500 mb-4">
-          <span className="font-medium text-gray-800">{muzakki.nama}</span> akan dihapus dari sistem. Tindakan ini tidak dapat dibatalkan.
+          <span className="font-medium text-gray-800">{muzakki.nama}</span> akan dihapus dari sistem.
         </p>
         {errorMsg && (
           <div className="mb-4 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs text-center">
@@ -188,7 +333,8 @@ function ModalHapus({ muzakki, onClose, onDeleted }) {
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={loading}>Batal</Button>
           <button
-            onClick={handleDelete} disabled={loading}
+            onClick={handleDelete}
+            disabled={loading}
             className="flex-1 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition disabled:opacity-50"
           >
             {loading ? "Menghapus..." : "Ya, Hapus"}
@@ -201,30 +347,30 @@ function ModalHapus({ muzakki, onClose, onDeleted }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function MuzakkiMustahik() {
-  const [data, setData] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, current_page: 1, last_page: 1 });
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [page, setPage] = useState(1);
-  const [modalForm, setModalForm] = useState(null); // null | { mode: 'add'|'edit', data?: obj }
-  const [modalHapus, setModalHapus] = useState(null); // null | obj
+  const [data, setData]             = useState([]);
+  const [meta, setMeta]             = useState({ total: 0, total_dosen_staf: 0, total_umum: 0, current_page: 1, last_page: 1 });
+  const [loading, setLoading]       = useState(true);
+  const [search, setSearch]         = useState("");
+  const [kategoriFilter, setKategoriFilter] = useState("");
+  const [page, setPage]             = useState(1);
+  const [modalForm, setModalForm]   = useState(null);
+  const [modalHapus, setModalHapus] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getMuzakki({ search, status: statusFilter, page, perPage: 10 });
-      setData(res.data);
-      setMeta(res.meta);
+      const res = await getMuzakki({ search, kategori: kategoriFilter, page, perPage: 10 });
+      setData(res.data || []);
+      setMeta(res.meta || { total: 0, total_dosen_staf: 0, total_umum: 0, current_page: 1, last_page: 1 });
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page]);
+  }, [search, kategoriFilter, page]);
 
   useEffect(() => {
-    const t = setTimeout(fetchData, search ? 350 : 0);
+    const t = setTimeout(fetchData, search ? 400 : 0);
     return () => clearTimeout(t);
   }, [fetchData, search]);
 
@@ -239,9 +385,6 @@ export default function MuzakkiMustahik() {
     else fetchData();
   }
 
-  const aktif = meta.total_aktif || 0;
-  const tidakAktif = meta.total_tidak_aktif || 0;
-
   return (
     <div>
       {/* Header Actions */}
@@ -253,9 +396,9 @@ export default function MuzakkiMustahik() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={Users}     label="Total Muzakki"  value={meta.total} color="brand"   sub="Terdaftar di sistem" loading={loading} />
-        <StatCard icon={UserCheck} label="Muzakki Aktif"  value={aktif}      color="emerald" sub="Status aktif"        loading={loading} />
-        <StatCard icon={UserX}     label="Tidak Aktif"    value={tidakAktif} color="red"     sub="Perlu ditinjau"      loading={loading} />
+        <StatCard icon={Users}         label="Total Muzakki"    value={meta.total}            color="brand"   loading={loading} />
+        <StatCard icon={GraduationCap} label="Dosen & Staf"     value={meta.total_dosen_staf} color="emerald" loading={loading} />
+        <StatCard icon={Globe}         label="Masyarakat Umum"  value={meta.total_umum}       color="blue"    loading={loading} />
       </div>
 
       {/* Table Card */}
@@ -265,17 +408,23 @@ export default function MuzakkiMustahik() {
           <SearchInput
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Cari nama, email, atau unit kerja..."
+            placeholder="Cari nama, NIP/NIK, email, fakultas..."
           />
           <div className="flex gap-2">
             {[
-              { val: "", label: "Semua" },
-              { val: "aktif", label: "Aktif" },
-              { val: "tidak_aktif", label: "Tidak Aktif" },
+              { val: "", label: "Semua Kategori" },
+              { val: "dosen_staf", label: "Dosen / Staf" },
+              { val: "umum", label: "Umum" },
             ].map(({ val, label }) => (
-              <button key={val} onClick={() => { setStatusFilter(val); setPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
-                  ${statusFilter === val ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
+              <button
+                key={val}
+                onClick={() => { setKategoriFilter(val); setPage(1); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  kategoriFilter === val
+                    ? "bg-brand-600 text-white shadow-xs"
+                    : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
                 {label}
               </button>
             ))}
@@ -287,7 +436,7 @@ export default function MuzakkiMustahik() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                {["Nama", "Unit Kerja", "Kontak", "Transaksi", "Status", ""].map((h) => (
+                {["Nama Muzakki", "Fakultas & Jurusan", "Kontak", "Total Transaksi", ""].map((h) => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
@@ -297,97 +446,107 @@ export default function MuzakkiMustahik() {
             <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
+                  <td colSpan={5} className="px-5 py-12 text-center">
                     <div className="w-7 h-7 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
                     <p className="text-gray-400 text-sm mt-3">Memuat data...</p>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={5} className="px-5 py-12 text-center text-gray-400 text-sm">
                     {search ? "Tidak ada muzakki yang cocok dengan pencarian." : "Belum ada data muzakki."}
                   </td>
                 </tr>
               ) : (
-                data.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold text-sm shrink-0">
-                          {row.nama.charAt(0).toUpperCase()}
+                data.map((row) => {
+                  const parsedInfo = parseUnitKerja(row.unit_kerja);
+                  return (
+                    <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold text-sm shrink-0">
+                            {row.nama.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800">{row.nama}</p>
+                            <p className="text-xs text-gray-400">
+                              {parsedInfo.isDosenStaf ? `NIP: ${row.nip || "-"}` : `NIK: ${row.nik || "-"}`}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-800">{row.nama}</p>
-                          <p className="text-xs text-gray-400">#{row.id}</p>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {parsedInfo.isDosenStaf ? (
+                          <div className="space-y-1.5">
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              <GraduationCap size={12} className="shrink-0 text-emerald-700" />
+                              <span className="truncate max-w-[260px]">{parsedInfo.fakultas}</span>
+                            </span>
+                            <div className="flex items-center gap-1.5 pl-[9px] text-xs font-medium text-gray-700">
+                              <BookOpen size={12} className="text-gray-400 shrink-0" />
+                              <span>{parsedInfo.jurusan}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                            <Globe size={12} />
+                            Masyarakat Umum
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="space-y-0.5">
+                          {row.email && (
+                            <p className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <Mail size={11} className="text-gray-400 shrink-0" /> {row.email}
+                            </p>
+                          )}
+                          {row.no_hp && (
+                            <p className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <Phone size={11} className="text-gray-400 shrink-0" /> {row.no_hp}
+                            </p>
+                          )}
+                          {!row.email && !row.no_hp && (
+                            <span className="text-gray-300 text-xs">—</span>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {row.unit_kerja ? (
-                        <span className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Building2 size={13} className="text-gray-400" />
-                          {row.unit_kerja}
-                        </span>
-                      ) : (
-                        <span className="text-gray-300 text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="space-y-0.5">
-                        {row.email && (
-                          <p className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <Mail size={11} className="text-gray-400" /> {row.email}
-                          </p>
-                        )}
-                        {row.no_hp && (
-                          <p className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <Phone size={11} className="text-gray-400" /> {row.no_hp}
-                          </p>
-                        )}
-                        {!row.email && !row.no_hp && <span className="text-gray-300 text-xs">—</span>}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="text-sm font-medium text-gray-700">
-                        {row.transaksi_count ?? 0}
-                        <span className="text-gray-400 font-normal text-xs ml-1">transaksi</span>
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        row.status === "aktif"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-gray-100 text-gray-500"
-                      }`}>
-                        {row.status === "aktif" ? "Aktif" : "Tidak Aktif"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setModalForm({ mode: "edit", data: row })}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition"
-                          title="Edit"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => setModalHapus(row)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
-                          title="Hapus"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-5 py-3.5 text-gray-600 font-medium text-xs">
+                        {row.transaksi_count ?? 0} kali
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2 justify-end">
+                          <button
+                            onClick={() => setModalForm({ mode: "edit", data: row })}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition"
+                            title="Edit"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => setModalHapus(row)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                            title="Hapus"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
-        <Pagination page={page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} label="muzakki" />
+        <Pagination
+          page={page}
+          lastPage={meta.last_page}
+          total={meta.total}
+          onPageChange={setPage}
+          label="muzakki"
+        />
       </Card>
 
       {/* Modals */}

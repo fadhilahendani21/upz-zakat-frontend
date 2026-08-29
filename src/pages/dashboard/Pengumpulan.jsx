@@ -15,6 +15,15 @@ import { getPengumpulan, savePengumpulan } from "../../services/transaksiService
 import { useSettings, getSettings } from "../../services/settingService";
 import { NumericFormat } from "react-number-format";
 // ── Konstanta ─────────────────────────────────────────────────────────────────
+const THIS_YEAR = new Date().getFullYear();
+const TAHUN_OPTIONS = [
+  { label: "Semua Tahun", value: 0 },
+  ...Array.from({ length: 5 }, (_, i) => ({
+    label: `Tahun ${THIS_YEAR - i}`,
+    value: THIS_YEAR - i,
+  })),
+];
+
 const BULAN_OPTIONS = [
   { label: "Semua Bulan", value: 0 },
   { label: "Januari",   value: 1 },  { label: "Februari",  value: 2 },
@@ -190,6 +199,7 @@ export default function Pengumpulan() {
   const [search, setSearch]   = useState("");
   const [kategori, setKategori] = useState("");
   const [bulan, setBulan]     = useState(0);
+  const [tahun, setTahun]     = useState(0);
   const [page, setPage]       = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [detailRow, setDetailRow] = useState(null);
@@ -197,7 +207,7 @@ export default function Pengumpulan() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getPengumpulan({ search, kategori, bulan, page, perPage: 10 });
+      const res = await getPengumpulan({ search, kategori, bulan, tahun, page, perPage: 10 });
       setData(res.data);
       setMeta(res.meta);
     } catch (err) {
@@ -205,7 +215,7 @@ export default function Pengumpulan() {
     } finally {
       setLoading(false);
     }
-  }, [search, kategori, bulan, page]);
+  }, [search, kategori, bulan, tahun, page]);
 
   // Debounce search, langsung untuk filter lainnya
   useEffect(() => {
@@ -265,9 +275,9 @@ export default function Pengumpulan() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={Wallet}    label="Total Transaksi" value={meta.total}                         color="brand"   sub="Terdaftar di database" loading={loading} />
-        <StatCard icon={TrendingUp} label="Total Nominal"  value={formatRupiah(meta.total_nominal || 0)} color="emerald" sub="Akumulasi pengumpulan"   loading={loading} />
-        <StatCard icon={Users}     label="Halaman"        value={`${meta.current_page} / ${meta.last_page}`} color="blue" sub="Navigasi tabel"      loading={loading} />
+        <StatCard icon={Wallet}    label="Total Transaksi" value={meta.total}                         color="brand"   loading={loading} />
+        <StatCard icon={TrendingUp} label="Total Nominal"  value={formatRupiah(meta.total_nominal || 0)} color="emerald" loading={loading} />
+        <StatCard icon={Users}     label="Halaman"        value={`${meta.current_page} / ${meta.last_page}`} color="blue" loading={loading} />
       </div>
 
       {/* Table Card */}
@@ -286,6 +296,9 @@ export default function Pengumpulan() {
             </FilterSelect>
             <FilterSelect value={bulan} onChange={(e) => { setBulan(Number(e.target.value)); setPage(1); }}>
               {BULAN_OPTIONS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+            </FilterSelect>
+            <FilterSelect value={tahun} onChange={(e) => { setTahun(Number(e.target.value)); setPage(1); }}>
+              {TAHUN_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </FilterSelect>
           </div>
         </div>

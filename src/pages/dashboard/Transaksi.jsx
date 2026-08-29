@@ -107,10 +107,10 @@ export default function Transaksi() {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <StatCard icon={Wallet}      label="Saldo Bersih"   value={formatRupiah(totalMasuk - totalKeluar)} color="brand"   sub="Masuk − Keluar"           loading={loading} />
-        <StatCard icon={ArrowDownLeft}  label="Total Kas Masuk"  value={formatRupiah(totalMasuk)}  color="emerald" sub="Akumulasi seluruh pengumpulan" loading={loading} />
-        <StatCard icon={ArrowUpRight} label="Total Kas Keluar" value={formatRupiah(totalKeluar)} color="amber"   sub="Akumulasi seluruh penyaluran" loading={loading} />
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard icon={Wallet}        label="Saldo Bersih"      value={formatRupiah(totalMasuk - totalKeluar)} color="brand"   loading={loading} />
+        <StatCard icon={ArrowDownLeft} label="Total Kas Masuk"   value={formatRupiah(totalMasuk)}               color="emerald" loading={loading} />
+        <StatCard icon={ArrowUpRight}  label="Total Kas Keluar"  value={formatRupiah(totalKeluar)}              color="amber"   loading={loading} />
       </section>
 
       {/* Filter Bar */}

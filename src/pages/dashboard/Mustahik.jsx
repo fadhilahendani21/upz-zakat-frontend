@@ -1,25 +1,38 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Heart, UserCheck, UserX, Plus,
+  Heart, Phone, MapPin, Plus, Users,
   X, Pencil, Trash2,
-  Phone, MapPin,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import StatCard from "../../components/dashboard/StatCard";
-import { Pagination, SearchInput } from "../../components/dashboard/ui";
+import { Pagination, SearchInput, FilterSelect } from "../../components/dashboard/ui";
 import {
   getMustahik, createMustahik, updateMustahik, deleteMustahik,
 } from "../../services/mustahikService";
-import { useSettings, getSettings } from "../../services/settingService";
+import { getSettings } from "../../services/settingService";
+
+const DEFAULT_ASNAF = [
+  "Fakir",
+  "Miskin",
+  "Gharim",
+  "Muallaf",
+  "Ibnu Sabil",
+  "Fi Sabilillah",
+  "Amil",
+  "Riqab",
+];
 
 const KATEGORI_COLORS = {
-  "Fakir Miskin":  "bg-red-50 text-red-700",
-  "Gharim":        "bg-orange-50 text-orange-700",
-  "Muallaf":       "bg-purple-50 text-purple-700",
-  "Ibnu Sabil":    "bg-blue-50 text-blue-700",
-  "Fi Sabilillah": "bg-green-50 text-green-700",
-  "Amil":          "bg-yellow-50 text-yellow-700",
+  "Fakir":         "bg-red-50 text-red-700 border-red-200",
+  "Miskin":        "bg-orange-50 text-orange-700 border-orange-200",
+  "Fakir Miskin":  "bg-red-50 text-red-700 border-red-200",
+  "Gharim":        "bg-amber-50 text-amber-700 border-amber-200",
+  "Muallaf":       "bg-purple-50 text-purple-700 border-purple-200",
+  "Ibnu Sabil":    "bg-blue-50 text-blue-700 border-blue-200",
+  "Fi Sabilillah": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "Amil":          "bg-yellow-50 text-yellow-700 border-yellow-200",
+  "Riqab":         "bg-pink-50 text-pink-700 border-pink-200",
 };
 
 function Field({ label, field, type = "text", placeholder, value, onChange, error }) {
@@ -40,15 +53,14 @@ function Field({ label, field, type = "text", placeholder, value, onChange, erro
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
-  const asnafOptions = getSettings()?.kategori?.asnafList || [
-    "Fakir Miskin", "Gharim", "Muallaf", "Ibnu Sabil", "Fi Sabilillah", "Amil",
-  ];
+  const asnafOptions = getSettings()?.kategori?.asnafList || DEFAULT_ASNAF;
+
   const [form, setForm] = useState({
     nama:     initial?.nama ?? "",
+    nik:      initial?.nik ?? "",
     no_hp:    initial?.no_hp ?? "",
     alamat:   initial?.alamat ?? "",
-    kategori: initial?.kategori ?? (asnafOptions[0] || "Fakir Miskin"),
-    status:   initial?.status ?? "aktif",
+    kategori: initial?.kategori ?? (asnafOptions[0] || "Fakir"),
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors]   = useState({});
@@ -61,6 +73,7 @@ function ModalForm({ initial, onClose, onSaved }) {
   function validate() {
     const errs = {};
     if (!form.nama.trim()) errs.nama = "Nama wajib diisi.";
+    if (!form.kategori) errs.kategori = "Kategori Asnaf wajib dipilih.";
     return errs;
   }
 
@@ -100,36 +113,26 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             )}
 
-            <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama mustahik" />
-            <Field label="No. HP" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
-            <Field label="Alamat" field="alamat" value={form.alamat} onChange={set} error={errors.alamat} placeholder="Alamat lengkap mustahik" />
+            <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama lengkap mustahik" />
+            <Field label="NIK (Nomor Induk Kependudukan)" field="nik" value={form.nik} onChange={set} error={errors.nik} placeholder="Contoh: 3278011503800001" />
 
             {/* Kategori Asnaf */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori Asnaf</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori Asnaf *</label>
               <select
                 value={form.kategori}
                 onChange={(e) => set("kategori", e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 bg-white"
               >
-                {asnafOptions.map((k) => <option key={k} value={k}>{k}</option>)}
+                {asnafOptions.map((k) => (
+                  <option key={k} value={k}>{k}</option>
+                ))}
               </select>
+              {errors.kategori && <p className="text-xs text-red-500 mt-1">{errors.kategori}</p>}
             </div>
 
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-              <div className="flex gap-3">
-                {[{ val: "aktif", label: "Aktif" }, { val: "tidak_aktif", label: "Tidak Aktif" }].map(({ val, label }) => (
-                  <label key={val} className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer text-sm font-medium transition
-                    ${form.status === val ? "bg-brand-50 border-brand-500 text-brand-700" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    <input type="radio" name="status" value={val} checked={form.status === val}
-                      onChange={() => set("status", val)} className="sr-only" />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <Field label="No. HP / WhatsApp" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
+            <Field label="Alamat Domisili" field="alamat" value={form.alamat} onChange={set} error={errors.alamat} placeholder="Alamat lengkap mustahik" />
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
@@ -170,7 +173,7 @@ function ModalHapus({ mustahik, onClose, onDeleted }) {
         </div>
         <h3 className="text-center font-semibold text-gray-900 mb-1">Hapus Mustahik?</h3>
         <p className="text-center text-sm text-gray-500 mb-4">
-          <span className="font-medium text-gray-800">{mustahik.nama}</span> akan dihapus dari sistem.
+          <span className="font-medium text-gray-800">{mustahik.nama}</span> akan dihapus dari data mustahik.
         </p>
         {errorMsg && (
           <div className="mb-4 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs text-center">
@@ -180,7 +183,8 @@ function ModalHapus({ mustahik, onClose, onDeleted }) {
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={loading}>Batal</Button>
           <button
-            onClick={handleDelete} disabled={loading}
+            onClick={handleDelete}
+            disabled={loading}
             className="flex-1 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition disabled:opacity-50"
           >
             {loading ? "Menghapus..." : "Ya, Hapus"}
@@ -193,52 +197,50 @@ function ModalHapus({ mustahik, onClose, onDeleted }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Mustahik() {
-  const settings = useSettings();
-  const asnafOptions = settings?.kategori?.asnafList || [
-    "Fakir Miskin", "Gharim", "Muallaf", "Ibnu Sabil", "Fi Sabilillah", "Amil",
-  ];
-  const [data, setData]           = useState([]);
-  const [meta, setMeta]           = useState({ total: 0, current_page: 1, last_page: 1 });
-  const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState("");
-  const [statusFilter, setStatus] = useState("");
-  const [kategoriFilter, setKategori] = useState("");
-  const [page, setPage]           = useState(1);
-  const [modalForm, setModalForm] = useState(null);
+  const [data, setData]             = useState([]);
+  const [meta, setMeta]             = useState({ total: 0, total_kontak: 0, current_page: 1, last_page: 1 });
+  const [loading, setLoading]       = useState(true);
+  const [search, setSearch]         = useState("");
+  const [kategoriFilter, setKategoriFilter] = useState("");
+  const [page, setPage]             = useState(1);
+  const [modalForm, setModalForm]   = useState(null);
   const [modalHapus, setModalHapus] = useState(null);
+
+  const asnafOptions = getSettings()?.kategori?.asnafList || DEFAULT_ASNAF;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getMustahik({ search, status: statusFilter, kategori: kategoriFilter, page, perPage: 10 });
-      setData(res.data);
-      setMeta(res.meta);
+      const res = await getMustahik({ search, kategori: kategoriFilter, page, perPage: 10 });
+      setData(res.data || []);
+      setMeta(res.meta || { total: 0, total_kontak: 0, current_page: 1, last_page: 1 });
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, kategoriFilter, page]);
+  }, [search, kategoriFilter, page]);
 
   useEffect(() => {
-    const t = setTimeout(fetchData, search ? 350 : 0);
+    const t = setTimeout(fetchData, search ? 400 : 0);
     return () => clearTimeout(t);
   }, [fetchData, search]);
 
-  function handleSaved() { setModalForm(null); fetchData(); }
+  function handleSaved() {
+    setModalForm(null);
+    fetchData();
+  }
+
   function handleDeleted() {
     setModalHapus(null);
     if (data.length === 1 && page > 1) setPage((p) => p - 1);
     else fetchData();
   }
 
-  const aktif = meta.total_aktif || 0;
-  const tidakAktif = meta.total_tidak_aktif || 0;
-
   return (
     <div>
-      {/* Header Actions */}
-      <div className="flex justify-end mb-5 -mt-1 gap-2 relative z-20">
+      {/* Header Actions — posisinya seragam dengan halaman lain */}
+      <div className="flex justify-end mb-4 -mt-3 relative z-20">
         <Button icon={Plus} onClick={() => setModalForm({ mode: "add" })}>
           Tambah Mustahik
         </Button>
@@ -246,9 +248,9 @@ export default function Mustahik() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={Heart}     label="Total Mustahik" value={meta.total}  color="red"     sub="Terdaftar di sistem" loading={loading} />
-        <StatCard icon={UserCheck} label="Mustahik Aktif" value={aktif}       color="emerald" sub="Status aktif"        loading={loading} />
-        <StatCard icon={UserX}     label="Tidak Aktif"    value={tidakAktif}  color="brand"   sub="Perlu ditinjau"      loading={loading} />
+        <StatCard icon={Heart} label="Total Mustahik"    value={meta.total}                                color="red"     loading={loading} />
+        <StatCard icon={Phone} label="Terdata Kontak"   value={meta.total_kontak ?? 0}                    color="emerald" loading={loading} />
+        <StatCard icon={Users} label="Halaman"          value={`${meta.current_page} / ${meta.last_page}`} color="blue"    loading={loading} />
       </div>
 
       {/* Table Card */}
@@ -258,24 +260,18 @@ export default function Mustahik() {
           <SearchInput
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Cari nama, alamat, atau kategori..."
+            placeholder="Cari nama, NIK, alamat, atau asnaf..."
           />
-          <div className="flex gap-2 flex-wrap">
-            {[{ val: "", label: "Semua" }, { val: "aktif", label: "Aktif" }, { val: "tidak_aktif", label: "Tidak Aktif" }].map(({ val, label }) => (
-              <button key={val} onClick={() => { setStatus(val); setPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
-                  ${statusFilter === val ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                {label}
-              </button>
-            ))}
-            <select
+          <div className="flex items-center gap-2">
+            <FilterSelect
               value={kategoriFilter}
-              onChange={(e) => { setKategori(e.target.value); setPage(1); }}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 focus:outline-none bg-white"
+              onChange={(e) => { setKategoriFilter(e.target.value); setPage(1); }}
             >
-              <option value="">Semua Kategori</option>
-              {asnafOptions.map((k) => <option key={k} value={k}>{k}</option>)}
-            </select>
+              <option value="">Semua Kategori Asnaf</option>
+              {asnafOptions.map((k) => (
+                <option key={k} value={k}>{k}</option>
+              ))}
+            </FilterSelect>
           </div>
         </div>
 
@@ -284,7 +280,7 @@ export default function Mustahik() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                {["Nama", "Kontak & Alamat", "Kategori", "Status", ""].map((h) => (
+                {["Nama Mustahik", "Kategori Asnaf", "No. HP / Kontak", "Alamat Domisili", ""].map((h) => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
@@ -293,71 +289,89 @@ export default function Mustahik() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr><td colSpan={5} className="px-5 py-12 text-center">
-                  <div className="w-7 h-7 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
-                  <p className="text-gray-400 text-sm mt-3">Memuat data...</p>
-                </td></tr>
-              ) : data.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-12 text-center text-gray-400 text-sm">
-                  {search ? "Tidak ada mustahik yang cocok dengan pencarian." : "Belum ada data mustahik."}
-                </td></tr>
-              ) : data.map((row) => (
-                <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-semibold text-sm shrink-0">
-                        {row.nama.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-800">{row.nama}</p>
-                        <p className="text-xs text-gray-400">#{row.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="space-y-0.5">
-                      {row.no_hp && (
-                        <p className="flex items-center gap-1.5 text-xs text-gray-500">
-                          <Phone size={11} className="text-gray-400" /> {row.no_hp}
-                        </p>
-                      )}
-                      {row.alamat && (
-                        <p className="flex items-center gap-1.5 text-xs text-gray-500 max-w-xs truncate">
-                          <MapPin size={11} className="text-gray-400 shrink-0" /> {row.alamat}
-                        </p>
-                      )}
-                      {!row.no_hp && !row.alamat && <span className="text-gray-300 text-xs">—</span>}
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${KATEGORI_COLORS[row.kategori] ?? "bg-gray-100 text-gray-600"}`}>
-                      {row.kategori ?? "—"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${row.status === "aktif" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
-                      {row.status === "aktif" ? "Aktif" : "Tidak Aktif"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setModalForm({ mode: "edit", data: row })}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition" title="Edit">
-                        <Pencil size={14} />
-                      </button>
-                      <button onClick={() => setModalHapus(row)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition" title="Hapus">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                <tr>
+                  <td colSpan={5} className="px-5 py-12 text-center">
+                    <div className="w-7 h-7 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
+                    <p className="text-gray-400 text-sm mt-3">Memuat data...</p>
                   </td>
                 </tr>
-              ))}
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-12 text-center text-gray-400 text-sm">
+                    {search ? "Tidak ada mustahik yang cocok dengan pencarian." : "Belum ada data mustahik."}
+                  </td>
+                </tr>
+              ) : (
+                data.map((row) => (
+                  <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-semibold text-sm shrink-0">
+                          {row.nama.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">{row.nama}</p>
+                          <p className="text-xs text-gray-400">NIK: {row.nik || "-"}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                        KATEGORI_COLORS[row.kategori] ?? "bg-gray-50 text-gray-700 border-gray-200"
+                      }`}>
+                        {row.kategori || "Fakir"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {row.no_hp ? (
+                        <p className="flex items-center gap-1.5 text-xs text-gray-700 font-medium">
+                          <Phone size={12} className="text-gray-400" /> {row.no_hp}
+                        </p>
+                      ) : (
+                        <span className="text-gray-300 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {row.alamat ? (
+                        <p className="flex items-center gap-1.5 text-xs text-gray-600 max-w-sm">
+                          <MapPin size={12} className="text-gray-400 shrink-0" /> {row.alamat}
+                        </p>
+                      ) : (
+                        <span className="text-gray-300 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => setModalForm({ mode: "edit", data: row })}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition"
+                          title="Edit"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => setModalHapus(row)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                          title="Hapus"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        <Pagination page={page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} label="mustahik" />
+        <Pagination
+          page={page}
+          lastPage={meta.last_page}
+          total={meta.total}
+          onPageChange={setPage}
+          label="mustahik"
+        />
       </Card>
 
       {/* Modals */}
