@@ -1,128 +1,112 @@
 import { useState } from "react";
 import {
-  UserRound,
-  Search,
+  ClipboardCheck,
   ShieldCheck,
+  HandHeart,
+  UserRound,
+  WalletCards,
+  Landmark,
+  QrCode,
+  Smartphone,
+  ChevronDown,
+  Check,
+  UserPlus,
   Clock3,
   LockKeyhole,
-  UsersRound,
-  Building2,
-  ClipboardCheck,
-  WalletCards,
-  Sprout,
-  Info,
-  Check,
-  ChevronDown,
   Calculator,
 } from "lucide-react";
 
-export default function DaftarMuzakkiUnsilPage() {
-  // ==============================
+import { metodePembayaran } from "../data/dummyDonasi";
+
+// =========================================================
+// ICON METODE PEMBAYARAN
+// SAMA SEPERTI DONASI
+// =========================================================
+const METODE_ICON = {
+  "transfer-bank": Landmark,
+  qris: QrCode,
+  "e-wallet": Smartphone,
+};
+
+export default function DaftarMuzakkiUmumPage() {
+  // =========================================================
   // STATE
-  // ==============================
-  const [metodeCari, setMetodeCari] = useState("nip");
-  const [keyword, setKeyword] = useState("");
-  const [dataDitemukan, setDataDitemukan] = useState(false);
+  // =========================================================
 
-  const [jenisZakat, setJenisZakat] = useState("penghasilan");
-  const [frekuensi, setFrekuensi] = useState("bulanan");
-  const [nominal, setNominal] = useState("500000");
-  const [noHandphone, setNoHandphone] = useState("");
-  const [setuju, setSetuju] = useState(false);
+  const [formData, setFormData] = useState({
+    namaLengkap: "",
+    jenisKelamin: "",
+    nik: "",
+    tanggalLahir: "",
+    email: "",
+    whatsapp: "",
+    instansi: "",
+    pekerjaan: "",
+    alamat: "",
+    kota: "",
+    kodePos: "",
+    jenisZakat: "",
+    frekuensi: "",
+    pembayaran: "",
+    sumberInformasi: "",
+    catatan: "",
+    persetujuan: false,
+  });
 
-  // ==============================
-  // DATA SIMULASI KEPEGAWAIAN
-  // Nanti diganti API backend
-  // ==============================
-  const dataPegawai = {
-    nama: "Nama Dosen / Staff UNSIL",
-    nip: "198xxxxxxxxxxxxx",
-    unit: "Universitas Siliwangi",
-    jabatan: "Dosen",
-    email: "nama@unsil.ac.id",
+  // =========================================================
+  // HANDLE CHANGE
+  // =========================================================
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
-  // ==============================
-  // CARI DATA
-  // ==============================
-  const handleCariData = () => {
-    if (!keyword.trim()) {
-      alert(
-        `Silakan masukkan ${
-          metodeCari === "nip" ? "NIP" : "nama"
-        } terlebih dahulu.`
-      );
-      return;
-    }
+  // =========================================================
+  // JENIS ZAKAT
+  // =========================================================
 
-    // Simulasi data ditemukan
-    setDataDitemukan(true);
+  const handleJenisZakat = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      jenisZakat: value,
+    }));
   };
 
-  // ==============================
-  // FORMAT RUPIAH
-  // ==============================
-  const formatRupiah = (value) => {
-    if (!value) return "0";
-
-    const number = Number(value.replace(/\D/g, ""));
-
-    return new Intl.NumberFormat("id-ID").format(number);
-  };
-
-  // ==============================
-  // HANDLE NOMINAL
-  // ==============================
-  const handleNominalChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "");
-    setNominal(value);
-  };
-
-  // ==============================
-  // ESTIMASI TAHUN
-  // ==============================
-  const getEstimasiTahunan = () => {
-    const angka = Number(nominal || 0);
-
-    if (frekuensi === "bulanan") {
-      return angka * 12;
-    }
-
-    if (frekuensi === "tahunan") {
-      return angka;
-    }
-
-    if (frekuensi === "ramadan") {
-      return angka;
-    }
-
-    return angka;
-  };
-
-  // ==============================
+  // =========================================================
   // SUBMIT
-  // ==============================
+  // =========================================================
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!dataDitemukan) {
-      alert("Silakan cari data kepegawaian terlebih dahulu.");
+    if (!formData.persetujuan) {
+      alert("Silakan centang persetujuan terlebih dahulu.");
       return;
     }
 
-    if (!noHandphone.trim()) {
-      alert("Silakan masukkan nomor handphone aktif.");
+    if (!formData.jenisZakat) {
+      alert("Silakan pilih jenis zakat.");
       return;
     }
 
-    if (!setuju) {
-      alert("Silakan menyetujui pernyataan terlebih dahulu.");
+    if (!formData.frekuensi) {
+      alert("Silakan pilih frekuensi menunaikan zakat.");
       return;
     }
 
-    alert("Pendaftaran Muzakki berhasil dikirim.");
+    if (!formData.pembayaran) {
+      alert("Silakan pilih preferensi pembayaran.");
+      return;
+    }
 
-    // Nanti di sini bisa dipanggil API backend
+    console.log("Data Muzakki Umum:", formData);
+
+    alert("Pendaftaran Muzakki berhasil dikirim!");
   };
 
   return (
@@ -132,14 +116,14 @@ export default function DaftarMuzakkiUnsilPage() {
           HERO / BREADCRUMB
       ====================================================== */}
       <section className="relative overflow-hidden bg-gradient-to-r from-[#075b43] via-[#08734f] to-[#075b43]">
-        
-        {/* Pattern */}
+
+        {/* PATTERN BULAT */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full border-[30px] border-white" />
           <div className="absolute right-40 top-10 h-48 w-48 rounded-full border-[20px] border-white" />
         </div>
 
-        {/* Dekorasi tanaman */}
+        {/* DEKORASI */}
         <div className="absolute right-0 top-0 hidden h-full w-[32%] overflow-hidden lg:block">
           <div className="absolute bottom-0 right-20 h-32 w-10 rotate-12 rounded-full bg-green-700/30" />
           <div className="absolute right-32 top-8 h-20 w-10 -rotate-45 rounded-full bg-green-300/40" />
@@ -147,21 +131,23 @@ export default function DaftarMuzakkiUnsilPage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-8">
+
           <h1 className="text-3xl font-bold text-white md:text-4xl">
-            Pendaftaran Muzakki
+            Daftar sebagai Muzakki
           </h1>
 
           <p className="mt-1 text-xl text-white md:text-2xl">
-            Dosen & Staff Universitas Siliwangi
+            Muzakki Umum
           </p>
 
-          <div className="mt-5 flex items-center gap-3 text-sm text-white/90">
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-white/90">
             <span>Beranda</span>
             <span>›</span>
-            <span>Daftar Muzakki</span>
+            <span>Daftar sebagai Muzakki</span>
             <span>›</span>
-            <span>Dosen & Staff UNSIL</span>
+            <span>Muzakki Umum</span>
           </div>
+
         </div>
       </section>
 
@@ -170,17 +156,17 @@ export default function DaftarMuzakkiUnsilPage() {
       ====================================================== */}
       <main className="mx-auto max-w-7xl px-5 py-8 lg:px-8 lg:py-10">
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[285px_1fr]">
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[285px_1fr]">
 
           {/* =================================================
               SIDEBAR KIRI
           ================================================== */}
-          <aside className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <aside className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
 
-            {/* Icon */}
+            {/* ICON */}
             <div className="mb-5 flex justify-center">
               <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100">
-                <Building2
+                <ClipboardCheck
                   size={82}
                   strokeWidth={1.5}
                   className="text-[#078052]"
@@ -188,44 +174,46 @@ export default function DaftarMuzakkiUnsilPage() {
               </div>
             </div>
 
+            {/* TITLE */}
             <h2 className="text-xl font-bold leading-snug text-[#08734f]">
-              Pendaftaran Khusus
+              Pendaftaran Muzakki
               <br />
-              Dosen & Staff UNSIL
+              Umum
             </h2>
 
+            {/* DESCRIPTION */}
             <p className="mt-4 text-sm leading-6 text-slate-600">
-              Formulir ini khusus untuk Dosen dan Staff
-              Universitas Siliwangi. Data Anda akan
-              diambil otomatis dari sistem kepegawaian
-              universitas.
+              Formulir ini diperuntukkan bagi masyarakat umum
+              yang ingin terdaftar sebagai Muzakki dan menunaikan
+              zakat melalui UPZ Zakat Universitas Siliwangi.
             </p>
 
-            {/* Feature */}
+            {/* FEATURE */}
             <div className="mt-7 space-y-6">
 
               <Feature
                 icon={<ShieldCheck size={22} />}
-                title="Data Terverifikasi"
-                description="Data diambil langsung dari sistem kepegawaian UNSIL."
+                title="Aman & Terpercaya"
+                description="Data Anda aman dan hanya digunakan untuk keperluan administrasi zakat."
               />
 
               <Feature
                 icon={<Clock3 size={22} />}
                 title="Lebih Cepat & Mudah"
-                description="Cukup masukkan NIP atau Nama, data muncul otomatis."
+                description="Pendaftaran dapat dilakukan dengan mudah melalui formulir online."
               />
 
               <Feature
                 icon={<LockKeyhole size={22} />}
-                title="Aman & Terpercaya"
-                description="Informasi Anda aman dan hanya digunakan untuk keperluan zakat."
+                title="Data Terlindungi"
+                description="Informasi Anda dijaga dan digunakan sesuai kebutuhan pelayanan zakat."
               />
 
             </div>
 
-            {/* Quote */}
+            {/* QUOTE */}
             <div className="mt-8 rounded-xl bg-green-50 p-5">
+
               <div className="mb-2 text-3xl font-bold text-[#08734f]">
                 “
               </div>
@@ -241,6 +229,7 @@ export default function DaftarMuzakkiUnsilPage() {
                 (QS. At-Taubah: 103)
               </p>
 
+              {/* KALKULATOR */}
               <button
                 type="button"
                 onClick={() => {
@@ -252,10 +241,11 @@ export default function DaftarMuzakkiUnsilPage() {
                 View Kalkulator Zakat
               </button>
 
-              <p className="mt-3 text-center text-xs text-slate-600">
+              <p className="mt-3 text-center text-xs leading-5 text-slate-600">
                 Hitung zakat Anda dengan mudah
                 menggunakan kalkulator kami.
               </p>
+
             </div>
           </aside>
 
@@ -268,365 +258,457 @@ export default function DaftarMuzakkiUnsilPage() {
           >
 
             {/* =================================================
-                1. PENCARIAN DATA KEPEGAWAIAN
+                1. DATA PRIBADI
             ================================================== */}
             <SectionTitle
               number="1."
               icon={<UserRound size={21} />}
-              title="Pencarian Data Kepegawaian"
+              title="Data Pribadi"
             />
 
             <p className="mt-2 text-sm text-slate-600">
-              Masukkan NIP atau nama Anda untuk mengambil
-              data secara otomatis dari sistem kepegawaian UNSIL.
+              Lengkapi data diri Anda dengan benar untuk
+              keperluan administrasi Muzakki.
             </p>
-
-            {/* Tab pencarian */}
-            <div className="mt-5 flex border-b border-slate-200">
-              <button
-                type="button"
-                onClick={() => setMetodeCari("nip")}
-                className={`w-1/2 border-b-2 px-4 py-3 text-sm font-medium transition ${
-                  metodeCari === "nip"
-                    ? "border-[#08734f] text-[#08734f]"
-                    : "border-transparent text-slate-500"
-                }`}
-              >
-                Cari dengan NIP
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setMetodeCari("nama")}
-                className={`w-1/2 border-b-2 px-4 py-3 text-sm font-medium transition ${
-                  metodeCari === "nama"
-                    ? "border-[#08734f] text-[#08734f]"
-                    : "border-transparent text-slate-500"
-                }`}
-              >
-                Cari dengan Nama
-              </button>
-            </div>
-
-            <div className="mt-5">
-              <label className="mb-2 block text-sm font-medium">
-                {metodeCari === "nip" ? "NIP" : "Nama"}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-
-              <div className="flex flex-col gap-3 md:flex-row">
-                <input
-                  type={metodeCari === "nip" ? "text" : "text"}
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  placeholder={
-                    metodeCari === "nip"
-                      ? "Masukkan NIP Anda"
-                      : "Masukkan nama lengkap Anda"
-                  }
-                  className="h-11 flex-1 rounded-lg border border-slate-200 px-4 text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
-                />
-
-                <button
-                  type="button"
-                  onClick={handleCariData}
-                  className="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#08734f] px-6 text-sm font-semibold text-white transition hover:bg-[#065d40]"
-                >
-                  <Search size={18} />
-                  Cari Data
-                </button>
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="mt-5 flex gap-3 rounded-lg bg-green-50 p-4 text-sm text-[#176b51]">
-              <Info size={19} className="mt-0.5 shrink-0" />
-
-              <p>
-                Pastikan NIP yang Anda masukkan sesuai
-                dengan data kepegawaian Universitas Siliwangi.
-                Jika data tidak ditemukan, silakan hubungi
-                Bagian Kepegawaian.
-              </p>
-            </div>
-
-            <div className="my-6 border-t border-slate-200" />
-
-            {/* =================================================
-                2. DATA DIRI
-            ================================================== */}
-            <SectionTitle
-              number="2."
-              icon={<UserRound size={21} />}
-              title="Data Diri (Otomatis dari Sistem)"
-            />
 
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
 
-              <ReadOnlyInput
+              <InputField
                 label="Nama Lengkap"
-                value={dataDitemukan ? dataPegawai.nama : "-"}
+                name="namaLengkap"
+                value={formData.namaLengkap}
+                onChange={handleChange}
+                placeholder="Masukkan nama lengkap"
+                required
               />
 
-              <ReadOnlyInput
-                label="NIP"
-                value={dataDitemukan ? dataPegawai.nip : "-"}
+              <SelectField
+                label="Jenis Kelamin"
+                name="jenisKelamin"
+                value={formData.jenisKelamin}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Pilih jenis kelamin</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </SelectField>
+
+              <InputField
+                label="NIK / Nomor Identitas"
+                name="nik"
+                value={formData.nik}
+                onChange={handleChange}
+                placeholder="Masukkan NIK / No. KTP"
+                required
               />
 
-              <ReadOnlyInput
-                label="Fakultas / Unit Kerja"
-                value={dataDitemukan ? dataPegawai.unit : "-"}
+              <InputField
+                label="Tempat, Tanggal Lahir"
+                name="tanggalLahir"
+                value={formData.tanggalLahir}
+                onChange={handleChange}
+                placeholder="Contoh: Tasikmalaya, 01 Januari 1990"
+                required
               />
 
-              <ReadOnlyInput
-                label="Jabatan"
-                value={dataDitemukan ? dataPegawai.jabatan : "-"}
+              <InputField
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                type="email"
+                placeholder="nama@email.com"
+                required
               />
 
-              <ReadOnlyInput
-                label="Email Institusi"
-                value={dataDitemukan ? dataPegawai.email : "-"}
+              <InputField
+                label="No. WhatsApp"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                type="tel"
+                placeholder="08xxxxxxxxxx"
+                required
               />
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  No. Handphone (Aktif)
-                  <span className="text-red-500"> *</span>
+              <InputField
+                label="Fakultas / Unit / Instansi"
+                name="instansi"
+                value={formData.instansi}
+                onChange={handleChange}
+                placeholder="Contoh: Universitas Siliwangi"
+              />
+
+              <InputField
+                label="Pekerjaan / Jabatan"
+                name="pekerjaan"
+                value={formData.pekerjaan}
+                onChange={handleChange}
+                placeholder="Contoh: Karyawan"
+              />
+
+              <div className="md:col-span-2">
+
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Alamat Lengkap{" "}
+                  <span className="text-red-500">*</span>
                 </label>
 
-                <input
-                  type="tel"
-                  value={noHandphone}
-                  onChange={(e) => setNoHandphone(e.target.value)}
-                  placeholder="Masukkan nomor handphone aktif Anda"
-                  className="h-11 w-full rounded-lg border border-slate-200 px-4 text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                <textarea
+                  name="alamat"
+                  value={formData.alamat}
+                  onChange={handleChange}
+                  required
+                  rows={3}
+                  placeholder="Masukkan alamat lengkap"
+                  className="w-full resize-none rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
                 />
+
               </div>
 
+              <SelectField
+                label="Kota / Kabupaten"
+                name="kota"
+                value={formData.kota}
+                onChange={handleChange}
+                required
+              >
+                <option value="">
+                  Pilih kota / kabupaten
+                </option>
+
+                <option value="Tasikmalaya">
+                  Tasikmalaya
+                </option>
+
+                <option value="Ciamis">
+                  Ciamis
+                </option>
+
+                <option value="Garut">
+                  Garut
+                </option>
+
+                <option value="Banjar">
+                  Banjar
+                </option>
+
+                <option value="Pangandaran">
+                  Pangandaran
+                </option>
+
+                <option value="Bandung">
+                  Bandung
+                </option>
+
+                <option value="Jakarta">
+                  Jakarta
+                </option>
+
+                <option value="Lainnya">
+                  Lainnya
+                </option>
+              </SelectField>
+
+              <InputField
+                label="Kode Pos"
+                name="kodePos"
+                value={formData.kodePos}
+                onChange={handleChange}
+                placeholder="Masukkan kode pos"
+              />
+
             </div>
-
-            {/* Info otomatis */}
-            <div className="mt-5 flex gap-3 rounded-lg bg-green-50 p-4 text-sm text-[#176b51]">
-              <Info size={19} className="mt-0.5 shrink-0" />
-
-              <p>
-                Data di atas diambil otomatis dari sistem
-                kepegawaian Universitas Siliwangi dan tidak
-                dapat diubah.
-              </p>
-            </div>
-
-            <div className="my-6 border-t border-slate-200" />
 
             {/* =================================================
-                3. INFORMASI ZAKAT
+                2. INFORMASI ZAKAT
             ================================================== */}
+            <div className="my-6 border-t border-slate-200" />
+
             <SectionTitle
-              number="3."
-              icon={<UsersRound size={21} />}
+              number="2."
+              icon={<WalletCards size={21} />}
               title="Informasi Zakat"
             />
 
+            {/* JENIS ZAKAT */}
             <div className="mt-5">
-              <label className="mb-3 block text-sm font-medium">
-                Jenis Zakat yang akan Ditunaikan
-                <span className="text-red-500"> *</span>
+
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Jenis Zakat yang biasa ditunaikan{" "}
+                <span className="text-red-500">*</span>
               </label>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
                 <ZakatCard
-                  selected={jenisZakat === "penghasilan"}
-                  onClick={() => setJenisZakat("penghasilan")}
+                  selected={formData.jenisZakat === "penghasilan"}
+                  onClick={() =>
+                    handleJenisZakat("penghasilan")
+                  }
                   icon={<WalletCards size={23} />}
                   title="Zakat Penghasilan"
-                  description="Zakat atas penghasilan (gaji, honor, dll)"
+                  description="Zakat atas penghasilan seperti gaji dan honor."
                 />
 
                 <ZakatCard
-                  selected={jenisZakat === "maal"}
-                  onClick={() => setJenisZakat("maal")}
-                  icon={<ClipboardCheck size={23} />}
+                  selected={formData.jenisZakat === "maal"}
+                  onClick={() =>
+                    handleJenisZakat("maal")
+                  }
+                  icon={<Landmark size={23} />}
                   title="Zakat Maal"
-                  description="Zakat atas harta (tabungan, investasi, emas, dll)"
+                  description="Zakat atas harta, tabungan, emas, investasi, dan lainnya."
                 />
 
                 <ZakatCard
-                  selected={jenisZakat === "fitrah"}
-                  onClick={() => setJenisZakat("fitrah")}
-                  icon={<Sprout size={23} />}
+                  selected={formData.jenisZakat === "fitrah"}
+                  onClick={() =>
+                    handleJenisZakat("fitrah")
+                  }
+                  icon={<HandHeart size={23} />}
                   title="Zakat Fitrah"
-                  description="Zakat fitrah untuk diri dan keluarga"
+                  description="Zakat fitrah untuk diri sendiri dan keluarga."
                 />
 
               </div>
             </div>
 
-            {/* Frekuensi */}
+            {/* FREKUENSI */}
             <div className="mt-6">
-              <label className="mb-3 block text-sm font-medium">
-                Frekuensi Pembayaran Zakat
-                <span className="text-red-500"> *</span>
+
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Frekuensi Menunaikan Zakat{" "}
+                <span className="text-red-500">*</span>
               </label>
 
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 
                 <RadioOption
                   label="Bulanan"
-                  value="bulanan"
-                  selected={frekuensi === "bulanan"}
-                  onClick={() => setFrekuensi("bulanan")}
+                  selected={formData.frekuensi === "bulanan"}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      frekuensi: "bulanan",
+                    }))
+                  }
                 />
 
                 <RadioOption
                   label="Tahunan"
-                  value="tahunan"
-                  selected={frekuensi === "tahunan"}
-                  onClick={() => setFrekuensi("tahunan")}
+                  selected={formData.frekuensi === "tahunan"}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      frekuensi: "tahunan",
+                    }))
+                  }
                 />
 
                 <RadioOption
                   label="Setiap Ramadan"
-                  value="ramadan"
-                  selected={frekuensi === "ramadan"}
-                  onClick={() => setFrekuensi("ramadan")}
+                  selected={formData.frekuensi === "ramadan"}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      frekuensi: "ramadan",
+                    }))
+                  }
                 />
 
                 <RadioOption
-                  label="Sesuai Kesepakatan"
-                  value="kesepakatan"
-                  selected={frekuensi === "kesepakatan"}
-                  onClick={() => setFrekuensi("kesepakatan")}
+                  label="Sesuai Kebutuhan"
+                  selected={formData.frekuensi === "kebutuhan"}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      frekuensi: "kebutuhan",
+                    }))
+                  }
                 />
 
               </div>
             </div>
 
-            {/* Nominal */}
-            <div className="mt-5 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#08734f]">
-                Nominal Zakat yang Disepakati
+            {/* =================================================
+                PREFERENSI PEMBAYARAN
+                SAMA DENGAN DONASI
+            ================================================== */}
+            <div className="mt-6">
+
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Preferensi Pembayaran{" "}
                 <span className="text-red-500">*</span>
-                <Info size={15} />
+              </label>
+
+              <div className="space-y-2.5">
+
+                {metodePembayaran.map((m) => {
+                  const Icon = METODE_ICON[m.id];
+
+                  return (
+                    <label
+                      key={m.id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3.5 transition ${
+                        formData.pembayaran === m.id
+                          ? "border-brand-600 bg-brand-50"
+                          : "border-gray-200 hover:border-brand-300"
+                      }`}
+                    >
+
+                      <input
+                        type="radio"
+                        name="pembayaran"
+                        value={m.id}
+                        checked={
+                          formData.pembayaran === m.id
+                        }
+                        onChange={handleChange}
+                        className="text-brand-600"
+                        required
+                      />
+
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white text-brand-600">
+                        {Icon && <Icon size={18} />}
+                      </span>
+
+                      <span>
+
+                        <span className="block text-sm font-medium text-gray-900">
+                          {m.nama}
+                        </span>
+
+                        <span className="block text-xs text-gray-500">
+                          {m.keterangan}
+                        </span>
+
+                      </span>
+
+                    </label>
+                  );
+                })}
+
               </div>
-
-              <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
-                <span className="flex items-center border-r border-slate-200 px-4 text-sm font-medium text-slate-600">
-                  Rp
-                </span>
-
-                <input
-                  type="text"
-                  value={formatRupiah(nominal)}
-                  onChange={handleNominalChange}
-                  className="h-11 w-full px-4 text-sm outline-none"
-                  placeholder="500.000"
-                />
-              </div>
-
-              <p className="mt-2 text-xs text-slate-500">
-                Contoh: 500000
-              </p>
             </div>
 
-            {/* Ringkasan */}
-            <div className="mt-5 rounded-xl bg-green-50 p-5">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#08734f]">
-                <ClipboardCheck size={18} />
-                Ringkasan Komitmen Zakat Anda
-              </h3>
-
-              <div className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-
-                <SummaryItem
-                  label="Jenis Zakat"
-                  value={
-                    jenisZakat === "penghasilan"
-                      ? "Zakat Penghasilan"
-                      : jenisZakat === "maal"
-                      ? "Zakat Maal"
-                      : "Zakat Fitrah"
-                  }
-                />
-
-                <SummaryItem
-                  label="Frekuensi"
-                  value={
-                    frekuensi === "bulanan"
-                      ? "Bulanan"
-                      : frekuensi === "tahunan"
-                      ? "Tahunan"
-                      : frekuensi === "ramadan"
-                      ? "Setiap Ramadan"
-                      : "Sesuai Kesepakatan"
-                  }
-                />
-
-                <SummaryItem
-                  label="Nominal Disepakati"
-                  value={`Rp ${formatRupiah(nominal)}${
-                    frekuensi === "bulanan" ? " / bulan" : ""
-                  }`}
-                  green
-                />
-
-                <SummaryItem
-                  label="Estimasi / Tahun"
-                  value={`Rp ${formatRupiah(
-                    String(getEstimasiTahunan())
-                  )}`}
-                  green
-                />
-
-              </div>
-
-              <p className="mt-4 text-xs text-slate-500">
-                Estimasi per tahun dihitung berdasarkan nominal
-                dan frekuensi pembayaran yang dipilih.
-              </p>
-            </div>
-
+            {/* =================================================
+                3. INFORMASI TAMBAHAN
+            ================================================== */}
             <div className="my-6 border-t border-slate-200" />
+
+            <SectionTitle
+              number="3."
+              icon={<ClipboardCheck size={21} />}
+              title="Informasi Tambahan"
+            />
+
+            <p className="mt-1 text-sm text-slate-500">
+              Opsional
+            </p>
+
+            <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+
+              <SelectField
+                label="Bagaimana Anda mengetahui UPZ Zakat UNSIL?"
+                name="sumberInformasi"
+                value={formData.sumberInformasi}
+                onChange={handleChange}
+              >
+                <option value="">
+                  Pilih sumber informasi
+                </option>
+
+                <option value="media-sosial">
+                  Media Sosial
+                </option>
+
+                <option value="website">
+                  Website UPZ
+                </option>
+
+                <option value="teman">
+                  Teman / Keluarga
+                </option>
+
+                <option value="kampus">
+                  Lingkungan Kampus
+                </option>
+
+                <option value="lainnya">
+                  Lainnya
+                </option>
+              </SelectField>
+
+              <div>
+
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Catatan
+                </label>
+
+                <textarea
+                  name="catatan"
+                  value={formData.catatan}
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="Masukkan catatan (opsional)"
+                  className="w-full resize-none rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                />
+
+              </div>
+
+            </div>
 
             {/* =================================================
                 4. PERSETUJUAN
             ================================================== */}
+            <div className="my-6 border-t border-slate-200" />
+
             <SectionTitle
               number="4."
-              icon={<UsersRound size={21} />}
+              icon={<ShieldCheck size={21} />}
               title="Persetujuan"
             />
 
             <label className="mt-5 flex cursor-pointer items-start gap-3">
+
               <input
                 type="checkbox"
-                checked={setuju}
-                onChange={(e) => setSetuju(e.target.checked)}
+                name="persetujuan"
+                checked={formData.persetujuan}
+                onChange={handleChange}
                 className="mt-1 h-4 w-4 accent-[#08734f]"
               />
 
               <span className="text-sm leading-6 text-slate-600">
-                Saya menyatakan bahwa data yang ditampilkan
-                adalah data saya dan menyetujui penggunaan
-                data tersebut untuk keperluan administrasi dan
-                pelayanan zakat UPZ Zakat Universitas Siliwangi.
+                Saya menyatakan bahwa data yang saya berikan
+                adalah benar dan saya menyetujui penggunaan
+                data ini untuk keperluan administrasi dan
+                pelayanan zakat UPZ Zakat UNSIL.
               </span>
+
             </label>
 
-            {/* Submit */}
+            {/* =================================================
+                SUBMIT
+            ================================================== */}
             <button
               type="submit"
               className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#08734f] text-sm font-semibold text-white transition hover:bg-[#065d40]"
             >
-              <UserRound size={19} />
+              <UserPlus size={19} />
               Daftar sebagai Muzakki
             </button>
 
-            {/* Footer form */}
+            {/* FOOTER */}
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+
               <LockKeyhole size={14} />
+
               Data Anda aman dan akan digunakan sesuai
               kebijakan UPZ Zakat UNSIL.
+
             </div>
 
           </form>
@@ -637,12 +719,17 @@ export default function DaftarMuzakkiUnsilPage() {
 }
 
 /* =========================================================
-   COMPONENT: SECTION TITLE
+   SECTION TITLE
 ========================================================= */
 
-function SectionTitle({ number, icon, title }) {
+function SectionTitle({
+  number,
+  icon,
+  title,
+}) {
   return (
     <div className="flex items-center gap-3">
+
       <div className="text-[#08734f]">
         {icon}
       </div>
@@ -650,17 +737,23 @@ function SectionTitle({ number, icon, title }) {
       <h2 className="text-base font-bold text-[#08734f]">
         {number} {title}
       </h2>
+
     </div>
   );
 }
 
 /* =========================================================
-   COMPONENT: FEATURE
+   FEATURE
 ========================================================= */
 
-function Feature({ icon, title, description }) {
+function Feature({
+  icon,
+  title,
+  description,
+}) {
   return (
     <div className="flex gap-4">
+
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-50 text-[#08734f]">
         {icon}
       </div>
@@ -674,40 +767,107 @@ function Feature({ icon, title, description }) {
           {description}
         </p>
       </div>
+
     </div>
   );
 }
 
 /* =========================================================
-   COMPONENT: READ ONLY INPUT
+   INPUT
 ========================================================= */
 
-function ReadOnlyInput({ label, value }) {
+function InputField({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  required = false,
+}) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium">
-        {label}
+
+      <label className="mb-2 block text-sm font-medium text-gray-700">
+
+        {label}{" "}
+
+        {required && (
+          <span className="text-red-500">
+            *
+          </span>
+        )}
+
+      </label>
+
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        className="h-11 w-full rounded-lg border border-slate-200 px-4 text-sm outline-none transition placeholder:text-gray-400 focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+      />
+
+    </div>
+  );
+}
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+function SelectField({
+  label,
+  name,
+  value,
+  onChange,
+  children,
+  required = false,
+}) {
+  return (
+    <div>
+
+      <label className="mb-2 block text-sm font-medium text-gray-700">
+
+        {label}{" "}
+
+        {required && (
+          <span className="text-red-500">
+            *
+          </span>
+        )}
+
       </label>
 
       <div className="relative">
-        <input
-          type="text"
+
+        <select
+          name={name}
           value={value}
-          readOnly
-          className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 pr-10 text-sm text-slate-600 outline-none"
+          onChange={onChange}
+          required={required}
+          className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+        >
+
+          {children}
+
+        </select>
+
+        <ChevronDown
+          size={17}
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
         />
 
-        <LockKeyhole
-          size={15}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-        />
       </div>
+
     </div>
   );
 }
 
 /* =========================================================
-   COMPONENT: ZAKAT CARD
+   ZAKAT CARD
 ========================================================= */
 
 function ZakatCard({
@@ -727,6 +887,7 @@ function ZakatCard({
           : "border-slate-200 bg-white hover:border-green-300"
       }`}
     >
+
       {selected && (
         <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded bg-[#08734f] text-white">
           <Check size={13} />
@@ -735,7 +896,9 @@ function ZakatCard({
 
       <div
         className={`mb-3 ${
-          selected ? "text-[#08734f]" : "text-slate-500"
+          selected
+            ? "text-[#08734f]"
+            : "text-slate-500"
         }`}
       >
         {icon}
@@ -748,12 +911,13 @@ function ZakatCard({
       <p className="mt-1 text-xs leading-5 text-slate-500">
         {description}
       </p>
+
     </button>
   );
 }
 
 /* =========================================================
-   COMPONENT: RADIO OPTION
+   RADIO OPTION
 ========================================================= */
 
 function RadioOption({
@@ -767,6 +931,7 @@ function RadioOption({
       onClick={onClick}
       className="flex items-center gap-2 text-left text-sm text-slate-600"
     >
+
       <span
         className={`flex h-4 w-4 items-center justify-center rounded-full border ${
           selected
@@ -774,40 +939,15 @@ function RadioOption({
             : "border-slate-300"
         }`}
       >
+
         {selected && (
           <span className="h-2 w-2 rounded-full bg-[#08734f]" />
         )}
+
       </span>
 
       {label}
+
     </button>
-  );
-}
-
-/* =========================================================
-   COMPONENT: SUMMARY ITEM
-========================================================= */
-
-function SummaryItem({
-  label,
-  value,
-  green = false,
-}) {
-  return (
-    <div>
-      <p className="text-xs text-slate-500">
-        {label}
-      </p>
-
-      <p
-        className={`mt-1 text-sm font-semibold ${
-          green
-            ? "text-[#08734f]"
-            : "text-slate-700"
-        }`}
-      >
-        {value}
-      </p>
-    </div>
   );
 }

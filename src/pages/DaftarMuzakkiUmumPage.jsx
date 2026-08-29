@@ -2,13 +2,12 @@ import { useState } from "react";
 import {
   ClipboardCheck,
   ShieldCheck,
-  FileText,
   HandHeart,
   UserRound,
   WalletCards,
   Landmark,
   QrCode,
-  Building2,
+  Smartphone,
   ChevronDown,
   Check,
   UserPlus,
@@ -16,6 +15,19 @@ import {
   LockKeyhole,
   Calculator,
 } from "lucide-react";
+
+import { metodePembayaran } from "../data/dummyDonasi";
+
+// =========================================================
+// ICON METODE PEMBAYARAN
+// Sama seperti yang digunakan di DonasiPage
+// =========================================================
+
+const METODE_ICON = {
+  "transfer-bank": Landmark,
+  qris: QrCode,
+  "e-wallet": Smartphone,
+};
 
 export default function DaftarMuzakkiUmumPage() {
   // =========================================================
@@ -93,13 +105,17 @@ export default function DaftarMuzakkiUmumPage() {
       <section className="relative overflow-hidden bg-gradient-to-r from-[#075b43] via-[#08734f] to-[#075b43]">
 
         {/* PATTERN BULAT */}
+
         <div className="absolute inset-0 opacity-10">
+
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full border-[30px] border-white" />
 
           <div className="absolute right-40 top-10 h-48 w-48 rounded-full border-[20px] border-white" />
+
         </div>
 
         {/* DEKORASI TANAMAN / ILUSTRASI */}
+
         <div className="absolute right-0 top-0 hidden h-full w-[32%] overflow-hidden lg:block">
 
           <div className="absolute bottom-0 right-20 h-32 w-10 rotate-12 rounded-full bg-green-700/30" />
@@ -109,6 +125,7 @@ export default function DaftarMuzakkiUmumPage() {
           <div className="absolute right-10 top-20 h-28 w-12 rotate-45 rounded-full bg-green-400/30" />
 
           <div className="absolute bottom-5 right-5 h-24 w-8 -rotate-12 rounded-full bg-green-300/30" />
+
         </div>
 
         <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-8">
@@ -122,14 +139,21 @@ export default function DaftarMuzakkiUmumPage() {
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-white/90">
+
             <span>Beranda</span>
+
             <span>›</span>
+
             <span>Daftar sebagai Muzakki</span>
+
             <span>›</span>
+
             <span>Muzakki Umum</span>
+
           </div>
 
         </div>
+
       </section>
 
       {/* =====================================================
@@ -146,9 +170,7 @@ export default function DaftarMuzakkiUmumPage() {
 
           <aside className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
 
-            {/* =================================================
-                ICON / ILUSTRASI
-            ================================================= */}
+            {/* ICON / ILUSTRASI */}
 
             <div className="mb-5 flex justify-center">
 
@@ -164,25 +186,27 @@ export default function DaftarMuzakkiUmumPage() {
 
             </div>
 
-            {/* =================================================
-                TITLE
-            ================================================= */}
+            {/* TITLE */}
 
             <h2 className="text-xl font-bold leading-snug text-[#08734f]">
+
               Pendaftaran Muzakki
+
               <br />
+
               Umum
+
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-slate-600">
+
               Formulir ini diperuntukkan bagi masyarakat umum
               yang ingin terdaftar sebagai Muzakki dan menunaikan
               zakat melalui UPZ Zakat Universitas Siliwangi.
+
             </p>
 
-            {/* =================================================
-                FEATURE
-            ================================================= */}
+            {/* FEATURE */}
 
             <div className="mt-7 space-y-6">
 
@@ -206,9 +230,7 @@ export default function DaftarMuzakkiUmumPage() {
 
             </div>
 
-            {/* =================================================
-                QUOTE
-            ================================================= */}
+            {/* QUOTE */}
 
             <div className="mt-8 rounded-xl bg-green-50 p-5">
 
@@ -217,10 +239,12 @@ export default function DaftarMuzakkiUmumPage() {
               </div>
 
               <p className="text-sm italic leading-6 text-slate-600">
+
                 Ambillah zakat dari sebagian harta mereka,
                 dengan zakat itu kamu membersihkan dan
                 mensucikan mereka dan mendoalah untuk
                 mereka.
+
               </p>
 
               <p className="mt-4 text-xs font-semibold text-slate-700">
@@ -236,13 +260,18 @@ export default function DaftarMuzakkiUmumPage() {
                 }}
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border border-[#08734f] px-4 py-3 text-sm font-semibold text-[#08734f] transition hover:bg-[#08734f] hover:text-white"
               >
+
                 <Calculator size={18} />
+
                 View Kalkulator Zakat
+
               </button>
 
               <p className="mt-3 text-center text-xs text-slate-600">
+
                 Hitung zakat Anda dengan mudah
                 menggunakan kalkulator kami.
+
               </p>
 
             </div>
@@ -269,8 +298,10 @@ export default function DaftarMuzakkiUmumPage() {
             />
 
             <p className="mt-2 text-sm text-slate-600">
+
               Lengkapi data diri Anda dengan benar untuk
               keperluan administrasi Muzakki.
+
             </p>
 
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -295,9 +326,19 @@ export default function DaftarMuzakkiUmumPage() {
                 onChange={handleChange}
                 required
               >
-                <option value="">Pilih jenis kelamin</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
+
+                <option value="">
+                  Pilih jenis kelamin
+                </option>
+
+                <option value="Laki-laki">
+                  Laki-laki
+                </option>
+
+                <option value="Perempuan">
+                  Perempuan
+                </option>
+
               </SelectField>
 
               {/* NIK */}
@@ -371,8 +412,13 @@ export default function DaftarMuzakkiUmumPage() {
               <div className="md:col-span-2">
 
                 <label className="mb-2 block text-sm font-medium text-gray-700">
+
                   Alamat Lengkap{" "}
-                  <span className="text-red-500">*</span>
+
+                  <span className="text-red-500">
+                    *
+                  </span>
+
                 </label>
 
                 <textarea
@@ -396,6 +442,7 @@ export default function DaftarMuzakkiUmumPage() {
                 onChange={handleChange}
                 required
               >
+
                 <option value="">
                   Pilih kota / kabupaten
                 </option>
@@ -463,31 +510,48 @@ export default function DaftarMuzakkiUmumPage() {
             <div className="mt-5">
 
               <label className="mb-3 block text-sm font-medium">
+
                 Jenis Zakat yang biasa ditunaikan
-                <span className="text-red-500"> *</span>
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+
               </label>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
                 <ZakatCard
-                  selected={formData.jenisZakat === "penghasilan"}
-                  onClick={() => handleJenisZakat("penghasilan")}
+                  selected={
+                    formData.jenisZakat === "penghasilan"
+                  }
+                  onClick={() =>
+                    handleJenisZakat("penghasilan")
+                  }
                   icon={<WalletCards size={23} />}
                   title="Zakat Penghasilan"
                   description="Zakat atas penghasilan seperti gaji dan honor."
                 />
 
                 <ZakatCard
-                  selected={formData.jenisZakat === "maal"}
-                  onClick={() => handleJenisZakat("maal")}
+                  selected={
+                    formData.jenisZakat === "maal"
+                  }
+                  onClick={() =>
+                    handleJenisZakat("maal")
+                  }
                   icon={<Landmark size={23} />}
                   title="Zakat Maal"
                   description="Zakat atas harta, tabungan, emas, investasi, dan lainnya."
                 />
 
                 <ZakatCard
-                  selected={formData.jenisZakat === "fitrah"}
-                  onClick={() => handleJenisZakat("fitrah")}
+                  selected={
+                    formData.jenisZakat === "fitrah"
+                  }
+                  onClick={() =>
+                    handleJenisZakat("fitrah")
+                  }
                   icon={<HandHeart size={23} />}
                   title="Zakat Fitrah"
                   description="Zakat fitrah untuk diri sendiri dan keluarga."
@@ -502,16 +566,22 @@ export default function DaftarMuzakkiUmumPage() {
             <div className="mt-6">
 
               <label className="mb-3 block text-sm font-medium">
+
                 Frekuensi Menunaikan Zakat
-                <span className="text-red-500"> *</span>
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+
               </label>
 
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 
                 <RadioOption
                   label="Bulanan"
-                  value="bulanan"
-                  selected={formData.frekuensi === "bulanan"}
+                  selected={
+                    formData.frekuensi === "bulanan"
+                  }
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
@@ -522,8 +592,9 @@ export default function DaftarMuzakkiUmumPage() {
 
                 <RadioOption
                   label="Tahunan"
-                  value="tahunan"
-                  selected={formData.frekuensi === "tahunan"}
+                  selected={
+                    formData.frekuensi === "tahunan"
+                  }
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
@@ -534,8 +605,9 @@ export default function DaftarMuzakkiUmumPage() {
 
                 <RadioOption
                   label="Setiap Ramadan"
-                  value="ramadan"
-                  selected={formData.frekuensi === "ramadan"}
+                  selected={
+                    formData.frekuensi === "ramadan"
+                  }
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
@@ -546,8 +618,9 @@ export default function DaftarMuzakkiUmumPage() {
 
                 <RadioOption
                   label="Sesuai Kebutuhan"
-                  value="kebutuhan"
-                  selected={formData.frekuensi === "kebutuhan"}
+                  selected={
+                    formData.frekuensi === "kebutuhan"
+                  }
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
@@ -560,52 +633,72 @@ export default function DaftarMuzakkiUmumPage() {
 
             </div>
 
-            {/* PEMBAYARAN */}
+            {/* =================================================
+                PREFERENSI PEMBAYARAN
+                SAMA SEPERTI DONASI
+            ================================================== */}
 
             <div className="mt-6">
 
               <label className="mb-3 block text-sm font-medium">
+
                 Preferensi Pembayaran
-                <span className="text-red-500"> *</span>
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+
               </label>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 
-                <PaymentButton
-                  icon={<Landmark size={18} />}
-                  name="pembayaran"
-                  value="transfer"
-                  label="Transfer Bank"
-                  checked={formData.pembayaran === "transfer"}
-                  onChange={handleChange}
-                />
+                {metodePembayaran.map((m) => {
 
-                <PaymentButton
-                  icon={<Building2 size={18} />}
-                  name="pembayaran"
-                  value="virtual-account"
-                  label="Virtual Account"
-                  checked={formData.pembayaran === "virtual-account"}
-                  onChange={handleChange}
-                />
+                  const Icon = METODE_ICON[m.id];
 
-                <PaymentButton
-                  icon={<QrCode size={18} />}
-                  name="pembayaran"
-                  value="qris"
-                  label="QRIS"
-                  checked={formData.pembayaran === "qris"}
-                  onChange={handleChange}
-                />
+                  return (
+                    <label
+                      key={m.id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3.5 transition ${
+                        formData.pembayaran === m.id
+                          ? "border-[#08734f] bg-green-50"
+                          : "border-slate-200 hover:border-green-300"
+                      }`}
+                    >
 
-                <PaymentButton
-                  icon={<Building2 size={18} />}
-                  name="pembayaran"
-                  value="tunai"
-                  label="Tunai di Kantor UPZ"
-                  checked={formData.pembayaran === "tunai"}
-                  onChange={handleChange}
-                />
+                      <input
+                        type="radio"
+                        name="pembayaran"
+                        value={m.id}
+                        checked={
+                          formData.pembayaran === m.id
+                        }
+                        onChange={handleChange}
+                        required
+                        className="h-4 w-4 accent-[#08734f]"
+                      />
+
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-white text-[#08734f]">
+
+                        <Icon size={18} />
+
+                      </span>
+
+                      <span>
+
+                        <span className="block text-sm font-medium text-slate-900">
+                          {m.nama}
+                        </span>
+
+                        <span className="block text-xs text-slate-500">
+                          {m.keterangan}
+                        </span>
+
+                      </span>
+
+                    </label>
+                  );
+                })}
 
               </div>
 
@@ -629,12 +722,15 @@ export default function DaftarMuzakkiUmumPage() {
 
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
 
+              {/* SUMBER INFORMASI */}
+
               <SelectField
                 label="Bagaimana Anda mengetahui UPZ Zakat UNSIL?"
                 name="sumberInformasi"
                 value={formData.sumberInformasi}
                 onChange={handleChange}
               >
+
                 <option value="">
                   Pilih sumber informasi
                 </option>
@@ -658,7 +754,10 @@ export default function DaftarMuzakkiUmumPage() {
                 <option value="lainnya">
                   Lainnya
                 </option>
+
               </SelectField>
+
+              {/* CATATAN */}
 
               <div>
 
@@ -702,24 +801,27 @@ export default function DaftarMuzakkiUmumPage() {
               />
 
               <span className="text-sm leading-6 text-slate-600">
+
                 Saya menyatakan bahwa data yang saya berikan
                 adalah benar dan saya menyetujui penggunaan
                 data ini untuk keperluan administrasi dan
                 pelayanan zakat UPZ Zakat UNSIL.
+
               </span>
 
             </label>
 
-            {/* =================================================
-                SUBMIT
-            ================================================== */}
+            {/* SUBMIT */}
 
             <button
               type="submit"
               className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#08734f] text-sm font-semibold text-white transition hover:bg-[#065d40]"
             >
+
               <UserPlus size={19} />
+
               Daftar sebagai Muzakki
+
             </button>
 
             {/* FOOTER FORM */}
@@ -747,7 +849,11 @@ export default function DaftarMuzakkiUmumPage() {
    SECTION TITLE
 ========================================================= */
 
-function SectionTitle({ number, icon, title }) {
+function SectionTitle({
+  number,
+  icon,
+  title,
+}) {
   return (
     <div className="flex items-center gap-3">
 
@@ -767,7 +873,11 @@ function SectionTitle({ number, icon, title }) {
    FEATURE
 ========================================================= */
 
-function Feature({ icon, title, description }) {
+function Feature({
+  icon,
+  title,
+  description,
+}) {
   return (
     <div className="flex gap-4">
 
@@ -812,7 +922,9 @@ function InputField({
         {label}{" "}
 
         {required && (
-          <span className="text-red-500">*</span>
+          <span className="text-red-500">
+            *
+          </span>
         )}
 
       </label>
@@ -851,7 +963,9 @@ function SelectField({
         {label}{" "}
 
         {required && (
-          <span className="text-red-500">*</span>
+          <span className="text-red-500">
+            *
+          </span>
         )}
 
       </label>
@@ -865,7 +979,9 @@ function SelectField({
           required={required}
           className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
         >
+
           {children}
+
         </select>
 
         <ChevronDown
@@ -903,7 +1019,9 @@ function ZakatCard({
 
       {selected && (
         <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded bg-[#08734f] text-white">
+
           <Check size={13} />
+
         </div>
       )}
 
@@ -914,7 +1032,9 @@ function ZakatCard({
             : "text-slate-500"
         }`}
       >
+
         {icon}
+
       </div>
 
       <h3 className="text-sm font-semibold text-slate-700">
@@ -962,52 +1082,5 @@ function RadioOption({
       {label}
 
     </button>
-  );
-}
-
-/* =========================================================
-   PAYMENT BUTTON
-========================================================= */
-
-function PaymentButton({
-  icon,
-  name,
-  value,
-  label,
-  checked,
-  onChange,
-}) {
-  return (
-    <label
-      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-3 text-sm transition ${
-        checked
-          ? "border-[#08734f] bg-green-50 text-[#126b43]"
-          : "border-slate-200 text-slate-600 hover:border-green-300"
-      }`}
-    >
-
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        checked={checked}
-        onChange={onChange}
-        required
-        className="h-4 w-4 accent-[#08734f]"
-      />
-
-      <span
-        className={
-          checked
-            ? "text-[#08734f]"
-            : "text-slate-400"
-        }
-      >
-        {icon}
-      </span>
-
-      <span>{label}</span>
-
-    </label>
   );
 }
