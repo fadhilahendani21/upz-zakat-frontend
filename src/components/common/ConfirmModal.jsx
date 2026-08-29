@@ -58,9 +58,9 @@ export default function ConfirmModal({
           <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug">
             {title}
           </h3>
-          <p className="mt-1.5 text-xs sm:text-sm text-gray-500 leading-relaxed">
+          <div className="mt-1.5 text-xs sm:text-sm text-gray-500 leading-relaxed">
             {message}
-          </p>
+          </div>
           {errorMessage && (
             <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-xs text-red-700">
               <AlertCircle size={14} className="shrink-0 mt-0.5 text-red-600" />

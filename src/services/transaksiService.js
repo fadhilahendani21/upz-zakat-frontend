@@ -147,3 +147,22 @@ export async function getDashboardSaldo() {
     saldo: (masukJson.meta?.total_nominal ?? 0) - (keluarJson.meta?.total_nominal ?? 0),
   };
 }
+
+/**
+ * DELETE /api/transaksi/{id}
+ * Hapus transaksi berdasarkan ID. Hanya Administrator.
+ */
+export async function deleteTransaksi(id) {
+  if (!API_URL) throw new Error("API tidak terkonfigurasi.");
+
+  const res = await fetch(`${API_URL}/transaksi/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  handle401(res);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Gagal menghapus transaksi.");
+  }
+  return res.json();
+}

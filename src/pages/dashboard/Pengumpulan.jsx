@@ -2,16 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import {
   ArrowDownToLine, Plus, Search,
   Download, TrendingUp, Wallet, Users,
-  X,
+  X, Trash2,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Combobox from "../../components/common/Combobox";
 import StatCard from "../../components/dashboard/StatCard";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import { Pagination, SearchInput, FilterSelect, Modal, FormField, inputCls } from "../../components/dashboard/ui";
 import { formatRupiah } from "../../utils/formatRupiah";
 import { getMuzakkiOptions } from "../../services/muzakkiService";
-import { getPengumpulan, savePengumpulan } from "../../services/transaksiService";
+import { getPengumpulan, savePengumpulan, deleteTransaksi } from "../../services/transaksiService";
+import { getUser } from "../../services/authService";
 import { useSettings, getSettings } from "../../services/settingService";
 import { NumericFormat } from "react-number-format";
 // ── Konstanta ─────────────────────────────────────────────────────────────────
@@ -151,38 +153,60 @@ function ModalTambah({ onClose, onSaved }) {
 }
 
 // ── Modal Detail ──────────────────────────────────────────────────────────────
-function ModalDetail({ row, onClose }) {
-  const fields = [
-    { label: "Kode",       value: row.kode },
-    { label: "Muzakki",    value: row.nama },
-    { label: "Kategori",   value: row.kategori },
-    { label: "Nominal",    value: formatRupiah(row.nominal) },
-    { label: "Metode",     value: row.metode || "—" },
-    { label: "Tanggal",    value: new Date(row.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) },
-    { label: "Keterangan", value: row.keterangan || "—" },
-  ];
+function ModalDetail({ row, onClose, onDelete, isAdmin }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-[1px]">
+      <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 mb-0.5">Detail</p>
-            <h2 className="font-semibold text-gray-900">Transaksi Pengumpulan</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Detail Transaksi</p>
+            <h3 className="mt-1 text-xl font-bold text-gray-900">{row.kode}</h3>
           </div>
-          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 transition">
-            <X size={16} />
+          <button type="button" onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition hover:text-gray-700">
+            <X size={18} />
           </button>
         </div>
-        <div className="px-6 py-5 space-y-3">
-          {fields.map(({ label, value }) => (
-            <div key={label} className="flex justify-between items-start gap-4">
-              <span className="text-sm text-gray-400 shrink-0">{label}</span>
-              <span className="text-sm font-medium text-gray-800 text-right">{value}</span>
+
+        <div className="space-y-4 px-5 py-5 text-sm text-gray-700">
+          {[
+            ["Nama", row.nama ?? "-"],
+            ["Kategori", row.kategori ?? "-"],
+            ["Keterangan", row.keterangan || "—"],
+            ["Nominal", `+${formatRupiah(row.nominal)}`],
+            ["Tanggal", new Date(row.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })],
+            ["Metode Pembayaran", row.metode || "—"],
+          ].map(([label, val]) => (
+            <div key={label} className="flex items-start justify-between gap-3">
+              <span className="text-gray-500">{label}</span>
+              <span className="font-semibold text-gray-900 text-right max-w-[60%]">{val}</span>
             </div>
           ))}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-gray-500">Status</span>
+            <span className="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700">
+              Masuk
+            </span>
+          </div>
         </div>
-        <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
-          <Button variant="outline" onClick={onClose}>Tutup</Button>
+
+        <div className="border-t border-gray-200 px-5 py-4 flex items-center justify-between gap-3">
+          {isAdmin ? (
+            <button
+              type="button"
+              onClick={() => onDelete?.(row)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition border border-red-200"
+            >
+              <Trash2 size={14} /> Hapus Transaksi
+            </button>
+          ) : <div />}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
+          >
+            Tutup
+          </button>
         </div>
       </div>
     </div>
@@ -191,6 +215,8 @@ function ModalDetail({ row, onClose }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Pengumpulan() {
+  const user = getUser();
+  const isAdmin = user?.role === "administrator";
   const settings = useSettings();
   const kategoriOptions = settings?.kategori?.jenisDanaList || ["Zakat Fitrah", "Zakat Maal", "Infaq", "Sedekah", "Dana Lainnya"];
   const [data, setData]   = useState([]);
@@ -204,6 +230,10 @@ export default function Pengumpulan() {
   const [showModal, setShowModal] = useState(false);
   const [detailRow, setDetailRow] = useState(null);
 
+  const [rowToDelete, setRowToDelete] = useState(null);
+  const [isDeleting, setIsDeleting]   = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -216,6 +246,26 @@ export default function Pengumpulan() {
       setLoading(false);
     }
   }, [search, kategori, bulan, tahun, page]);
+
+  async function handleConfirmDelete() {
+    if (!rowToDelete?.id) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteTransaksi(rowToDelete.id);
+      setRowToDelete(null);
+      if (detailRow?.id === rowToDelete.id) {
+        setDetailRow(null);
+      }
+      setToastMsg("Transaksi pengumpulan berhasil dihapus.");
+      setTimeout(() => setToastMsg(""), 3000);
+      fetchData();
+    } catch (err) {
+      setDeleteError(err.message || "Gagal menghapus transaksi.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   // Debounce search, langsung untuk filter lainnya
   useEffect(() => {
@@ -368,7 +418,40 @@ export default function Pengumpulan() {
           onSaved={() => { setPage(1); fetchData(); }}
         />
       )}
-      {detailRow && <ModalDetail row={detailRow} onClose={() => setDetailRow(null)} />}
+      {detailRow && (
+        <ModalDetail
+          row={detailRow}
+          isAdmin={isAdmin}
+          onClose={() => setDetailRow(null)}
+          onDelete={(row) => {
+            setDeleteError("");
+            setRowToDelete(row);
+          }}
+        />
+      )}
+
+      {/* Modal Konfirmasi Hapus */}
+      <ConfirmModal
+        isOpen={!!rowToDelete}
+        onClose={() => {
+          setRowToDelete(null);
+          setDeleteError("");
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Hapus Transaksi Pengumpulan?"
+        message={
+          rowToDelete ? (
+            <span>
+              Apakah Anda yakin ingin menghapus transaksi <strong>{rowToDelete.kode}</strong> atas nama <strong>{rowToDelete.nama}</strong> sebesar <strong>{formatRupiah(rowToDelete.nominal || 0)}</strong>? Tindakan ini akan mengoreksi total penerimaan kas.
+            </span>
+          ) : ""
+        }
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        variant="danger"
+        loading={isDeleting}
+        errorMessage={deleteError}
+      />
     </div>
   );
 }

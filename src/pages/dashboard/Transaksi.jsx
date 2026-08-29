@@ -6,13 +6,15 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Search,
   Wallet,
   X,
+  Trash2,
 } from "lucide-react";
 import StatCard from "../../components/dashboard/StatCard";
-import { getAllTransaksi } from "../../services/transaksiService";
+import ConfirmModal from "../../components/common/ConfirmModal";
+import { getAllTransaksi, deleteTransaksi } from "../../services/transaksiService";
+import { getUser } from "../../services/authService";
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", {
@@ -36,6 +38,9 @@ function formatJam(iso) {
 }
 
 export default function Transaksi() {
+  const user = getUser();
+  const isAdmin = user?.role === "administrator";
+
   const [allRows, setAllRows]       = useState([]);
   const [totalMasuk, setTotalMasuk] = useState(0);
   const [totalKeluar, setTotalKeluar] = useState(0);
@@ -49,6 +54,9 @@ export default function Transaksi() {
   const PER_PAGE = 15;
 
   const [selectedRow, setSelectedRow] = useState(null);
+  const [rowToDelete, setRowToDelete] = useState(null);
+  const [isDeleting, setIsDeleting]   = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -68,6 +76,24 @@ export default function Transaksi() {
       setLoading(false);
     }
   }, [search, dateFrom, dateTo, jenisFilter]);
+
+  async function handleConfirmDelete() {
+    if (!rowToDelete?.id) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteTransaksi(rowToDelete.id);
+      setRowToDelete(null);
+      if (selectedRow?.id === rowToDelete.id) {
+        setSelectedRow(null);
+      }
+      fetchData();
+    } catch (err) {
+      setDeleteError(err.message || "Gagal menghapus transaksi.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   useEffect(() => {
     const t = setTimeout(fetchData, search ? 400 : 0);
@@ -177,64 +203,55 @@ export default function Transaksi() {
       {/* Table */}
       <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-[900px] w-full border-collapse text-left">
-            <thead className="bg-gray-50">
-              <tr className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                <th className="px-4 py-3">Kode</th>
-                <th className="px-4 py-3">Tanggal</th>
-                <th className="px-4 py-3">Nama</th>
-                <th className="px-4 py-3">Kategori</th>
-                <th className="px-4 py-3">Keterangan</th>
-                <th className="px-4 py-3">Metode</th>
-                <th className="px-4 py-3">Jumlah</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-center">Aksi</th>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                {["Kode", "Nama", "Keterangan", "Nominal", "Tanggal", "Status", ""].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center">
+                  <td colSpan={7} className="px-5 py-12 text-center">
                     <div className="w-7 h-7 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
                     <p className="text-gray-400 text-sm mt-3">Memuat data transaksi...</p>
                   </td>
                 </tr>
               ) : pagedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={7} className="px-5 py-12 text-center text-sm text-gray-400">
                     Tidak ada transaksi yang sesuai dengan filter saat ini.
                   </td>
                 </tr>
               ) : pagedRows.map((row) => (
                 <tr key={`${row.status}-${row.id}`}
-                  className="border-t border-gray-200 align-top text-sm text-gray-700 hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-4 font-semibold text-gray-900 text-xs">{row.kode ?? "-"}</td>
-                  <td className="px-4 py-4">
-                    <div className="font-medium text-gray-800">{formatTanggal(row.tanggal)}</div>
-                    <div className="mt-1 text-xs text-gray-400">{formatJam(row.tanggal)}</div>
-                  </td>
-                  <td className="px-4 py-4 font-medium text-gray-800">{row.nama ?? "-"}</td>
-                  <td className="px-4 py-4">
-                    <span className="inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
-                      {row.kategori ?? "-"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 max-w-[220px] text-gray-500 text-xs truncate">{row.keterangan ?? "-"}</td>
-                  <td className="px-4 py-4 text-gray-600 text-xs">{row.metode ?? "-"}</td>
-                  <td className="px-4 py-4 font-semibold text-gray-900">
+                  className="hover:bg-gray-50/60 transition-colors">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-500">{row.kode ?? "-"}</td>
+                  <td className="px-5 py-3.5 font-medium text-gray-800">{row.nama ?? "-"}</td>
+                  <td className="px-5 py-3.5 text-gray-500 max-w-[220px] truncate">{row.keterangan || "—"}</td>
+                  <td className="px-5 py-3.5 font-semibold text-gray-900 whitespace-nowrap">
                     {row.status === "Masuk" ? "+" : "−"}{formatRupiah(row.nominal)}
                   </td>
-                  <td className="px-4 py-4">
-                    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">
+                    {row.tanggal
+                      ? new Date(row.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })
+                      : "-"}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                       row.status === "Masuk" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
                     }`}>
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-5 py-3.5">
                     <button onClick={() => setSelectedRow(row)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:border-brand-300 hover:text-brand-700">
-                      <Eye size={13} /> Detail
+                      className="text-xs text-brand-600 font-medium hover:underline">
+                      Detail
                     </button>
                   </td>
                 </tr>
@@ -289,12 +306,12 @@ export default function Transaksi() {
 
             <div className="space-y-4 px-5 py-5 text-sm text-gray-700">
               {[
-                ["Tanggal", `${formatTanggal(selectedRow.tanggal)} • ${formatJam(selectedRow.tanggal)}`],
                 ["Nama", selectedRow.nama ?? "-"],
                 ["Kategori", selectedRow.kategori ?? "-"],
                 ["Keterangan", selectedRow.keterangan ?? "-"],
+                ["Nominal", `${selectedRow.status === "Masuk" ? "+" : "−"}${formatRupiah(selectedRow.nominal)}`],
+                ["Tanggal", `${formatTanggal(selectedRow.tanggal)} • ${formatJam(selectedRow.tanggal)}`],
                 ["Metode Pembayaran", selectedRow.metode ?? "-"],
-                ["Jumlah", `${selectedRow.status === "Masuk" ? "+" : "−"}${formatRupiah(selectedRow.nominal)}`],
               ].map(([label, val]) => (
                 <div key={label} className="flex items-start justify-between gap-3">
                   <span className="text-gray-500">{label}</span>
@@ -309,15 +326,50 @@ export default function Transaksi() {
               </div>
             </div>
 
-            <div className="border-t border-gray-200 px-5 py-4">
+            <div className="border-t border-gray-200 px-5 py-4 flex items-center justify-between gap-3">
+              {isAdmin ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteError("");
+                    setRowToDelete(selectedRow);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition border border-red-200"
+                >
+                  <Trash2 size={14} /> Hapus Transaksi
+                </button>
+              ) : <div />}
               <button type="button" onClick={() => setSelectedRow(null)}
-                className="w-full rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
+                className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                 Tutup
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Modal Konfirmasi Hapus */}
+      <ConfirmModal
+        isOpen={!!rowToDelete}
+        onClose={() => {
+          setRowToDelete(null);
+          setDeleteError("");
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Hapus Data Transaksi?"
+        message={
+          rowToDelete ? (
+            <span>
+              Apakah Anda yakin ingin menghapus transaksi <strong>{rowToDelete.kode}</strong> (<strong>{rowToDelete.nama}</strong>) sebesar <strong>{formatRupiah(rowToDelete.nominal || 0)}</strong>? Saldo kas dan laporan keuangan akan otomatis terkoreksi kembali.
+            </span>
+          ) : ""
+        }
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        variant="danger"
+        loading={isDeleting}
+        errorMessage={deleteError}
+      />
     </div>
   );
 }

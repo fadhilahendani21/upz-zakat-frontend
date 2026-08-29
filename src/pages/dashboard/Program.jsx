@@ -27,10 +27,9 @@ const ICON_MAP = {
 const STATUS_BADGE = {
   aktif:   "bg-green-50 text-green-700",
   selesai: "bg-blue-50 text-blue-700",
-  ditunda: "bg-orange-50 text-orange-700",
 };
 
-const STATUS_LABEL = { aktif: "Aktif", selesai: "Selesai", ditunda: "Ditunda" };
+const STATUS_LABEL = { aktif: "Aktif", selesai: "Selesai" };
 
 function ProgressBar({ value, color = "brand" }) {
   const colors = {
@@ -169,11 +168,13 @@ function ModalForm({ initial, onClose, onSaved }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+              <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-xs text-blue-600 mb-2">
+                ℹ️ Status akan otomatis menjadi <strong>Selesai</strong> ketika target nominal terpenuhi (progress 100%).
+              </div>
               <div className="flex gap-2 flex-wrap">
                 {[
                   { val: "aktif",   label: "Aktif" },
                   { val: "selesai", label: "Selesai" },
-                  { val: "ditunda", label: "Ditunda" },
                 ].map(({ val, label }) => (
                   <label key={val} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer text-sm font-medium transition
                     ${form.status === val ? "bg-brand-50 border-brand-500 text-brand-700" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
@@ -316,7 +317,7 @@ export default function Program() {
             placeholder="Cari nama atau kode program..."
           />
           <div className="flex gap-2 flex-wrap">
-            {[{ val: "", label: "Semua Status" }, { val: "aktif", label: "Aktif" }, { val: "selesai", label: "Selesai" }, { val: "ditunda", label: "Ditunda" }]
+            {[{ val: "", label: "Semua Status" }, { val: "aktif", label: "Aktif" }, { val: "selesai", label: "Selesai" }]
               .map(({ val, label }) => (
                 <button key={val} onClick={() => { setStatus(val); setPage(1); }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
@@ -350,6 +351,8 @@ export default function Program() {
               {data.map((prog) => {
                 const Icon = ICON_MAP[prog.nama] ?? FolderKanban;
                 const progressPct = prog.progress;
+                // Auto-selesai jika target terpenuhi
+                const effectiveStatus = progressPct >= 100 ? "selesai" : prog.status;
                 return (
                   <div key={prog.id} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-shadow group">
                     <div className="flex items-start justify-between mb-3">
@@ -363,8 +366,8 @@ export default function Program() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[prog.status] ?? "bg-gray-100 text-gray-600"}`}>
-                          {STATUS_LABEL[prog.status] ?? prog.status}
+                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_BADGE[effectiveStatus] ?? "bg-gray-100 text-gray-600"}`}>
+                          {STATUS_LABEL[effectiveStatus] ?? effectiveStatus}
                         </span>
                       </div>
                     </div>
