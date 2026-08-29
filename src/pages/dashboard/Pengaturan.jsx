@@ -33,6 +33,79 @@ import {
 import { NumericFormat } from "react-number-format";
 import ConfirmModal from "../../components/common/ConfirmModal";
 
+const BANK_LIST = [
+  "Bank Syariah Indonesia (BSI)",
+  "Bank BRI",
+  "Bank BNI",
+  "Bank Mandiri",
+  "Bank BCA",
+  "Bank BTN",
+  "Bank CIMB Niaga",
+  "Bank Permata",
+  "Bank Danamon",
+  "Bank Muamalat",
+  "BRI Syariah",
+  "BNI Syariah",
+  "Bank Mega Syariah",
+  "Bank Jawa Barat (BJB)",
+  "Bank Jateng",
+  "Lainnya",
+];
+
+/**
+ * Dropdown bank dengan opsi "Lainnya" yang memunculkan text field manual.
+ * value / onChange beroperasi pada nama bank akhir (string).
+ */
+function BankSelect({ value, onChange, placeholder }) {
+  // isCustom: nilai saat ini bukan dari daftar standar (misal dari data lama)
+  const knownBanks = BANK_LIST.slice(0, -1); // hilangkan "Lainnya" dari daftar cek
+  const isCustom = value && !knownBanks.includes(value);
+
+  // State lokal: apakah user sedang dalam mode "Lainnya"
+  const [showManual, setShowManual] = useState(isCustom);
+
+  function handleSelectChange(e) {
+    const selected = e.target.value;
+    if (selected === "Lainnya") {
+      setShowManual(true);
+      onChange(""); // kosongkan nilai agar tidak mewarisi pilihan sebelumnya
+    } else {
+      setShowManual(false);
+      onChange(selected);
+    }
+  }
+
+  // Nilai yang ditampilkan di dropdown
+  const selectValue = showManual || isCustom ? "Lainnya" : (value || "");
+
+  return (
+    <div className="space-y-2">
+      <select
+        value={selectValue}
+        onChange={handleSelectChange}
+        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
+      >
+        <option value="">-- Pilih Bank --</option>
+        {BANK_LIST.map((bank) => (
+          <option key={bank} value={bank}>
+            {bank}
+          </option>
+        ))}
+      </select>
+      {(showManual || isCustom) && (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder || "Masukkan nama bank..."}
+          className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
+          autoFocus
+        />
+      )}
+    </div>
+  );
+}
+
 export default function Pengaturan() {
   const [activeTab, setActiveTab] = useState("profil");
   const [settings, setSettings] = useState(getSettings());
@@ -290,25 +363,6 @@ export default function Pengaturan() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-              Nomor SK & Dasar Legalitas
-            </label>
-            <input
-              type="text"
-              value={settings.profil.nomorSk}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  profil: { ...settings.profil, nomorSk: e.target.value },
-                })
-              }
-              className={inputCls}
-            />
-            <p className="text-[11px] text-gray-400 mt-1">
-              Contoh: SK Rektor Pembentukan UPZ & SK BAZNAS Kota/Provinsi/RI.
-            </p>
-          </div>
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
@@ -380,39 +434,119 @@ export default function Pengaturan() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                Rekening Penerimaan Zakat (Utama)
-              </label>
-              <input
-                type="text"
-                value={settings.profil.rekeningUtama}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    profil: { ...settings.profil, rekeningUtama: e.target.value },
-                  })
-                }
-                className={inputCls}
-              />
+          {/* Rekening Penerimaan Zakat (Utama) */}
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-brand-600 mb-3">
+              Rekening Penerimaan Zakat (Utama)
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Nama Bank
+                </label>
+                <BankSelect
+                  value={settings.profil.rekeningUtamaBank || ""}
+                  onChange={(val) =>
+                    setSettings({
+                      ...settings,
+                      profil: { ...settings.profil, rekeningUtamaBank: val },
+                    })
+                  }
+                  placeholder="Nama bank lainnya..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Nomor Rekening
+                </label>
+                <input
+                  type="text"
+                  value={settings.profil.rekeningUtamaNo || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      profil: { ...settings.profil, rekeningUtamaNo: e.target.value },
+                    })
+                  }
+                  placeholder="Contoh: 7123456789"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Atas Nama (a.n)
+                </label>
+                <input
+                  type="text"
+                  value={settings.profil.rekeningUtamaAn || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      profil: { ...settings.profil, rekeningUtamaAn: e.target.value },
+                    })
+                  }
+                  placeholder="Contoh: UPZ Unsil"
+                  className={inputCls}
+                />
+              </div>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                Rekening Penerimaan Infaq / Sedekah
-              </label>
-              <input
-                type="text"
-                value={settings.profil.rekeningInfaq}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    profil: { ...settings.profil, rekeningInfaq: e.target.value },
-                  })
-                }
-                className={inputCls}
-              />
+          {/* Rekening Penerimaan Infaq / Sedekah */}
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-3">
+              Rekening Penerimaan Infaq / Sedekah
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Nama Bank
+                </label>
+                <BankSelect
+                  value={settings.profil.rekeningInfaqBank || ""}
+                  onChange={(val) =>
+                    setSettings({
+                      ...settings,
+                      profil: { ...settings.profil, rekeningInfaqBank: val },
+                    })
+                  }
+                  placeholder="Nama bank lainnya..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Nomor Rekening
+                </label>
+                <input
+                  type="text"
+                  value={settings.profil.rekeningInfaqNo || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      profil: { ...settings.profil, rekeningInfaqNo: e.target.value },
+                    })
+                  }
+                  placeholder="Contoh: 7987654321"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Atas Nama (a.n)
+                </label>
+                <input
+                  type="text"
+                  value={settings.profil.rekeningInfaqAn || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      profil: { ...settings.profil, rekeningInfaqAn: e.target.value },
+                    })
+                  }
+                  placeholder="Contoh: Infaq UPZ Unsil"
+                  className={inputCls}
+                />
+              </div>
             </div>
           </div>
         </Card>

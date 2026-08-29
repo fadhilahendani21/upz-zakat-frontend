@@ -229,12 +229,11 @@ export default function DonasiPage() {
                       "BSI 7123456789 a.n UPZ Unsil"}
                   </p>
                 </div>
-
                 <button
                   type="button"
                   onClick={() =>
                     navigator.clipboard?.writeText(
-                      settings?.profil?.rekeningUtama ||
+                      settings?.profil?.rekeningUtamaNo ||
                         "7123456789"
                     )
                   }

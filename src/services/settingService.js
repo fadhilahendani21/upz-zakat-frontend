@@ -7,13 +7,16 @@ export const DEFAULT_SETTINGS = {
   profil: {
     namaLembaga: "Unit Pengumpul Zakat (UPZ) Universitas Siliwangi",
     namaSingkat: "UPZ Unsil",
-    nomorSk: "SK Rektor No. 420/UN40/HK/2023 & BAZNAS RI No. 81/2023",
     alamat: "Jl. Siliwangi No. 24, Kahuripan, Kec. Tawang, Kota Tasikmalaya, Jawa Barat 46115",
     whatsapp: "081234567890",
     email: "upz@unsil.ac.id",
     website: "https://upz.unsil.ac.id",
-    rekeningUtama: "Bank Syariah Indonesia (BSI) No. 7123456789 a.n UPZ Unsil",
-    rekeningInfaq: "Bank BSI No. 7987654321 a.n Infaq UPZ Unsil",
+    rekeningUtamaBank: "Bank Syariah Indonesia (BSI)",
+    rekeningUtamaNo: "7123456789",
+    rekeningUtamaAn: "UPZ Unsil",
+    rekeningInfaqBank: "Bank Syariah Indonesia (BSI)",
+    rekeningInfaqNo: "7987654321",
+    rekeningInfaqAn: "Infaq UPZ Unsil",
   },
 
   // 2. Pengaturan Zakat & Nisab
@@ -70,9 +73,8 @@ export const DEFAULT_SETTINGS = {
 export function getSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
-    const parsed = JSON.parse(raw);
-    return {
+    const parsed = raw ? JSON.parse(raw) : {};
+    const merged = {
       ...DEFAULT_SETTINGS,
       ...parsed,
       profil: { ...DEFAULT_SETTINGS.profil, ...(parsed.profil || {}) },
@@ -81,9 +83,29 @@ export function getSettings() {
       privasi: { ...DEFAULT_SETTINGS.privasi, ...(parsed.privasi || {}) },
       umum: { ...DEFAULT_SETTINGS.umum, ...(parsed.umum || {}) },
     };
+
+    // Derived values for backward compatibility
+    const mainBank = merged.profil.rekeningUtamaBank || "";
+    const mainNo = merged.profil.rekeningUtamaNo || "";
+    const mainAn = merged.profil.rekeningUtamaAn || "";
+    merged.profil.rekeningUtama = `${mainBank} No. ${mainNo} a.n ${mainAn}`;
+
+    const infaqBank = merged.profil.rekeningInfaqBank || "";
+    const infaqNo = merged.profil.rekeningInfaqNo || "";
+    const infaqAn = merged.profil.rekeningInfaqAn || "";
+    merged.profil.rekeningInfaq = `${infaqBank} No. ${infaqNo} a.n ${infaqAn}`;
+
+    return merged;
   } catch (err) {
     console.error("Gagal membaca pengaturan sistem dari storage:", err);
-    return DEFAULT_SETTINGS;
+    return {
+      ...DEFAULT_SETTINGS,
+      profil: {
+        ...DEFAULT_SETTINGS.profil,
+        rekeningUtama: `${DEFAULT_SETTINGS.profil.rekeningUtamaBank} No. ${DEFAULT_SETTINGS.profil.rekeningUtamaNo} a.n ${DEFAULT_SETTINGS.profil.rekeningUtamaAn}`,
+        rekeningInfaq: `${DEFAULT_SETTINGS.profil.rekeningInfaqBank} No. ${DEFAULT_SETTINGS.profil.rekeningInfaqNo} a.n ${DEFAULT_SETTINGS.profil.rekeningInfaqAn}`,
+      }
+    };
   }
 }
 

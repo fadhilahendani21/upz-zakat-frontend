@@ -293,7 +293,7 @@ export default function ZakatPage() {
                   type="button"
                   onClick={() =>
                     navigator.clipboard?.writeText(
-                      settings?.profil?.rekeningUtama ||
+                      settings?.profil?.rekeningUtamaNo ||
                         "7123456789"
                     )
                   }
