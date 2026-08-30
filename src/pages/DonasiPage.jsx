@@ -10,6 +10,7 @@ import {
   User,
   Mail,
   Phone,
+  X,
 } from "lucide-react";
 
 import Card from "../components/common/Card";
@@ -42,6 +43,10 @@ export default function DonasiPage() {
   const location = useLocation();
   const settings = useSettings();
 
+  // ======================================================
+  // STATE
+  // ======================================================
+
   const [jenisId, setJenisId] = useState(
     location.state?.jenisId || JENIS_DONASI[0]?.id
   );
@@ -57,7 +62,7 @@ export default function DonasiPage() {
   );
 
   const [metodeId, setMetodeId] = useState(
-    metodePembayaran[0].id
+    metodePembayaran[0]?.id || ""
   );
 
   const [anonim, setAnonim] = useState(
@@ -73,6 +78,13 @@ export default function DonasiPage() {
   const [status, setStatus] = useState("idle");
   const [hasil, setHasil] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // POPUP QRIS
+  const [showQris, setShowQris] = useState(false);
+
+  // ======================================================
+  // JENIS DONASI TERPILIH
+  // ======================================================
 
   const jenisTerpilih = JENIS_DONASI.find(
     (j) => j.id === jenisId
@@ -106,6 +118,21 @@ export default function DonasiPage() {
   }
 
   // ======================================================
+  // PILIH METODE PEMBAYARAN
+  // ======================================================
+
+  function handlePilihMetode(id) {
+    setMetodeId(id);
+
+    // QRIS langsung buka popup
+    if (id === "qris") {
+      setShowQris(true);
+    } else {
+      setShowQris(false);
+    }
+  }
+
+  // ======================================================
   // SUBMIT DONASI
   // ======================================================
 
@@ -113,6 +140,11 @@ export default function DonasiPage() {
     e.preventDefault();
 
     if (!nominal || nominal < 10000) return;
+
+    if (!metodeId) {
+      setErrorMsg("Silakan pilih metode pembayaran.");
+      return;
+    }
 
     setStatus("loading");
     setErrorMsg("");
@@ -154,17 +186,19 @@ export default function DonasiPage() {
   if (status === "success") {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
-        <div className="max-w-lg mx-auto px-6 py-20 text-center">
 
-          <div className="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-5">
+        <div className="mx-auto max-w-lg px-6 py-20 text-center">
+
+          {/* ICON SUKSES */}
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-brand-50 text-brand-600">
             <CheckCircle2 size={32} />
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900">
             Terima kasih atas donasi Anda
           </h1>
 
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          <p className="mb-6 text-sm leading-relaxed text-gray-500">
             Selesaikan pembayaran dengan mengikuti instruksi
             yang tersedia. Konfirmasi akan dilakukan setelah
             pembayaran berhasil diverifikasi.
@@ -172,42 +206,46 @@ export default function DonasiPage() {
 
           <Card className="text-left">
 
-            <div className="flex justify-between text-sm mb-3 gap-4">
+            {/* ID TRANSAKSI */}
+            <div className="mb-3 flex justify-between gap-4 text-sm">
               <span className="text-gray-500">
                 ID Transaksi
               </span>
 
-              <span className="font-medium text-gray-900 text-right">
+              <span className="text-right font-medium text-gray-900">
                 {hasil?.kode || hasil?.id || "-"}
               </span>
             </div>
 
-            <div className="flex justify-between text-sm mb-3 gap-4">
+            {/* JENIS */}
+            <div className="mb-3 flex justify-between gap-4 text-sm">
               <span className="text-gray-500">
                 Jenis
               </span>
 
-              <span className="font-medium text-gray-900 text-right">
+              <span className="text-right font-medium text-gray-900">
                 {jenisTerpilih?.nama}
               </span>
             </div>
 
-            <div className="flex justify-between text-sm mb-3 gap-4">
+            {/* NOMINAL */}
+            <div className="mb-3 flex justify-between gap-4 text-sm">
               <span className="text-gray-500">
                 Nominal
               </span>
 
-              <span className="font-semibold text-brand-700 text-right">
+              <span className="text-right font-semibold text-brand-700">
                 {formatRupiah(nominal)}
               </span>
             </div>
 
-            <div className="flex justify-between text-sm gap-4">
+            {/* METODE */}
+            <div className="flex justify-between gap-4 text-sm">
               <span className="text-gray-500">
                 Metode
               </span>
 
-              <span className="font-medium text-gray-900 text-right">
+              <span className="text-right font-medium text-gray-900">
                 {
                   metodePembayaran.find(
                     (m) => m.id === metodeId
@@ -216,19 +254,23 @@ export default function DonasiPage() {
               </span>
             </div>
 
+            {/* =================================================
+                DETAIL TRANSFER BANK
+            ================================================== */}
             {metodeId === "transfer-bank" && (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
 
                 <div>
                   <p className="text-xs text-gray-500">
                     Rekening Tujuan
                   </p>
 
-                  <p className="font-mono font-semibold text-gray-900 text-xs sm:text-sm">
+                  <p className="font-mono text-xs font-semibold text-gray-900 sm:text-sm">
                     {settings?.profil?.rekeningUtama ||
                       "BSI 7123456789 a.n UPZ Unsil"}
                   </p>
                 </div>
+
                 <button
                   type="button"
                   onClick={() =>
@@ -237,7 +279,7 @@ export default function DonasiPage() {
                         "7123456789"
                     )
                   }
-                  className="text-brand-600 hover:text-brand-700 p-2"
+                  className="p-2 text-brand-600 hover:text-brand-700"
                   title="Salin nomor rekening"
                 >
                   <Copy size={18} />
@@ -246,8 +288,45 @@ export default function DonasiPage() {
               </div>
             )}
 
+            {/* =================================================
+                DETAIL QRIS
+            ================================================== */}
+            {metodeId === "qris" && (
+              <div className="mt-5 border-t border-gray-100 pt-5 text-center">
+
+                <p className="text-sm font-semibold text-brand-700">
+                  Pembayaran QRIS
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  Scan QR berikut menggunakan aplikasi pembayaran
+                  yang mendukung QRIS.
+                </p>
+
+                <div className="mt-4 flex justify-center">
+
+                  <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+
+                    <img
+                      src="/dummy-qris.png"
+                      alt="QRIS"
+                      className="h-56 w-56 object-contain"
+                    />
+
+                  </div>
+
+                </div>
+
+                <p className="mt-3 text-xs text-gray-500">
+                  Silakan selesaikan pembayaran sesuai nominal donasi.
+                </p>
+
+              </div>
+            )}
+
           </Card>
 
+          {/* WHATSAPP */}
           {settings?.profil?.whatsapp && (
             <a
               href={`https://wa.me/${settings.profil.whatsapp.replace(
@@ -264,19 +343,21 @@ export default function DonasiPage() {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-2 transition"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
               <Phone size={16} />
               Konfirmasi via WhatsApp
             </a>
           )}
 
+          {/* DONASI LAIN */}
           <Button
             variant="outline"
             className="mt-4 w-full"
             onClick={() => {
               setStatus("idle");
               setHasil(null);
+              setShowQris(false);
             }}
           >
             Buat Donasi Lain
@@ -294,63 +375,75 @@ export default function DonasiPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
-      {/* HEADER */}
-      <section className="w-full bg-brand-700 text-white">
-        <div className="max-w-5xl mx-auto px-6 py-12 lg:py-14 text-center">
+      {/* =================================================
+          HEADER
+      ================================================== */}
 
-          <span className="inline-flex items-center gap-2 text-xs font-medium bg-white/10 px-3 py-1.5 rounded-full">
+      <section className="w-full bg-brand-700 text-white">
+
+        <div className="mx-auto max-w-5xl px-6 py-12 text-center lg:py-14">
+
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium">
             <Heart size={14} />
             Donasi Sekarang
           </span>
 
-          <h1 className="mt-5 text-3xl lg:text-4xl font-extrabold leading-tight">
+          <h1 className="mt-5 text-3xl font-extrabold leading-tight lg:text-4xl">
             Donasi Infaq & Sedekah
           </h1>
 
-          <p className="mt-4 text-green-50 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-green-50 sm:text-base">
             Salurkan infaq dan sedekah Anda dengan mudah,
             aman, dan tepat sasaran untuk membantu masyarakat
             yang membutuhkan.
           </p>
 
         </div>
+
       </section>
 
-      <form
-  onSubmit={handleSubmit}
-  className="w-full max-w-7xl mx-auto px-6 py-12 space-y-5"
->
+      {/* =================================================
+          FORM
+      ================================================== */}
 
-        {/* JENIS DONASI */}
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto w-full max-w-7xl space-y-5 px-6 py-12"
+      >
+
+        {/* =================================================
+            JENIS DONASI
+        ================================================== */}
+
         <Card>
 
-          <h2 className="font-semibold text-gray-900 mb-4">
+          <h2 className="mb-4 font-semibold text-gray-900">
             Pilih Jenis Donasi
           </h2>
 
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
 
             {JENIS_DONASI.map((j) => (
               <button
                 type="button"
                 key={j.id}
                 onClick={() => setJenisId(j.id)}
-                className={`text-left rounded-xl border p-4 transition-colors ${
+                className={`rounded-xl border p-4 text-left transition-colors ${
                   jenisId === j.id
                     ? "border-brand-600 bg-brand-50"
                     : "border-gray-200 hover:border-brand-300"
                 }`}
               >
 
-                <p className="text-[11px] font-medium text-brand-600 uppercase tracking-wide">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-brand-600">
                   {j.kategori}
                 </p>
 
-                <p className="font-semibold text-gray-900 text-sm mt-1">
+                <p className="mt-1 text-sm font-semibold text-gray-900">
                   {j.nama}
                 </p>
 
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                <p className="mt-1 text-xs leading-relaxed text-gray-500">
                   {j.deskripsi}
                 </p>
 
@@ -361,14 +454,17 @@ export default function DonasiPage() {
 
         </Card>
 
-        {/* NOMINAL */}
+        {/* =================================================
+            NOMINAL
+        ================================================== */}
+
         <Card>
 
-          <h2 className="font-semibold text-gray-900 mb-4">
+          <h2 className="mb-4 font-semibold text-gray-900">
             Nominal Donasi
           </h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
 
             {nominalCepat.map((n) => (
               <button
@@ -387,7 +483,7 @@ export default function DonasiPage() {
 
           </div>
 
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
             Atau masukkan nominal lain
           </label>
 
@@ -403,27 +499,30 @@ export default function DonasiPage() {
               value={nominalCustom}
               onChange={handleNominalCustomChange}
               placeholder="100.000"
-              className="w-full border border-gray-200 rounded-lg pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
 
           </div>
 
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="mt-2 text-xs text-gray-400">
             Minimal donasi Rp10.000
           </p>
 
         </Card>
 
-        {/* DATA DIRI */}
+        {/* =================================================
+            DATA DIRI
+        ================================================== */}
+
         <Card>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
             <h2 className="font-semibold text-gray-900">
               Data Diri
             </h2>
 
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
 
               <input
                 type="checkbox"
@@ -434,18 +533,19 @@ export default function DonasiPage() {
                 className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
               />
 
-              Donasi sebagai hamba Allah (anonim)
+              Donasi sebagai Hamba Allah (anonim)
 
             </label>
 
           </div>
 
           {!anonim && (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
 
+              {/* NAMA */}
               <div className="sm:col-span-2">
 
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   Nama Lengkap
                 </label>
 
@@ -463,16 +563,17 @@ export default function DonasiPage() {
                     value={data.nama}
                     onChange={handleDataChange}
                     placeholder="Nama Anda"
-                    className="w-full border border-gray-200 rounded-lg pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
 
                 </div>
 
               </div>
 
+              {/* EMAIL */}
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   Email
                 </label>
 
@@ -490,16 +591,17 @@ export default function DonasiPage() {
                     value={data.email}
                     onChange={handleDataChange}
                     placeholder="nama@email.com"
-                    className="w-full border border-gray-200 rounded-lg pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
 
                 </div>
 
               </div>
 
+              {/* TELEPON */}
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   No. Telepon
                 </label>
 
@@ -517,7 +619,7 @@ export default function DonasiPage() {
                     value={data.telepon}
                     onChange={handleDataChange}
                     placeholder="08xx-xxxx-xxxx"
-                    className="w-full border border-gray-200 rounded-lg pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
 
                 </div>
@@ -529,10 +631,13 @@ export default function DonasiPage() {
 
         </Card>
 
-        {/* METODE PEMBAYARAN */}
+        {/* =================================================
+            METODE PEMBAYARAN
+        ================================================== */}
+
         <Card>
 
-          <h2 className="font-semibold text-gray-900 mb-4">
+          <h2 className="mb-4 font-semibold text-gray-900">
             Metode Pembayaran
           </h2>
 
@@ -545,7 +650,7 @@ export default function DonasiPage() {
               return (
                 <label
                   key={m.id}
-                  className={`flex items-center gap-3 rounded-lg border p-3.5 cursor-pointer ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3.5 transition-colors ${
                     metodeId === m.id
                       ? "border-brand-600 bg-brand-50"
                       : "border-gray-200 hover:border-brand-300"
@@ -558,13 +663,15 @@ export default function DonasiPage() {
                     value={m.id}
                     checked={metodeId === m.id}
                     onChange={() =>
-                      setMetodeId(m.id)
+                      handlePilihMetode(m.id)
                     }
                     className="text-brand-600"
                   />
 
-                  <span className="w-9 h-9 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-brand-600 shrink-0">
-                    <Icon size={18} />
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white text-brand-600">
+
+                    {Icon && <Icon size={18} />}
+
                   </span>
 
                   <span>
@@ -587,16 +694,19 @@ export default function DonasiPage() {
 
         </Card>
 
-        {/* RINGKASAN */}
+        {/* =================================================
+            RINGKASAN
+        ================================================== */}
+
         <Card>
 
           {errorMsg && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
               {errorMsg}
             </div>
           )}
 
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
 
             <span className="text-sm text-gray-500">
               Total donasi
@@ -615,7 +725,8 @@ export default function DonasiPage() {
               status === "loading" ||
               !nominal ||
               nominal < 10000 ||
-              !jenisTerpilih
+              !jenisTerpilih ||
+              !metodeId
             }
             className="w-full"
           >
@@ -624,13 +735,94 @@ export default function DonasiPage() {
               : "Lanjutkan Pembayaran"}
           </Button>
 
-          <p className="text-xs text-gray-400 text-center mt-3">
+          <p className="mt-3 text-center text-xs text-gray-400">
             Transaksi aman dan diawasi sesuai prinsip syariah.
           </p>
 
         </Card>
 
       </form>
+
+      {/* =====================================================
+          POPUP QRIS
+      ====================================================== */}
+
+      {showQris && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+
+          {/* MODAL */}
+          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+
+            {/* TOMBOL CLOSE */}
+            <button
+              type="button"
+              onClick={() => setShowQris(false)}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+              aria-label="Tutup popup QRIS"
+            >
+              <X size={20} />
+            </button>
+
+            {/* HEADER */}
+            <div className="text-center">
+
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <QrCode size={25} />
+              </div>
+
+              <h2 className="mt-4 text-lg font-bold text-gray-900">
+                Pembayaran QRIS
+              </h2>
+
+              <p className="mt-1 text-sm leading-5 text-gray-500">
+                Scan QR berikut menggunakan aplikasi pembayaran
+                Anda.
+              </p>
+
+            </div>
+
+            {/* QR IMAGE */}
+            <div className="mt-6 flex justify-center">
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+
+                <img
+                  src="/dummy-qris.png"
+                  alt="QRIS"
+                  className="h-64 w-64 object-contain"
+                />
+
+              </div>
+
+            </div>
+
+            {/* INFO NOMINAL */}
+            <div className="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-center">
+
+              <p className="text-xs text-gray-500">
+                Total Donasi
+              </p>
+
+              <p className="mt-1 text-lg font-bold text-brand-700">
+                {formatRupiah(nominal)}
+              </p>
+
+            </div>
+
+            {/* TOMBOL TUTUP */}
+            <button
+              type="button"
+              onClick={() => setShowQris(false)}
+              className="mt-5 w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+            >
+              Tutup
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 }

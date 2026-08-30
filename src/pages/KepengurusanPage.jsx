@@ -1,8 +1,6 @@
 import { ArrowLeft, Users, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import kepengurusanImage from "../assets/images/kepengurusan.jpeg";
-
 export default function KepengurusanPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
@@ -11,39 +9,24 @@ export default function KepengurusanPage() {
           HERO
       ===================================================== */}
 
-      <section className="relative w-full overflow-hidden">
+      <section className="w-full bg-brand-700 text-white">
 
-        {/* Foto */}
-        <div className="relative h-[280px] sm:h-[340px] lg:h-[400px]">
+        <div className="mx-auto flex min-h-[260px] items-center justify-center px-6 py-12 text-center sm:min-h-[290px] lg:min-h-[310px]">
 
-          <img
-            src={kepengurusanImage}
-            alt="Kepengurusan UPZ Zakat Universitas Siliwangi"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
+          <div className="max-w-3xl">
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/50" />
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-200 sm:text-sm">
+              Tentang Kami
+            </p>
 
-          {/* Isi Hero */}
-          <div className="relative z-10 flex h-full items-center justify-center px-6">
+            <h1 className="mt-3 text-3xl font-bold sm:text-4xl lg:text-5xl">
+              Kepengurusan
+            </h1>
 
-            <div className="text-center text-white">
-
-              <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-green-200">
-                Tentang Kami
-              </p>
-
-              <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold">
-                Kepengurusan
-              </h1>
-
-              <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-green-50 leading-relaxed">
-                Susunan pengurus Unit Pengumpul Zakat Universitas Siliwangi
-                periode berjalan.
-              </p>
-
-            </div>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-green-50 sm:text-base">
+              Susunan pengurus Unit Pengumpul Zakat Universitas Siliwangi
+              periode berjalan.
+            </p>
 
           </div>
 
@@ -51,29 +34,29 @@ export default function KepengurusanPage() {
 
       </section>
 
-
       {/* =====================================================
           CONTENT
       ===================================================== */}
 
-      <main className="max-w-6xl mx-auto px-6 py-10 sm:py-12">
+      <main className="mx-auto max-w-6xl px-6 py-10 sm:py-12">
 
-        {/* Tombol kembali */}
+        {/* =================================================
+            TOMBOL KEMBALI
+        ================================================== */}
 
         <Link
           to="/tentang"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800 transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800"
         >
           <ArrowLeft size={16} />
           Kembali ke Tentang Kami
         </Link>
 
-
-        {/* =====================================================
+        {/* =================================================
             JUDUL
-        ===================================================== */}
+        ================================================== */}
 
-        <div className="mt-8 mb-8">
+        <div className="mb-8 mt-8">
 
           <div className="flex items-center gap-3">
 
@@ -87,7 +70,7 @@ export default function KepengurusanPage() {
                 Struktur Organisasi
               </p>
 
-              <h2 className="mt-1 text-2xl sm:text-3xl font-bold text-gray-900">
+              <h2 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">
                 Kepengurusan UPZ Zakat
               </h2>
 
@@ -97,23 +80,23 @@ export default function KepengurusanPage() {
 
         </div>
 
-
-        {/* =====================================================
+        {/* =================================================
             KEPENGURUSAN
-        ===================================================== */}
+        ================================================== */}
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
-          {/* Judul */}
+          {/* =================================================
+              1. KEPENGURUSAN
+          ================================================== */}
 
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-gray-900 sm:text-xl">
             1. Kepengurusan
           </h3>
 
-
           {/* =================================================
               PENASEHAT
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-7">
 
@@ -121,8 +104,7 @@ export default function KepengurusanPage() {
               Penasehat
             </h4>
 
-
-            <ol className="mt-4 list-decimal space-y-3 pl-6 text-sm sm:text-base text-gray-700 leading-relaxed">
+            <ol className="mt-4 list-decimal space-y-3 pl-6 text-sm leading-relaxed text-gray-700 sm:text-base">
 
               <li>
                 Rektor Universitas Siliwangi
@@ -154,10 +136,9 @@ export default function KepengurusanPage() {
 
           </div>
 
-
           {/* =================================================
               PENGURUS
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-9">
 
@@ -165,63 +146,59 @@ export default function KepengurusanPage() {
               Pengurus
             </h4>
 
-
             <div className="mt-5 space-y-5">
 
-              {/* Ketua */}
+              {/* KETUA */}
 
               <div>
 
-                <p className="text-sm sm:text-base font-semibold text-brand-700">
+                <p className="text-sm font-semibold text-brand-700 sm:text-base">
                   Ketua
                 </p>
 
-                <p className="mt-1 text-sm sm:text-base text-gray-700">
+                <p className="mt-1 text-sm text-gray-700 sm:text-base">
                   Dr. H. Cucu Hidayat, M.Pd.
                 </p>
 
               </div>
 
-
-              {/* Wakil Ketua */}
+              {/* WAKIL KETUA */}
 
               <div>
 
-                <p className="text-sm sm:text-base font-semibold text-brand-700">
+                <p className="text-sm font-semibold text-brand-700 sm:text-base">
                   Wakil Ketua
                 </p>
 
-                <p className="mt-1 text-sm sm:text-base text-gray-700">
+                <p className="mt-1 text-sm text-gray-700 sm:text-base">
                   Dr. H. Acep Zoni Saefuk Mubarok, M.Ag.
                 </p>
 
               </div>
 
-
-              {/* Sekretaris */}
+              {/* SEKRETARIS */}
 
               <div>
 
-                <p className="text-sm sm:text-base font-semibold text-brand-700">
+                <p className="text-sm font-semibold text-brand-700 sm:text-base">
                   Sekretaris
                 </p>
 
-                <p className="mt-1 text-sm sm:text-base text-gray-700">
+                <p className="mt-1 text-sm text-gray-700 sm:text-base">
                   Darwis Darmawan, S.Pd., M.Pd.
                 </p>
 
               </div>
 
-
-              {/* Bendahara */}
+              {/* BENDAHARA */}
 
               <div>
 
-                <p className="text-sm sm:text-base font-semibold text-brand-700">
+                <p className="text-sm font-semibold text-brand-700 sm:text-base">
                   Bendahara
                 </p>
 
-                <p className="mt-1 text-sm sm:text-base text-gray-700">
+                <p className="mt-1 text-sm text-gray-700 sm:text-base">
                   Hj. Euis Rosidah, S.E., M.Ak.
                 </p>
 
@@ -231,10 +208,9 @@ export default function KepengurusanPage() {
 
           </div>
 
-
           {/* =================================================
               BIDANG PENGUMPULAN
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-9">
 
@@ -245,6 +221,7 @@ export default function KepengurusanPage() {
             <div className="mt-5 space-y-4">
 
               <div>
+
                 <p className="text-sm font-semibold text-gray-700">
                   Koordinator
                 </p>
@@ -252,10 +229,11 @@ export default function KepengurusanPage() {
                 <p className="mt-1 text-sm text-gray-600">
                   Drs. H. Asep Saepullah, M.Ag.
                 </p>
+
               </div>
 
-
               <div>
+
                 <p className="text-sm font-semibold text-gray-700">
                   Anggota
                 </p>
@@ -263,16 +241,16 @@ export default function KepengurusanPage() {
                 <p className="mt-1 text-sm text-gray-600">
                   Adhi Amjad Mughni, S.E.I., M.E.Sy.
                 </p>
+
               </div>
 
             </div>
 
           </div>
 
-
           {/* =================================================
               BIDANG PENDISTRIBUSIAN
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-9">
 
@@ -294,7 +272,6 @@ export default function KepengurusanPage() {
 
               </div>
 
-
               <div>
 
                 <p className="text-sm font-semibold text-gray-700">
@@ -311,10 +288,9 @@ export default function KepengurusanPage() {
 
           </div>
 
-
           {/* =================================================
               BIDANG PENDAYAGUNAAN
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-9">
 
@@ -336,7 +312,6 @@ export default function KepengurusanPage() {
 
               </div>
 
-
               <div>
 
                 <p className="text-sm font-semibold text-gray-700">
@@ -353,27 +328,25 @@ export default function KepengurusanPage() {
 
           </div>
 
-
           {/* =================================================
               LEGAL FORMAL
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-10 border-t border-gray-100 pt-8">
 
             <h4 className="font-bold text-gray-900">
-              • Legal Formal
+              Legal Formal
             </h4>
 
-            <p className="mt-4 text-sm sm:text-base leading-relaxed text-gray-700">
+            <p className="mt-4 text-sm leading-relaxed text-gray-700 sm:text-base">
               SK Pengurus UPZ Universitas Siliwangi
             </p>
 
           </div>
 
-
           {/* =================================================
               ALAMAT KANTOR
-          ================================================= */}
+          ================================================== */}
 
           <div className="mt-8 border-t border-gray-100 pt-8">
 
@@ -386,14 +359,14 @@ export default function KepengurusanPage() {
               <div>
 
                 <h4 className="font-bold text-gray-900">
-                  • Alamat Kantor
+                  Alamat Kantor
                 </h4>
 
-                <p className="mt-3 text-sm sm:text-base leading-relaxed text-gray-700">
+                <p className="mt-3 text-sm leading-relaxed text-gray-700 sm:text-base">
                   Masjid Kampus Al-Muhajirin Universitas Siliwangi.
                 </p>
 
-                <p className="mt-2 text-sm sm:text-base leading-relaxed text-gray-700">
+                <p className="mt-2 text-sm leading-relaxed text-gray-700 sm:text-base">
                   Jl. Siliwangi No. 24 Kel. Kahuripan Kec. Tawang
                   Kota Tasikmalaya 46115
                 </p>
@@ -406,10 +379,9 @@ export default function KepengurusanPage() {
 
         </div>
 
-
-        {/* =====================================================
+        {/* =================================================
             TOMBOL KEMBALI
-        ===================================================== */}
+        ================================================== */}
 
         <div className="mt-8 text-center">
 

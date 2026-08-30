@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { MapPin, LogIn, Phone, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import logoUpz from "../../assets/img/logo-upz.png";
 import { useSettings } from "../../services/settingService";
@@ -33,7 +33,6 @@ export default function Footer() {
     settings?.profil?.alamat ||
     "Universitas Siliwangi, Tasikmalaya";
 
-  // Nomor WhatsApp UPZ
   const whatsapp = "085171014303";
 
   const email =
@@ -43,51 +42,56 @@ export default function Footer() {
     <footer className="bg-[#175621] text-white">
 
       {/* ================= MAIN FOOTER ================= */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-6 pb-4">
+      <div className="mx-auto max-w-7xl px-6 pb-4 pt-6 lg:px-10">
 
-        <div className="grid grid-cols-3 lg:grid-cols-12 gap-x-4 gap-y-6 lg:gap-7">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-6 lg:grid-cols-12 lg:gap-7">
 
           {/* ================= BRAND ================= */}
           <div className="col-span-3 lg:col-span-5">
 
             <div className="flex items-center gap-3">
 
-              {/* Logo UPZ */}
-              <div className="w-9 h-9 rounded-lg bg-white p-1 shadow-sm">
+              <div className="h-9 w-9 rounded-lg bg-white p-1 shadow-sm">
+
                 <img
                   src={logoUpz}
                   alt="Logo UPZ Unsil"
-                  className="w-full h-full object-contain rounded-md"
+                  className="h-full w-full rounded-md object-contain"
                 />
+
               </div>
 
-              {/* Nama */}
               <div>
+
                 <h3 className="text-base font-bold">
                   {brandName}
                 </h3>
 
-                <p className="text-[11px] text-green-300 mt-0.5">
+                {/* DIBESARKAN */}
+                <p className="mt-0.5 text-xs font-medium text-green-300">
                   Universitas Siliwangi
                 </p>
+
               </div>
 
             </div>
 
-            <p className="mt-3 max-w-md text-xs text-green-100 leading-5">
+            <p className="mt-3 max-w-md text-xs leading-5 text-green-100">
+
               {orgName} berkomitmen
               dalam mengelola dan menyalurkan zakat, infak, dan sedekah
               secara amanah, transparan, dan tepat sasaran.
+
             </p>
 
             {/* ================= SOCIAL MEDIA ================= */}
-            <div className="flex items-center gap-2 mt-3">
+            <div className="mt-3 flex items-center gap-2">
 
               {/* Instagram */}
               <a
                 href="#"
                 aria-label="Instagram"
-                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-green-800 transition-all duration-300"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 transition-all duration-300 hover:bg-white hover:text-green-800"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +125,7 @@ export default function Footer() {
               <a
                 href="#"
                 aria-label="Facebook"
-                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-green-800 transition-all duration-300"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 transition-all duration-300 hover:bg-white hover:text-green-800"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -142,7 +146,7 @@ export default function Footer() {
               <a
                 href="#"
                 aria-label="YouTube"
-                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-green-800 transition-all duration-300"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 transition-all duration-300 hover:bg-white hover:text-green-800"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -155,35 +159,39 @@ export default function Footer() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"
-                  />
+                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
                   <path d="m10 15 5-3-5-3z" />
                 </svg>
               </a>
 
             </div>
+
           </div>
 
           {/* ================= NAVIGASI ================= */}
           <div className="col-span-1 lg:col-span-2">
 
-            <h4 className="font-semibold text-white text-sm">
+            <h4 className="text-sm font-semibold text-white">
               Navigasi
             </h4>
 
-            <div className="w-7 h-0.5 bg-green-400 rounded-full mt-1.5 mb-2.5" />
+            <div className="mb-2.5 mt-1.5 h-0.5 w-7 rounded-full bg-green-400" />
 
             <ul className="space-y-1.5">
+
               {navigasi.map((item) => (
                 <li key={item.to}>
+
                   <Link
                     to={item.to}
-                    className="text-xs text-green-100 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
+                    className="inline-block text-xs text-green-100 transition-all duration-200 hover:translate-x-1 hover:text-white"
                   >
                     {item.label}
                   </Link>
+
                 </li>
               ))}
+
             </ul>
 
           </div>
@@ -191,68 +199,77 @@ export default function Footer() {
           {/* ================= LAYANAN ================= */}
           <div className="col-span-1 lg:col-span-2">
 
-            <h4 className="font-semibold text-white text-sm">
+            <h4 className="text-sm font-semibold text-white">
               Layanan
             </h4>
 
-            <div className="w-7 h-0.5 bg-green-400 rounded-full mt-1.5 mb-2.5" />
+            <div className="mb-2.5 mt-1.5 h-0.5 w-7 rounded-full bg-green-400" />
 
             <ul className="space-y-1.5">
+
               {layanan.map((item) => (
                 <li key={item.to}>
+
                   <Link
                     to={item.to}
-                    className="relative z-10 text-xs text-green-100 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
+                    className="inline-block text-xs text-green-100 transition-all duration-200 hover:translate-x-1 hover:text-white"
                   >
                     {item.label}
                   </Link>
+
                 </li>
               ))}
+
             </ul>
 
           </div>
 
-          {/* ================= KONTAK ================= */}
+          {/* ================= HUBUNGI KAMI ================= */}
           <div className="col-span-1 lg:col-span-3">
 
-            <h4 className="font-semibold text-white text-sm">
+            <h4 className="text-sm font-semibold text-white">
               Hubungi Kami
             </h4>
 
-            <div className="w-7 h-0.5 bg-green-400 rounded-full mt-1.5 mb-2.5" />
+            <div className="mb-3 mt-1.5 h-0.5 w-7 rounded-full bg-green-400" />
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
 
-              {/* Address */}
-              <div className="flex gap-2.5">
+              {/* ALAMAT */}
+              <div className="flex items-start gap-2.5">
 
-                <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
-                  <MapPin size={13} />
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+
+                  <MapPin size={14} />
+
                 </div>
 
-                <div>
-                  <p className="text-[11px] text-green-300 mb-0.5">
+                <div className="min-w-0">
+
+                  <p className="text-[11px] font-medium leading-4 text-green-300">
                     Alamat
                   </p>
 
-                  <p className="text-xs text-green-100 leading-4">
+                  <p className="text-xs leading-5 text-green-100">
                     {alamat}
                   </p>
+
                 </div>
 
               </div>
 
-              {/* Phone */}
-              <div className="flex gap-2.5">
+              {/* WHATSAPP */}
+              <div className="flex items-start gap-2.5">
 
-                <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
-                  <span className="text-xs">
-                    ☎
-                  </span>
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+
+                  <Phone size={14} />
+
                 </div>
 
-                <div>
-                  <p className="text-[11px] text-green-300 mb-0.5">
+                <div className="min-w-0">
+
+                  <p className="text-[11px] font-medium leading-4 text-green-300">
                     WhatsApp / Telepon
                   </p>
 
@@ -260,55 +277,86 @@ export default function Footer() {
                     href="https://wa.me/6285171014303"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-green-100 hover:text-white transition-colors"
+                    className="text-xs leading-5 text-green-100 transition-colors hover:text-white"
                   >
                     {whatsapp}
                   </a>
+
                 </div>
 
               </div>
 
-              {/* Email */}
-              <div className="flex gap-2.5">
+              {/* EMAIL */}
+              <div className="flex items-start gap-2.5">
 
-                <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
-                  <span className="text-xs">
-                    ✉
-                  </span>
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+
+                  <Mail size={14} />
+
                 </div>
 
-                <div>
-                  <p className="text-[11px] text-green-300 mb-0.5">
+                <div className="min-w-0">
+
+                  <p className="text-[11px] font-medium leading-4 text-green-300">
                     Email
                   </p>
 
                   <a
                     href={`mailto:${email}`}
-                    className="text-xs text-green-100 hover:text-white transition-colors"
+                    className="break-all text-xs leading-5 text-green-100 transition-colors hover:text-white"
                   >
                     {email}
                   </a>
+
                 </div>
 
               </div>
 
             </div>
+
           </div>
 
         </div>
+
       </div>
 
       {/* ================= BOTTOM ================= */}
       <div className="border-t border-white/10">
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-2.5">
+        <div className="mx-auto max-w-7xl px-6 py-2.5 lg:px-10">
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-1.5">
+          <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
 
-            <p className="text-[11px] text-green-200 text-center md:text-left">
-              © {new Date().getFullYear()} {orgName}.
-              All rights reserved.
-            </p>
+            {/* COPYRIGHT + LOGIN */}
+
+            <div className="flex items-center gap-2 text-center md:text-left">
+
+              <p className="text-[11px] text-green-200">
+
+                © {new Date().getFullYear()} {orgName}.
+                All rights reserved.
+
+              </p>
+
+              {/* ICON LOGIN */}
+
+              <Link
+                to="/masuk"
+                aria-label="Masuk"
+                title="Masuk"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-green-200/40 transition-all duration-200 hover:bg-white/10 hover:text-green-100"
+              >
+
+                <LogIn
+                  size={13}
+                  strokeWidth={1.8}
+                />
+
+              </Link>
+
+            </div>
+
+            {/* TAGLINE */}
 
             <div className="flex items-center gap-1.5 text-[11px] text-green-200">
 
@@ -331,6 +379,7 @@ export default function Footer() {
           </div>
 
         </div>
+
       </div>
 
     </footer>

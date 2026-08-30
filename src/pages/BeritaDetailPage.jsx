@@ -1,5 +1,5 @@
-import { useParams, Link } from "react-router-dom";
-import { Calendar, ArrowLeft } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Calendar } from "lucide-react";
 
 import berita1 from "../assets/images/berita 1.jpeg";
 import berita2 from "../assets/images/berita 2.jpeg";
@@ -92,74 +92,110 @@ export default function BeritaDetailPage() {
   const { id } = useParams();
 
   const news = NEWS.find(
-    (item) => String(item.id) === id
+    (item) => String(item.id) === String(id)
   );
+
+  // =======================================================
+  // BERITA TIDAK DITEMUKAN
+  // =======================================================
 
   if (!news) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="flex min-h-screen items-center justify-center bg-[#f8faf9] px-6">
+
         <div className="text-center">
-          <p className="text-gray-600">
-            Berita tidak ditemukan.
+
+          <h1 className="text-xl font-bold text-gray-900">
+            Berita tidak ditemukan
+          </h1>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Berita yang Anda cari belum tersedia.
           </p>
 
-          <Link
-            to="/berita"
-            className="mt-4 inline-flex items-center gap-2 text-brand-700 font-medium text-sm"
-          >
-            <ArrowLeft size={16} />
-            Kembali ke daftar berita
-          </Link>
         </div>
+
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <article className="max-w-6xl mx-auto px-6 lg:px-10 pt-8 pb-16">
+    <div className="min-h-screen bg-[#f8faf9]">
 
-        {/* Kembali */}
-        <Link
-          to="/berita"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-700 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Kembali ke daftar berita
-        </Link>
+      {/* =====================================================
+          CONTENT
+      ====================================================== */}
 
-        {/* Judul */}
-        <h1 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">
-          {news.title}
-        </h1>
+      <main className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-12">
 
-        {/* Kategori + Tanggal */}
-        <div className="mt-3 flex items-center gap-4">
+        {/* =================================================
+            HEADER BERITA
+        ================================================== */}
 
-          <span className="inline-flex items-center text-xs font-semibold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full">
+        <article>
+
+          {/* KATEGORI */}
+
+          <span className="inline-flex rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
             {news.category}
           </span>
 
-          <span className="flex items-center gap-1.5 text-sm text-gray-500">
-            <Calendar size={14} />
-            {news.date}
-          </span>
+          {/* JUDUL */}
 
-        </div>
+          <h1 className="mt-4 max-w-4xl text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
+            {news.title}
+          </h1>
 
-        {/* Foto Berita */}
-        <img
-          src={news.image}
-          alt={news.title}
-          className="mt-6 w-full h-72 sm:h-96 object-cover rounded-2xl"
-        />
+          {/* TANGGAL */}
 
-        {/* Isi Berita */}
-        <div className="mt-8 max-w-4xl text-gray-700 leading-relaxed whitespace-pre-line text-justify">
-          {news.content}
-        </div>
+          <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
 
-      </article>
+            <Calendar size={15} />
+
+            <span>
+              {news.date}
+            </span>
+
+          </div>
+
+          {/* =================================================
+              FOTO
+          ================================================== */}
+
+          <div className="mt-7 flex justify-center">
+
+            <div className="w-full max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+
+              <div className="flex h-[220px] items-center justify-center overflow-hidden rounded-xl bg-gray-50 sm:h-[280px] lg:h-[320px]">
+
+                <img
+                  src={news.image}
+                  alt={news.title}
+                  className="h-full w-full object-contain"
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* =================================================
+              ISI BERITA
+          ================================================== */}
+
+          <div className="mx-auto mt-8 max-w-4xl">
+
+            <div className="whitespace-pre-line text-justify text-sm leading-7 text-gray-700 sm:text-base sm:leading-8">
+              {news.content}
+            </div>
+
+          </div>
+
+        </article>
+
+      </main>
+
     </div>
   );
 }

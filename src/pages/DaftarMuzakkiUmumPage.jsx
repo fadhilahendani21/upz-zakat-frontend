@@ -14,13 +14,14 @@ import {
   Clock3,
   LockKeyhole,
   Calculator,
+  X,
+  Users,
 } from "lucide-react";
 
 import { metodePembayaran } from "../data/dummyDonasi";
 
 // =========================================================
 // ICON METODE PEMBAYARAN
-// Sama seperti yang digunakan di DonasiPage
 // =========================================================
 
 const METODE_ICON = {
@@ -31,7 +32,7 @@ const METODE_ICON = {
 
 export default function DaftarMuzakkiUmumPage() {
   // =========================================================
-  // STATE
+  // STATE FORM
   // =========================================================
 
   const [formData, setFormData] = useState({
@@ -39,8 +40,6 @@ export default function DaftarMuzakkiUmumPage() {
     jenisKelamin: "",
     nik: "",
     tanggalLahir: "",
-    email: "",
-    whatsapp: "",
     instansi: "",
     pekerjaan: "",
     alamat: "",
@@ -55,7 +54,38 @@ export default function DaftarMuzakkiUmumPage() {
   });
 
   // =========================================================
-  // HANDLE CHANGE
+  // STATE NOMINAL
+  // =========================================================
+
+  const [nominal, setNominal] = useState("500000");
+
+  // =========================================================
+  // STATE PEMBAYARAN
+  // =========================================================
+
+  const [showQris, setShowQris] = useState(false);
+
+  // =========================================================
+  // STATE KALKULATOR
+  // =========================================================
+
+  const [showKalkulator, setShowKalkulator] = useState(false);
+  const [jenisKalkulator, setJenisKalkulator] =
+    useState("penghasilan");
+
+  const [nilaiKalkulator, setNilaiKalkulator] =
+    useState("");
+
+  const [jumlahJiwa, setJumlahJiwa] = useState("1");
+
+  const [nominalPerJiwa, setNominalPerJiwa] =
+    useState("50000");
+
+  const [hasilKalkulator, setHasilKalkulator] =
+    useState(null);
+
+  // =========================================================
+  // HANDLE INPUT
   // =========================================================
 
   const handleChange = (e) => {
@@ -79,18 +109,220 @@ export default function DaftarMuzakkiUmumPage() {
   };
 
   // =========================================================
+  // FORMAT RUPIAH
+  // =========================================================
+
+  const formatNominal = (value) => {
+    const angka = String(value || "").replace(/\D/g, "");
+
+    if (!angka) {
+      return "";
+    }
+
+    return new Intl.NumberFormat("id-ID").format(
+      Number(angka)
+    );
+  };
+
+  // =========================================================
+  // HANDLE NOMINAL
+  // =========================================================
+
+  const handleNominalChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+
+    setNominal(value);
+  };
+
+  // =========================================================
+  // HANDLE METODE PEMBAYARAN
+  // =========================================================
+
+  const handlePilihMetode = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      pembayaran: id,
+    }));
+
+    if (id === "qris") {
+      setShowQris(true);
+    } else {
+      setShowQris(false);
+    }
+  };
+
+  // =========================================================
+  // BUKA KALKULATOR
+  // =========================================================
+
+  const openKalkulator = () => {
+    setShowKalkulator(true);
+    setHasilKalkulator(null);
+    setJenisKalkulator("penghasilan");
+    setNilaiKalkulator("");
+    setJumlahJiwa("1");
+    setNominalPerJiwa("50000");
+  };
+
+  // =========================================================
+  // GANTI JENIS KALKULATOR
+  // =========================================================
+
+  const handleJenisKalkulator = (value) => {
+    setJenisKalkulator(value);
+    setHasilKalkulator(null);
+    setNilaiKalkulator("");
+
+    if (value === "fitrah") {
+      setJumlahJiwa("1");
+      setNominalPerJiwa("50000");
+    }
+  };
+
+  // =========================================================
+  // HITUNG KALKULATOR
+  // =========================================================
+
+  const handleHitungKalkulator = () => {
+    if (jenisKalkulator === "penghasilan") {
+      const penghasilan = Number(
+        String(nilaiKalkulator || "").replace(/\D/g, "")
+      );
+
+      if (!penghasilan || penghasilan <= 0) {
+        alert("Silakan masukkan penghasilan per bulan.");
+        return;
+      }
+
+      const hasil = penghasilan * 0.025;
+
+      setHasilKalkulator({
+        label: "Estimasi Zakat Penghasilan",
+        value: hasil,
+        detail: "2,5% dari penghasilan per bulan",
+      });
+
+      return;
+    }
+
+    if (jenisKalkulator === "maal") {
+      const harta = Number(
+        String(nilaiKalkulator || "").replace(/\D/g, "")
+      );
+
+      if (!harta || harta <= 0) {
+        alert("Silakan masukkan total harta.");
+        return;
+      }
+
+      const hasil = harta * 0.025;
+
+      setHasilKalkulator({
+        label: "Estimasi Zakat Maal",
+        value: hasil,
+        detail: "2,5% dari total harta",
+      });
+
+      return;
+    }
+
+    if (jenisKalkulator === "fitrah") {
+      const jiwa = Number(
+        String(jumlahJiwa || "").replace(/\D/g, "")
+      );
+
+      const perJiwa = Number(
+        String(nominalPerJiwa || "").replace(/\D/g, "")
+      );
+
+      if (!jiwa || jiwa <= 0) {
+        alert("Jumlah jiwa harus lebih dari 0.");
+        return;
+      }
+
+      if (!perJiwa || perJiwa <= 0) {
+        alert("Silakan masukkan nominal per jiwa.");
+        return;
+      }
+
+      const hasil = jiwa * perJiwa;
+
+      setHasilKalkulator({
+        label: "Estimasi Zakat Fitrah",
+        value: hasil,
+        detail: `${jiwa} jiwa × Rp ${formatNominal(
+          perJiwa
+        )}`,
+      });
+    }
+  };
+
+  // =========================================================
   // SUBMIT
   // =========================================================
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!formData.namaLengkap.trim()) {
+      alert("Silakan masukkan nama lengkap.");
+      return;
+    }
+
+    if (!formData.jenisKelamin) {
+      alert("Silakan pilih jenis kelamin.");
+      return;
+    }
+
+    if (!formData.nik.trim()) {
+      alert("Silakan masukkan NIK / nomor identitas.");
+      return;
+    }
+
+    if (!formData.tanggalLahir.trim()) {
+      alert("Silakan masukkan tempat, tanggal lahir.");
+      return;
+    }
+
+    if (!formData.alamat.trim()) {
+      alert("Silakan masukkan alamat lengkap.");
+      return;
+    }
+
+    if (!formData.kota) {
+      alert("Silakan pilih kota / kabupaten.");
+      return;
+    }
+
+    if (!formData.jenisZakat) {
+      alert("Silakan pilih jenis zakat.");
+      return;
+    }
+
+    if (!formData.frekuensi) {
+      alert("Silakan pilih frekuensi menunaikan zakat.");
+      return;
+    }
+
+    if (!nominal || Number(nominal) < 10000) {
+      alert("Minimal nominal zakat adalah Rp10.000.");
+      return;
+    }
+
+    if (!formData.pembayaran) {
+      alert("Silakan pilih preferensi pembayaran.");
+      return;
+    }
+
     if (!formData.persetujuan) {
       alert("Silakan centang persetujuan terlebih dahulu.");
       return;
     }
 
-    console.log("Data Muzakki Umum:", formData);
+    console.log("Data Muzakki Umum:", {
+      ...formData,
+      nominalZakat: Number(nominal),
+    });
 
     alert("Pendaftaran Muzakki berhasil dikirim!");
   };
@@ -99,12 +331,10 @@ export default function DaftarMuzakkiUmumPage() {
     <div className="min-h-screen bg-white text-slate-800">
 
       {/* =====================================================
-          HERO / BREADCRUMB
+          HERO
       ====================================================== */}
 
       <section className="relative overflow-hidden bg-gradient-to-r from-[#075b43] via-[#08734f] to-[#075b43]">
-
-        {/* PATTERN BULAT */}
 
         <div className="absolute inset-0 opacity-10">
 
@@ -114,8 +344,6 @@ export default function DaftarMuzakkiUmumPage() {
 
         </div>
 
-        {/* DEKORASI TANAMAN / ILUSTRASI */}
-
         <div className="absolute right-0 top-0 hidden h-full w-[32%] overflow-hidden lg:block">
 
           <div className="absolute bottom-0 right-20 h-32 w-10 rotate-12 rounded-full bg-green-700/30" />
@@ -123,8 +351,6 @@ export default function DaftarMuzakkiUmumPage() {
           <div className="absolute right-32 top-8 h-20 w-10 -rotate-45 rounded-full bg-green-300/40" />
 
           <div className="absolute right-10 top-20 h-28 w-12 rotate-45 rounded-full bg-green-400/30" />
-
-          <div className="absolute bottom-5 right-5 h-24 w-8 -rotate-12 rounded-full bg-green-300/30" />
 
         </div>
 
@@ -141,13 +367,9 @@ export default function DaftarMuzakkiUmumPage() {
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-white/90">
 
             <span>Beranda</span>
-
             <span>›</span>
-
             <span>Daftar sebagai Muzakki</span>
-
             <span>›</span>
-
             <span>Muzakki Umum</span>
 
           </div>
@@ -165,12 +387,10 @@ export default function DaftarMuzakkiUmumPage() {
         <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[285px_1fr]">
 
           {/* =================================================
-              SIDEBAR KIRI
+              SIDEBAR
           ================================================== */}
 
           <aside className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-
-            {/* ICON / ILUSTRASI */}
 
             <div className="mb-5 flex justify-center">
 
@@ -186,27 +406,17 @@ export default function DaftarMuzakkiUmumPage() {
 
             </div>
 
-            {/* TITLE */}
-
             <h2 className="text-xl font-bold leading-snug text-[#08734f]">
-
               Pendaftaran Muzakki
-
               <br />
-
               Umum
-
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-slate-600">
-
               Formulir ini diperuntukkan bagi masyarakat umum
               yang ingin terdaftar sebagai Muzakki dan menunaikan
               zakat melalui UPZ Zakat Universitas Siliwangi.
-
             </p>
-
-            {/* FEATURE */}
 
             <div className="mt-7 space-y-6">
 
@@ -230,8 +440,6 @@ export default function DaftarMuzakkiUmumPage() {
 
             </div>
 
-            {/* QUOTE */}
-
             <div className="mt-8 rounded-xl bg-green-50 p-5">
 
               <div className="mb-2 text-3xl font-bold text-[#08734f]">
@@ -239,12 +447,10 @@ export default function DaftarMuzakkiUmumPage() {
               </div>
 
               <p className="text-sm italic leading-6 text-slate-600">
-
                 Ambillah zakat dari sebagian harta mereka,
                 dengan zakat itu kamu membersihkan dan
                 mensucikan mereka dan mendoalah untuk
                 mereka.
-
               </p>
 
               <p className="mt-4 text-xs font-semibold text-slate-700">
@@ -255,23 +461,16 @@ export default function DaftarMuzakkiUmumPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  window.location.href = "/hitung-zakat";
-                }}
+                onClick={openKalkulator}
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border border-[#08734f] px-4 py-3 text-sm font-semibold text-[#08734f] transition hover:bg-[#08734f] hover:text-white"
               >
-
                 <Calculator size={18} />
-
                 View Kalkulator Zakat
-
               </button>
 
-              <p className="mt-3 text-center text-xs text-slate-600">
-
+              <p className="mt-3 text-center text-xs leading-5 text-slate-600">
                 Hitung zakat Anda dengan mudah
                 menggunakan kalkulator kami.
-
               </p>
 
             </div>
@@ -298,15 +497,11 @@ export default function DaftarMuzakkiUmumPage() {
             />
 
             <p className="mt-2 text-sm text-slate-600">
-
               Lengkapi data diri Anda dengan benar untuk
               keperluan administrasi Muzakki.
-
             </p>
 
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-
-              {/* NAMA */}
 
               <InputField
                 label="Nama Lengkap"
@@ -317,8 +512,6 @@ export default function DaftarMuzakkiUmumPage() {
                 required
               />
 
-              {/* JENIS KELAMIN */}
-
               <SelectField
                 label="Jenis Kelamin"
                 name="jenisKelamin"
@@ -326,7 +519,6 @@ export default function DaftarMuzakkiUmumPage() {
                 onChange={handleChange}
                 required
               >
-
                 <option value="">
                   Pilih jenis kelamin
                 </option>
@@ -338,10 +530,7 @@ export default function DaftarMuzakkiUmumPage() {
                 <option value="Perempuan">
                   Perempuan
                 </option>
-
               </SelectField>
-
-              {/* NIK */}
 
               <InputField
                 label="NIK / Nomor Identitas"
@@ -352,8 +541,6 @@ export default function DaftarMuzakkiUmumPage() {
                 required
               />
 
-              {/* TEMPAT TANGGAL LAHIR */}
-
               <InputField
                 label="Tempat, Tanggal Lahir"
                 name="tanggalLahir"
@@ -363,32 +550,6 @@ export default function DaftarMuzakkiUmumPage() {
                 required
               />
 
-              {/* EMAIL */}
-
-              <InputField
-                label="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                type="email"
-                placeholder="nama@email.com"
-                required
-              />
-
-              {/* WHATSAPP */}
-
-              <InputField
-                label="No. WhatsApp"
-                name="whatsapp"
-                value={formData.whatsapp}
-                onChange={handleChange}
-                type="tel"
-                placeholder="08xxxxxxxxxx"
-                required
-              />
-
-              {/* INSTANSI */}
-
               <InputField
                 label="Fakultas / Unit / Instansi"
                 name="instansi"
@@ -396,8 +557,6 @@ export default function DaftarMuzakkiUmumPage() {
                 onChange={handleChange}
                 placeholder="Contoh: Universitas Siliwangi"
               />
-
-              {/* PEKERJAAN */}
 
               <InputField
                 label="Pekerjaan / Jabatan"
@@ -407,18 +566,11 @@ export default function DaftarMuzakkiUmumPage() {
                 placeholder="Contoh: Karyawan"
               />
 
-              {/* ALAMAT */}
-
               <div className="md:col-span-2">
 
                 <label className="mb-2 block text-sm font-medium text-gray-700">
-
                   Alamat Lengkap{" "}
-
-                  <span className="text-red-500">
-                    *
-                  </span>
-
+                  <span className="text-red-500">*</span>
                 </label>
 
                 <textarea
@@ -433,8 +585,6 @@ export default function DaftarMuzakkiUmumPage() {
 
               </div>
 
-              {/* KOTA */}
-
               <SelectField
                 label="Kota / Kabupaten"
                 name="kota"
@@ -442,7 +592,6 @@ export default function DaftarMuzakkiUmumPage() {
                 onChange={handleChange}
                 required
               >
-
                 <option value="">
                   Pilih kota / kabupaten
                 </option>
@@ -478,10 +627,7 @@ export default function DaftarMuzakkiUmumPage() {
                 <option value="Lainnya">
                   Lainnya
                 </option>
-
               </SelectField>
-
-              {/* KODE POS */}
 
               <InputField
                 label="Kode Pos"
@@ -509,14 +655,9 @@ export default function DaftarMuzakkiUmumPage() {
 
             <div className="mt-5">
 
-              <label className="mb-3 block text-sm font-medium">
-
-                Jenis Zakat yang biasa ditunaikan
-
-                <span className="text-red-500">
-                  {" "}*
-                </span>
-
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Jenis Zakat yang biasa ditunaikan{" "}
+                <span className="text-red-500">*</span>
               </label>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -565,14 +706,9 @@ export default function DaftarMuzakkiUmumPage() {
 
             <div className="mt-6">
 
-              <label className="mb-3 block text-sm font-medium">
-
-                Frekuensi Menunaikan Zakat
-
-                <span className="text-red-500">
-                  {" "}*
-                </span>
-
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Frekuensi Menunaikan Zakat{" "}
+                <span className="text-red-500">*</span>
               </label>
 
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -633,24 +769,56 @@ export default function DaftarMuzakkiUmumPage() {
 
             </div>
 
+            {/* NOMINAL */}
+
+            <div className="mt-6">
+
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Nominal Zakat yang Disepakati{" "}
+                <span className="text-red-500">*</span>
+              </label>
+
+              <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+
+                <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
+
+                  <span className="flex h-11 items-center border-r border-slate-200 px-4 text-sm font-medium text-slate-600">
+                    Rp
+                  </span>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatNominal(nominal)}
+                    onChange={handleNominalChange}
+                    placeholder="500.000"
+                    required
+                    className="h-11 w-full px-4 text-sm text-gray-700 outline-none"
+                  />
+
+                </div>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  Masukkan nominal zakat yang akan Anda tunaikan.
+                  Minimal Rp10.000.
+                </p>
+
+              </div>
+
+            </div>
+
             {/* =================================================
                 PREFERENSI PEMBAYARAN
-                SAMA SEPERTI DONASI
             ================================================== */}
 
             <div className="mt-6">
 
-              <label className="mb-3 block text-sm font-medium">
-
-                Preferensi Pembayaran
-
-                <span className="text-red-500">
-                  {" "}*
-                </span>
-
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Preferensi Pembayaran{" "}
+                <span className="text-red-500">*</span>
               </label>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-2.5">
 
                 {metodePembayaran.map((m) => {
 
@@ -659,10 +827,10 @@ export default function DaftarMuzakkiUmumPage() {
                   return (
                     <label
                       key={m.id}
-                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3.5 transition ${
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3.5 transition-colors ${
                         formData.pembayaran === m.id
-                          ? "border-[#08734f] bg-green-50"
-                          : "border-slate-200 hover:border-green-300"
+                          ? "border-brand-600 bg-brand-50"
+                          : "border-gray-200 hover:border-brand-300"
                       }`}
                     >
 
@@ -673,24 +841,28 @@ export default function DaftarMuzakkiUmumPage() {
                         checked={
                           formData.pembayaran === m.id
                         }
-                        onChange={handleChange}
+                        onChange={() =>
+                          handlePilihMetode(m.id)
+                        }
                         required
                         className="h-4 w-4 accent-[#08734f]"
                       />
 
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-white text-[#08734f]">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white text-brand-600">
 
-                        <Icon size={18} />
+                        {Icon && (
+                          <Icon size={18} />
+                        )}
 
                       </span>
 
                       <span>
 
-                        <span className="block text-sm font-medium text-slate-900">
+                        <span className="block text-sm font-medium text-gray-900">
                           {m.nama}
                         </span>
 
-                        <span className="block text-xs text-slate-500">
+                        <span className="block text-xs text-gray-500">
                           {m.keterangan}
                         </span>
 
@@ -698,6 +870,7 @@ export default function DaftarMuzakkiUmumPage() {
 
                     </label>
                   );
+
                 })}
 
               </div>
@@ -721,8 +894,6 @@ export default function DaftarMuzakkiUmumPage() {
             </p>
 
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-
-              {/* SUMBER INFORMASI */}
 
               <SelectField
                 label="Bagaimana Anda mengetahui UPZ Zakat UNSIL?"
@@ -756,8 +927,6 @@ export default function DaftarMuzakkiUmumPage() {
                 </option>
 
               </SelectField>
-
-              {/* CATATAN */}
 
               <div>
 
@@ -824,7 +993,7 @@ export default function DaftarMuzakkiUmumPage() {
 
             </button>
 
-            {/* FOOTER FORM */}
+            {/* FOOTER */}
 
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
 
@@ -840,6 +1009,410 @@ export default function DaftarMuzakkiUmumPage() {
         </div>
 
       </main>
+
+      {/* =====================================================
+          POPUP QRIS
+      ====================================================== */}
+
+      {showQris && (
+
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+          onClick={() => setShowQris(false)}
+        >
+
+          <div
+            className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            <button
+              type="button"
+              onClick={() => setShowQris(false)}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center">
+
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <QrCode size={25} />
+              </div>
+
+              <h2 className="mt-4 text-lg font-bold text-gray-900">
+                Pembayaran QRIS
+              </h2>
+
+              <p className="mt-1 text-sm leading-5 text-gray-500">
+                Scan QR berikut menggunakan aplikasi pembayaran Anda.
+              </p>
+
+            </div>
+
+            <div className="mt-6 flex justify-center">
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+
+                <img
+                  src="/dummy-qris.png"
+                  alt="QRIS"
+                  className="h-64 w-64 object-contain"
+                />
+
+              </div>
+
+            </div>
+
+            <div className="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-center">
+
+              <p className="text-xs text-gray-500">
+                Nominal Zakat
+              </p>
+
+              <p className="mt-1 text-lg font-bold text-brand-700">
+                Rp {formatNominal(nominal)}
+              </p>
+
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowQris(false)}
+              className="mt-5 w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+            >
+              Tutup
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+      {/* =====================================================
+          POPUP KALKULATOR ZAKAT
+      ====================================================== */}
+
+      {showKalkulator && (
+
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+          onClick={() => setShowKalkulator(false)}
+        >
+
+          <div
+            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            {/* CLOSE */}
+
+            <button
+              type="button"
+              onClick={() => setShowKalkulator(false)}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+              aria-label="Tutup kalkulator"
+            >
+              <X size={20} />
+            </button>
+
+            {/* HEADER */}
+
+            <div className="pr-8">
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-[#08734f]">
+
+                  <Calculator size={23} />
+
+                </div>
+
+                <div>
+
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Kalkulator Zakat
+                  </h2>
+
+                  <p className="text-sm text-gray-500">
+                    Hitung estimasi zakat Anda dengan mudah.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* JENIS KALKULATOR */}
+
+            <div className="mt-6">
+
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Jenis Zakat
+              </label>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+
+                <CalculatorTypeButton
+                  icon={<WalletCards size={20} />}
+                  title="Penghasilan"
+                  selected={
+                    jenisKalkulator === "penghasilan"
+                  }
+                  onClick={() =>
+                    handleJenisKalkulator("penghasilan")
+                  }
+                />
+
+                <CalculatorTypeButton
+                  icon={<Landmark size={20} />}
+                  title="Maal"
+                  selected={
+                    jenisKalkulator === "maal"
+                  }
+                  onClick={() =>
+                    handleJenisKalkulator("maal")
+                  }
+                />
+
+                <CalculatorTypeButton
+                  icon={<Users size={20} />}
+                  title="Fitrah"
+                  selected={
+                    jenisKalkulator === "fitrah"
+                  }
+                  onClick={() =>
+                    handleJenisKalkulator("fitrah")
+                  }
+                />
+
+              </div>
+
+            </div>
+
+            {/* ================================================
+                PENGHASILAN
+            ================================================= */}
+
+            {jenisKalkulator === "penghasilan" && (
+
+              <div className="mt-5">
+
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Penghasilan per Bulan
+                </label>
+
+                <div className="flex overflow-hidden rounded-lg border border-gray-200">
+
+                  <span className="flex items-center border-r border-gray-200 px-4 text-sm font-medium text-gray-500">
+                    Rp
+                  </span>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatNominal(
+                      nilaiKalkulator
+                    )}
+                    onChange={(e) =>
+                      setNilaiKalkulator(
+                        e.target.value.replace(/\D/g, "")
+                      )
+                    }
+                    placeholder="5.000.000"
+                    className="h-11 w-full px-4 text-sm outline-none focus:ring-2 focus:ring-green-100"
+                  />
+
+                </div>
+
+                <p className="mt-2 text-xs text-gray-500">
+                  Estimasi sederhana menggunakan 2,5%.
+                </p>
+
+              </div>
+
+            )}
+
+            {/* ================================================
+                MAAL
+            ================================================= */}
+
+            {jenisKalkulator === "maal" && (
+
+              <div className="mt-5">
+
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Total Harta
+                </label>
+
+                <div className="flex overflow-hidden rounded-lg border border-gray-200">
+
+                  <span className="flex items-center border-r border-gray-200 px-4 text-sm font-medium text-gray-500">
+                    Rp
+                  </span>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatNominal(
+                      nilaiKalkulator
+                    )}
+                    onChange={(e) =>
+                      setNilaiKalkulator(
+                        e.target.value.replace(/\D/g, "")
+                      )
+                    }
+                    placeholder="100.000.000"
+                    className="h-11 w-full px-4 text-sm outline-none focus:ring-2 focus:ring-green-100"
+                  />
+
+                </div>
+
+                <p className="mt-2 text-xs text-gray-500">
+                  Estimasi sederhana menggunakan 2,5%.
+                </p>
+
+              </div>
+
+            )}
+
+            {/* ================================================
+                FITRAH
+            ================================================= */}
+
+            {jenisKalkulator === "fitrah" && (
+
+              <div className="mt-5 space-y-4">
+
+                <div>
+
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Jumlah Jiwa
+                  </label>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={jumlahJiwa}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value.replace(/\D/g, "");
+
+                      setJumlahJiwa(value);
+                    }}
+                    placeholder="1"
+                    className="h-11 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-100"
+                  />
+
+                </div>
+
+                <div>
+
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Nominal Zakat Fitrah per Jiwa
+                  </label>
+
+                  <div className="flex overflow-hidden rounded-lg border border-gray-200">
+
+                    <span className="flex items-center border-r border-gray-200 px-4 text-sm font-medium text-gray-500">
+                      Rp
+                    </span>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formatNominal(
+                        nominalPerJiwa
+                      )}
+                      onChange={(e) =>
+                        setNominalPerJiwa(
+                          e.target.value.replace(/\D/g, "")
+                        )
+                      }
+                      placeholder="50.000"
+                      className="h-11 w-full px-4 text-sm outline-none focus:ring-2 focus:ring-green-100"
+                    />
+
+                  </div>
+
+                </div>
+
+                <p className="text-xs text-gray-500">
+                  Nominal per jiwa dapat disesuaikan dengan
+                  ketentuan yang berlaku di wilayah/UPZ.
+                </p>
+
+              </div>
+
+            )}
+
+            {/* HITUNG */}
+
+            <button
+              type="button"
+              onClick={handleHitungKalkulator}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#08734f] py-3 text-sm font-semibold text-white transition hover:bg-[#065d40]"
+            >
+
+              <Calculator size={18} />
+
+              Hitung Zakat
+
+            </button>
+
+            {/* HASIL */}
+
+            {hasilKalkulator && (
+
+              <div className="mt-5 rounded-xl border border-green-200 bg-green-50 p-5">
+
+                <p className="text-xs text-gray-500">
+                  {hasilKalkulator.label}
+                </p>
+
+                <p className="mt-2 text-2xl font-bold text-[#08734f]">
+                  Rp {formatNominal(
+                    hasilKalkulator.value
+                  )}
+                </p>
+
+                <p className="mt-2 text-xs text-gray-500">
+                  {hasilKalkulator.detail}
+                </p>
+
+              </div>
+
+            )}
+
+            {/* CATATAN */}
+
+            <div className="mt-5 rounded-lg bg-gray-50 p-4">
+
+              <p className="text-xs leading-5 text-gray-500">
+                Hasil di atas merupakan estimasi sederhana untuk
+                membantu perhitungan awal dan bukan penetapan
+                kewajiban zakat resmi.
+              </p>
+
+            </div>
+
+            {/* TUTUP */}
+
+            <button
+              type="button"
+              onClick={() => setShowKalkulator(false)}
+              className="mt-4 w-full rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            >
+              Tutup
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
 
     </div>
   );
@@ -979,9 +1552,7 @@ function SelectField({
           required={required}
           className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
         >
-
           {children}
-
         </select>
 
         <ChevronDown
@@ -1019,9 +1590,7 @@ function ZakatCard({
 
       {selected && (
         <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded bg-[#08734f] text-white">
-
           <Check size={13} />
-
         </div>
       )}
 
@@ -1032,9 +1601,7 @@ function ZakatCard({
             : "text-slate-500"
         }`}
       >
-
         {icon}
-
       </div>
 
       <h3 className="text-sm font-semibold text-slate-700">
@@ -1080,6 +1647,37 @@ function RadioOption({
       </span>
 
       {label}
+
+    </button>
+  );
+}
+
+/* =========================================================
+   CALCULATOR TYPE BUTTON
+========================================================= */
+
+function CalculatorTypeButton({
+  icon,
+  title,
+  selected,
+  onClick,
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 rounded-xl border p-3 text-left transition ${
+        selected
+          ? "border-[#08734f] bg-green-50 text-[#08734f]"
+          : "border-gray-200 bg-white text-gray-600 hover:border-green-300"
+      }`}
+    >
+
+      {icon}
+
+      <span className="text-sm font-semibold">
+        {title}
+      </span>
 
     </button>
   );
