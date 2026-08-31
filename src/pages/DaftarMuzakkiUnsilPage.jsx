@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   UserRound,
   Search,
@@ -19,9 +20,22 @@ import {
   Smartphone,
   UserPlus,
   Users,
+  CheckCircle2,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 
 import { metodePembayaran } from "../data/dummyDonasi";
+import { DOSEN_STAF_UNSIL } from "../data/dummyDosenStaf";
+import {
+  hitungZakatPenghasilan,
+  hitungZakatMaal,
+  hitungZakatFitrah,
+  getZakatConfig,
+} from "../services/zakatService";
+import { useSettings } from "../services/settingService";
+import { registerPublicMuzakki } from "../services/muzakkiService";
+
 
 // =========================================================
 // ICON METODE PEMBAYARAN
@@ -34,6 +48,8 @@ const METODE_ICON = {
 };
 
 export default function DaftarMuzakkiUnsilPage() {
+  const settings = useSettings();
+
   // =========================================================
   // STATE PENCARIAN DATA
   // =========================================================
@@ -41,6 +57,22 @@ export default function DaftarMuzakkiUnsilPage() {
   const [metodeCari, setMetodeCari] = useState("nip");
   const [keyword, setKeyword] = useState("");
   const [dataDitemukan, setDataDitemukan] = useState(false);
+  const [cariError, setCariError] = useState("");
+
+  // =========================================================
+  // DATA PEGAWAI DITEMUKAN
+  // =========================================================
+
+  const [dataPegawai, setDataPegawai] = useState({
+    nama: "",
+    nip: "",
+    unit: "",
+    jurusan: "",
+    jabatan: "",
+    email: "",
+    noHp: "",
+    golongan: "",
+  });
 
   // =========================================================
   // STATE ZAKAT
@@ -71,48 +103,47 @@ export default function DaftarMuzakkiUnsilPage() {
   // =========================================================
 
   const [showKalkulator, setShowKalkulator] = useState(false);
-
-  const [jenisKalkulator, setJenisKalkulator] =
-    useState("penghasilan");
-
-  const [nilaiKalkulator, setNilaiKalkulator] =
-    useState("");
-
+  const [jenisKalkulator, setJenisKalkulator] = useState("penghasilan");
+  const [nilaiKalkulator, setNilaiKalkulator] = useState("");
   const [jumlahJiwa, setJumlahJiwa] = useState("1");
-
-  const [nominalPerJiwa, setNominalPerJiwa] =
-    useState("50000");
-
-  const [hasilKalkulator, setHasilKalkulator] =
-    useState(null);
+  const [nominalPerJiwa, setNominalPerJiwa] = useState("45000");
+  const [hasilKalkulator, setHasilKalkulator] = useState(null);
 
   // =========================================================
-  // DATA SIMULASI KEPEGAWAIAN
-  // NANTI DIGANTI API BACKEND
+  // CARI DATA DOSEN / STAF
   // =========================================================
 
-  const dataPegawai = {
-    nama: "Nama Dosen / Staff UNSIL",
-    nip: "198xxxxxxxxxxxxx",
-    unit: "Universitas Siliwangi",
-    jabatan: "Dosen",
-  };
+  const handleCariData = (customTerm = null) => {
+    const rawTerm = typeof customTerm === "string" ? customTerm : keyword;
+    const term = rawTerm.trim().toLowerCase();
 
-  // =========================================================
-  // CARI DATA
-  // =========================================================
-
-  const handleCariData = () => {
-    if (!keyword.trim()) {
-      alert(
-        `Silakan masukkan ${
-          metodeCari === "nip" ? "NIP" : "nama"
-        } terlebih dahulu.`
+    if (!term) {
+      setCariError(
+        `Silakan masukkan ${metodeCari === "nip" ? "NIP" : "nama"} terlebih dahulu.`
       );
+      setDataDitemukan(false);
       return;
     }
 
-    setDataDitemukan(true);
+    const found = DOSEN_STAF_UNSIL.find((p) => {
+      if (metodeCari === "nip") {
+        return p.nip.replace(/\D/g, "").includes(term.replace(/\D/g, ""));
+      } else {
+        return p.nama.toLowerCase().includes(term);
+      }
+    });
+
+    if (found) {
+      setDataPegawai(found);
+      setDataDitemukan(true);
+      setCariError("");
+      setKeyword(metodeCari === "nip" ? found.nip : found.nama);
+    } else {
+      setDataDitemukan(false);
+      setCariError(
+        `Data pegawai dengan ${metodeCari === "nip" ? "NIP" : "nama"} "${rawTerm}" tidak ditemukan di database kepegawaian UNSIL.`
+      );
+    }
   };
 
   // =========================================================
@@ -174,11 +205,12 @@ export default function DaftarMuzakkiUnsilPage() {
   // =========================================================
 
   const openKalkulator = () => {
+    const config = getZakatConfig();
     setShowKalkulator(true);
     setJenisKalkulator("penghasilan");
     setNilaiKalkulator("");
     setJumlahJiwa("1");
-    setNominalPerJiwa("50000");
+    setNominalPerJiwa(String(Math.round(2.5 * config.hargaBerasPerKg)));
     setHasilKalkulator(null);
   };
 
@@ -187,18 +219,19 @@ export default function DaftarMuzakkiUnsilPage() {
   // =========================================================
 
   const handleJenisKalkulator = (value) => {
+    const config = getZakatConfig();
     setJenisKalkulator(value);
     setNilaiKalkulator("");
     setHasilKalkulator(null);
 
     if (value === "fitrah") {
       setJumlahJiwa("1");
-      setNominalPerJiwa("50000");
+      setNominalPerJiwa(String(Math.round(2.5 * config.hargaBerasPerKg)));
     }
   };
 
   // =========================================================
-  // HITUNG KALKULATOR
+  // HITUNG KALKULATOR (SESUAI PENGATURAN SISTEM)
   // =========================================================
 
   const handleHitungKalkulator = () => {
@@ -213,12 +246,15 @@ export default function DaftarMuzakkiUnsilPage() {
         return;
       }
 
-      const hasil = penghasilan * 0.025;
+      const hasil = hitungZakatPenghasilan(penghasilan);
 
       setHasilKalkulator({
         label: "Estimasi Zakat Penghasilan",
-        value: hasil,
-        detail: "Perhitungan sederhana 2,5% dari penghasilan.",
+        value: hasil.jumlahZakat,
+        wajib: hasil.wajibZakat,
+        detail: hasil.wajibZakat
+          ? `Wajib zakat ${hasil.kadarZakatPersen}% (Nisab setara 85 gram emas: Rp ${formatNominal(hasil.nisab)}/thn).`
+          : `Penghasilan belum mencapai nisab (Rp ${formatNominal(hasil.nisab)}/thn atau Rp ${formatNominal(hasil.nisabBulan)}/bln).`,
       });
 
       return;
@@ -235,12 +271,15 @@ export default function DaftarMuzakkiUnsilPage() {
         return;
       }
 
-      const hasil = harta * 0.025;
+      const hasil = hitungZakatMaal(harta);
 
       setHasilKalkulator({
         label: "Estimasi Zakat Maal",
-        value: hasil,
-        detail: "Perhitungan sederhana 2,5% dari total harta.",
+        value: hasil.jumlahZakat,
+        wajib: hasil.wajibZakat,
+        detail: hasil.wajibZakat
+          ? `Wajib zakat ${hasil.kadarZakatPersen}% dari harta bersih (Nisab 85g emas: Rp ${formatNominal(hasil.nisab)}).`
+          : `Harta belum mencapai nisab 85 gram emas (Rp ${formatNominal(hasil.nisab)}).`,
       });
 
       return;
@@ -252,41 +291,55 @@ export default function DaftarMuzakkiUnsilPage() {
         String(jumlahJiwa || "").replace(/\D/g, "")
       );
 
-      const perJiwa = Number(
-        String(nominalPerJiwa || "").replace(/\D/g, "")
-      );
-
       if (!jiwa || jiwa <= 0) {
         alert("Jumlah jiwa harus lebih dari 0.");
         return;
       }
 
-      if (!perJiwa || perJiwa <= 0) {
-        alert("Silakan masukkan nominal per jiwa.");
-        return;
-      }
-
-      const hasil = jiwa * perJiwa;
+      const hasil = hitungZakatFitrah(jiwa);
 
       setHasilKalkulator({
         label: "Estimasi Zakat Fitrah",
-        value: hasil,
+        value: hasil.jumlahZakat,
+        wajib: true,
         detail: `${jiwa} jiwa × Rp ${formatNominal(
-          perJiwa
-        )}`,
+          hasil.perJiwa
+        )} (Setara 2,5 kg beras @ Rp ${formatNominal(hasil.hargaBeras)}/kg).`,
       });
     }
   };
+
+  // Terapkan hasil kalkulator ke input nominal zakat
+  const terapkanHasilKalkulator = () => {
+    if (hasilKalkulator && hasilKalkulator.value > 0) {
+      setNominal(String(hasilKalkulator.value));
+      if (jenisKalkulator === "penghasilan") {
+        setJenisZakat("penghasilan");
+        setFrekuensi("bulanan");
+      } else if (jenisKalkulator === "maal") {
+        setJenisZakat("maal");
+        setFrekuensi("tahunan");
+      } else if (jenisKalkulator === "fitrah") {
+        setJenisZakat("fitrah");
+        setFrekuensi("tahunan");
+      }
+      setShowKalkulator(false);
+    }
+  };
+
 
   // =========================================================
   // SUBMIT
   // =========================================================
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!dataDitemukan) {
-      alert("Silakan cari data kepegawaian terlebih dahulu.");
+      alert("Silakan cari dan pilih data kepegawaian terlebih dahulu.");
       return;
     }
 
@@ -305,19 +358,29 @@ export default function DaftarMuzakkiUnsilPage() {
       return;
     }
 
-    console.log("Data Muzakki Dosen & Staff UNSIL:", {
-      nama: dataPegawai.nama,
-      nip: dataPegawai.nip,
-      unit: dataPegawai.unit,
-      jabatan: dataPegawai.jabatan,
-      jenisZakat,
-      frekuensi,
-      nominal: Number(nominal),
-      metodePembayaran: metodeId,
-    });
+    setSubmitting(true);
+    try {
+      await registerPublicMuzakki({
+        nama: dataPegawai.nama,
+        nip: dataPegawai.nip,
+        unit_kerja: `${dataPegawai.unit}${dataPegawai.jurusan ? ` · ${dataPegawai.jurusan}` : ""}`,
+        email: dataPegawai.email,
+        no_hp: dataPegawai.noHp,
+        jenis_zakat: jenisZakat,
+        frekuensi,
+        nominal: Number(nominal),
+        metode_pembayaran: metodeId,
+      });
 
-    alert("Pendaftaran Muzakki berhasil dikirim.");
+      alert(`Alhamdulillah, pendaftaran Muzakki Dosen/Staf UNSIL atas nama ${dataPegawai.nama} berhasil tersimpan ke sistem!`);
+      navigate("/daftar-muzakki");
+    } catch (err) {
+      alert(err.message || "Gagal mengirim pendaftaran. Silakan coba lagi.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -585,18 +648,25 @@ export default function DaftarMuzakkiUnsilPage() {
                   onChange={(e) => {
                     setKeyword(e.target.value);
                     setDataDitemukan(false);
+                    setCariError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCariData();
+                    }
                   }}
                   placeholder={
                     metodeCari === "nip"
-                      ? "Masukkan NIP Anda"
-                      : "Masukkan nama lengkap Anda"
+                      ? "Masukkan NIP Anda (misal: 197503122001121001)"
+                      : "Masukkan nama lengkap Anda (misal: Ahmad Fauzi)"
                   }
                   className="h-11 flex-1 rounded-lg border border-slate-200 px-4 text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
                 />
 
                 <button
                   type="button"
-                  onClick={handleCariData}
+                  onClick={() => handleCariData()}
                   className="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#08734f] px-6 text-sm font-semibold text-white transition hover:bg-[#065d40]"
                 >
 
@@ -608,24 +678,57 @@ export default function DaftarMuzakkiUnsilPage() {
 
               </div>
 
+              {/* CONTOH CEPAT */}
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                <span className="font-medium text-slate-600">Coba data dosen/tendik:</span>
+                {DOSEN_STAF_UNSIL.slice(0, 4).map((p) => (
+                  <button
+                    key={p.nip}
+                    type="button"
+                    onClick={() => {
+                      setMetodeCari("nip");
+                      setKeyword(p.nip);
+                      handleCariData(p.nip);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md bg-green-50 border border-green-200/60 px-2 py-1 text-[11px] font-medium text-[#08734f] transition hover:bg-green-100"
+                    title={`${p.nama} (${p.unit})`}
+                  >
+                    <Sparkles size={11} />
+                    {p.nama.split(",")[0]}
+                  </button>
+                ))}
+              </div>
+
+              {/* ERROR NOT FOUND */}
+              {cariError && (
+                <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                  {cariError}
+                </div>
+              )}
+
+              {/* SUCCESS FOUND */}
+              {dataDitemukan && dataPegawai && (
+                <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs font-semibold text-emerald-800">
+                  <CheckCircle2 size={17} className="text-emerald-600 shrink-0" />
+                  <span>
+                    Data Ditemukan: <strong>{dataPegawai.nama}</strong> ({dataPegawai.jabatan})
+                  </span>
+                </div>
+              )}
+
             </div>
 
             {/* INFO */}
 
-            <div className="mt-5 flex gap-3 rounded-lg bg-green-50 p-4 text-sm text-[#176b51]">
+            <div className="mt-4 flex gap-3 rounded-lg bg-green-50/70 border border-green-100 p-4 text-xs text-[#176b51]">
 
               <Info
-                size={19}
+                size={18}
                 className="mt-0.5 shrink-0"
               />
 
               <p>
-
-                Pastikan NIP yang Anda masukkan sesuai
-                dengan data kepegawaian Universitas Siliwangi.
-                Jika data tidak ditemukan, silakan hubungi
-                Bagian Kepegawaian.
-
+                Pastikan NIP yang Anda masukkan sesuai dengan data kepegawaian Universitas Siliwangi. Anda dapat mencari dengan NIP maupun Nama Lengkap.
               </p>
 
             </div>
@@ -642,7 +745,7 @@ export default function DaftarMuzakkiUnsilPage() {
               title="Data Diri (Otomatis dari Sistem)"
             />
 
-            <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
 
               <ReadOnlyInput
                 label="Nama Lengkap"
@@ -672,15 +775,34 @@ export default function DaftarMuzakkiUnsilPage() {
               />
 
               <ReadOnlyInput
-                label="Jabatan"
+                label="Jurusan / Program Studi"
                 value={
                   dataDitemukan
-                    ? dataPegawai.jabatan
+                    ? dataPegawai.jurusan || "-"
+                    : "-"
+                }
+              />
+
+              <ReadOnlyInput
+                label="Jabatan & Golongan"
+                value={
+                  dataDitemukan
+                    ? `${dataPegawai.jabatan} ${dataPegawai.golongan ? `(${dataPegawai.golongan})` : ""}`
+                    : "-"
+                }
+              />
+
+              <ReadOnlyInput
+                label="Email Universitas Siliwangi"
+                value={
+                  dataDitemukan
+                    ? dataPegawai.email || "-"
                     : "-"
                 }
               />
 
             </div>
+
 
             {/* INFO OTOMATIS */}
 
@@ -1037,14 +1159,22 @@ export default function DaftarMuzakkiUnsilPage() {
 
             <button
               type="submit"
-              className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#08734f] text-sm font-semibold text-white transition hover:bg-[#065d40]"
+              disabled={submitting}
+              className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#08734f] text-sm font-semibold text-white transition hover:bg-[#065d40] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-
-              <UserPlus size={19} />
-
-              Daftar sebagai Muzakki
-
+              {submitting ? (
+                <>
+                  <Loader2 size={19} className="animate-spin" />
+                  Menyimpan Pendaftaran...
+                </>
+              ) : (
+                <>
+                  <UserPlus size={19} />
+                  Daftar sebagai Muzakki
+                </>
+              )}
             </button>
+
 
             {/* FOOTER */}
 
@@ -1421,7 +1551,7 @@ export default function DaftarMuzakkiUnsilPage() {
 
               <div className="mt-5 rounded-xl border border-green-200 bg-green-50 p-5">
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 font-medium">
                   {hasilKalkulator.label}
                 </p>
 
@@ -1431,13 +1561,25 @@ export default function DaftarMuzakkiUnsilPage() {
                   )}
                 </p>
 
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-600 leading-relaxed">
                   {hasilKalkulator.detail}
                 </p>
+
+                {hasilKalkulator.value > 0 && (
+                  <button
+                    type="button"
+                    onClick={terapkanHasilKalkulator}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 active:scale-[0.98]"
+                  >
+                    <Check size={16} />
+                    Gunakan Nominal Ini ke Formulir (Rp {formatNominal(hasilKalkulator.value)})
+                  </button>
+                )}
 
               </div>
 
             )}
+
 
             {/* CATATAN */}
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   UserRound,
@@ -5,71 +6,60 @@ import {
   ArrowRight,
   UsersRound,
   CheckCircle2,
+  Search,
+  RefreshCw,
+  AlertCircle,
+  Building2,
 } from "lucide-react";
-
-// =========================================================
-// DATA MUZAKKI TERDAFTAR
-// SEMENTARA DATA DUMMY
-// NANTI BISA DIGANTI DENGAN DATA BACKEND
-// =========================================================
-
-const MUZAKKI_TERDAFTAR = [
-  {
-    id: 1,
-    nama: "Ahmad Fauzi",
-    kategori: "Muzakki Umum",
-    jenisZakat: "Zakat Penghasilan",
-    status: "Aktif",
-  },
-  {
-    id: 2,
-    nama: "Siti Rahma",
-    kategori: "Muzakki Umum",
-    jenisZakat: "Zakat Maal",
-    status: "Aktif",
-  },
-  {
-    id: 3,
-    nama: "Dr. H. Asep Setiawan",
-    kategori: "Dosen UNSIL",
-    jenisZakat: "Zakat Penghasilan",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Rina Marlina",
-    kategori: "Muzakki Umum",
-    jenisZakat: "Zakat Penghasilan",
-    status: "Aktif",
-  },
-  {
-    id: 5,
-    nama: "Dedi Kurniawan",
-    kategori: "Staf UNSIL",
-    jenisZakat: "Zakat Penghasilan",
-    status: "Aktif",
-  },
-  {
-    id: 6,
-    nama: "Nur Aisyah",
-    kategori: "Muzakki Umum",
-    jenisZakat: "Zakat Fitrah",
-    status: "Aktif",
-  },
-];
-
-// =========================================================
-// DAFTAR MUZAKKI PAGE
-// =========================================================
+import { getPublicMuzakki } from "../services/muzakkiService";
 
 export default function DaftarMuzakkiPage() {
-  const jumlahUmum = MUZAKKI_TERDAFTAR.filter(
-    (item) => item.kategori === "Muzakki Umum"
-  ).length;
+  const [muzakkiList, setMuzakkiList] = useState([]);
+  const [stats, setStats] = useState({ total: 0, dosen_staf: 0, umum: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [activeKategori, setActiveKategori] = useState("semua"); // "semua" | "unsil" | "umum"
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
-  const jumlahUnsil = MUZAKKI_TERDAFTAR.filter(
-    (item) => item.kategori.includes("UNSIL")
-  ).length;
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await getPublicMuzakki({
+          search,
+          kategori: activeKategori !== "semua" ? activeKategori : "",
+        });
+        if (isMounted) {
+          setMuzakkiList(res.data || []);
+          if (res.stats) {
+            setStats(res.stats);
+          }
+          setPage(1);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Gagal memuat data muzakki dari server.");
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    const timer = setTimeout(loadData, 250);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [search, activeKategori]);
+
+  // Client-side pagination for smooth UI
+  const totalItems = muzakkiList.length;
+  const totalPages = Math.ceil(totalItems / perPage) || 1;
+  const paginatedList = muzakkiList.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div className="min-h-screen bg-[#f8faf9]">
@@ -81,9 +71,7 @@ export default function DaftarMuzakkiPage() {
       <section className="relative overflow-hidden bg-gradient-to-r from-[#064f35] via-[#08613d] to-[#0b7548]">
 
         {/* DEKORASI */}
-
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full border-[24px] border-white/10" />
-
         <div className="absolute -bottom-24 left-1/3 h-64 w-64 rounded-full border-[18px] border-white/10" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-8">
@@ -93,18 +81,13 @@ export default function DaftarMuzakkiPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-green-50">
-            Bergabunglah menjadi bagian dari Muzakki
-            UPZ Zakat Universitas Siliwangi dan bersama-sama
-            mendukung pengelolaan zakat yang amanah,
-            transparan, dan tepat sasaran.
+            Bergabunglah menjadi bagian dari Muzakki UPZ Zakat Universitas Siliwangi dan bersama-sama mendukung pengelolaan zakat yang amanah, transparan, dan tepat sasaran.
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/90">
-
             <span>Beranda</span>
             <span>›</span>
             <span>Daftar sebagai Muzakki</span>
-
           </div>
 
         </div>
@@ -130,9 +113,7 @@ export default function DaftarMuzakkiPage() {
             </h2>
 
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-5 text-gray-500">
-              Silakan pilih kategori pendaftaran sesuai
-              dengan status Anda untuk melanjutkan proses
-              pendaftaran sebagai Muzakki.
+              Silakan pilih kategori pendaftaran sesuai dengan status Anda untuk melanjutkan proses pendaftaran sebagai Muzakki.
             </p>
 
           </div>
@@ -143,20 +124,15 @@ export default function DaftarMuzakkiPage() {
 
           <div className="mt-7 grid gap-5 md:grid-cols-2">
 
-            {/* =================================================
-                MUZAKKI UMUM
-            ================================================== */}
-
+            {/* MUZAKKI UMUM */}
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#edf8f2]">
-
                 <UserRound
                   size={27}
                   strokeWidth={1.8}
                   className="text-[#13804f]"
                 />
-
               </div>
 
               <h3 className="mt-4 text-lg font-bold text-gray-800">
@@ -164,9 +140,7 @@ export default function DaftarMuzakkiPage() {
               </h3>
 
               <p className="mt-2 text-sm leading-5 text-gray-500">
-                Untuk masyarakat umum yang ingin mendaftar
-                dan menunaikan zakat melalui UPZ Zakat
-                Universitas Siliwangi.
+                Untuk masyarakat umum yang ingin mendaftar dan menunaikan zakat melalui UPZ Zakat Universitas Siliwangi.
               </p>
 
               <Link
@@ -179,20 +153,15 @@ export default function DaftarMuzakkiPage() {
 
             </div>
 
-            {/* =================================================
-                DOSEN & STAF UNSIL
-            ================================================== */}
-
+            {/* DOSEN & STAF UNSIL */}
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#edf8f2]">
-
                 <GraduationCap
                   size={29}
                   strokeWidth={1.8}
                   className="text-[#13804f]"
                 />
-
               </div>
 
               <h3 className="mt-4 text-lg font-bold text-gray-800">
@@ -200,9 +169,7 @@ export default function DaftarMuzakkiPage() {
               </h3>
 
               <p className="mt-2 text-sm leading-5 text-gray-500">
-                Khusus dosen dan tenaga kependidikan/staf
-                Universitas Siliwangi yang ingin terdaftar
-                sebagai Muzakki.
+                Khusus dosen dan tenaga kependidikan/staf Universitas Siliwangi yang ingin terdaftar sebagai Muzakki.
               </p>
 
               <Link
@@ -221,12 +188,9 @@ export default function DaftarMuzakkiPage() {
               TRANSPARANSI MUZAKKI
           ================================================== */}
 
-          <section className="mt-10">
+          <section className="mt-12">
 
-            {/* =================================================
-                HEADER
-            ================================================== */}
-
+            {/* HEADER */}
             <div className="text-center">
 
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf8f2] text-[#13804f]">
@@ -238,200 +202,245 @@ export default function DaftarMuzakkiPage() {
               </h2>
 
               <p className="mx-auto mt-2 max-w-xl text-xs leading-5 text-gray-500 sm:text-sm">
-                Transparansi data pendaftaran Muzakki sebagai
-                bentuk keterbukaan dan kepercayaan dalam
-                pengelolaan zakat UPZ Zakat Universitas Siliwangi.
+                Transparansi data real pendaftaran Muzakki dari database sistem sebagai bentuk keterbukaan dan kepercayaan publik.
               </p>
 
             </div>
 
-            {/* =================================================
-                RINGKASAN
-            ================================================== */}
-
+            {/* RINGKASAN STATS */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
 
               {/* TOTAL */}
-
               <div className="rounded-xl border border-green-100 bg-white px-4 py-4 text-center shadow-sm">
-
                 <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-[#08734f]">
-
                   <UsersRound size={16} />
-
                 </div>
-
                 <p className="mt-2 text-xl font-bold text-[#08734f]">
-                  {MUZAKKI_TERDAFTAR.length}
+                  {loading ? "..." : stats.total}
                 </p>
-
                 <p className="mt-0.5 text-[11px] text-gray-500">
                   Total Muzakki Terdaftar
                 </p>
-
               </div>
 
               {/* UMUM */}
-
               <div className="rounded-xl border border-green-100 bg-white px-4 py-4 text-center shadow-sm">
-
                 <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-[#08734f]">
-
                   <UserRound size={16} />
-
                 </div>
-
                 <p className="mt-2 text-xl font-bold text-[#08734f]">
-                  {jumlahUmum}
+                  {loading ? "..." : stats.umum}
                 </p>
-
                 <p className="mt-0.5 text-[11px] text-gray-500">
                   Muzakki Umum
                 </p>
-
               </div>
 
               {/* UNSIL */}
-
               <div className="rounded-xl border border-green-100 bg-white px-4 py-4 text-center shadow-sm">
-
                 <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-[#08734f]">
-
                   <GraduationCap size={16} />
-
                 </div>
-
                 <p className="mt-2 text-xl font-bold text-[#08734f]">
-                  {jumlahUnsil}
+                  {loading ? "..." : stats.dosen_staf}
                 </p>
-
                 <p className="mt-0.5 text-[11px] text-gray-500">
                   Dosen &amp; Staf UNSIL
                 </p>
-
               </div>
 
             </div>
 
             {/* =================================================
-                TABEL
+                FILTER & PENCARIAN
             ================================================== */}
 
-            <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-              {/* HEADER TABEL */}
-
-              <div className="border-b border-gray-100 bg-green-50 px-4 py-3">
-
-                <div className="flex items-center gap-2">
-
-                  <CheckCircle2
-                    size={16}
-                    className="text-[#08734f]"
-                  />
-
-                  <h3 className="text-xs font-semibold text-[#08734f] sm:text-sm">
-                    Daftar Muzakki Aktif
-                  </h3>
-
-                </div>
-
-                <p className="mt-0.5 text-[10px] text-gray-500 sm:text-xs">
-                  Data ditampilkan sebagai bentuk transparansi
-                  pendaftaran Muzakki.
-                </p>
-
+              {/* TABS KATEGORI */}
+              <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveKategori("semua")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                    activeKategori === "semua"
+                      ? "bg-[#08734f] text-white shadow-xs"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Semua ({stats.total})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveKategori("unsil")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                    activeKategori === "unsil"
+                      ? "bg-[#08734f] text-white shadow-xs"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Dosen & Staf UNSIL ({stats.dosen_staf})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveKategori("umum")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                    activeKategori === "umum"
+                      ? "bg-[#08734f] text-white shadow-xs"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Masyarakat Umum ({stats.umum})
+                </button>
               </div>
 
-              {/* TABLE */}
+              {/* SEARCH INPUT */}
+              <div className="relative w-full sm:w-64">
+                <Search
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari nama atau unit..."
+                  className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-xs outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                />
+              </div>
 
+            </div>
+
+            {/* =================================================
+                TABEL DATA REAL
+            ================================================== */}
+
+            <div className="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+
+              {/* HEADER TABEL */}
+              <div className="border-b border-gray-100 bg-green-50/60 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={16}
+                      className="text-[#08734f]"
+                    />
+                    <h3 className="text-xs font-semibold text-[#08734f] sm:text-sm">
+                      Daftar Muzakki Real Time (Database UPZ)
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-500">
+                    Menampilkan {totalItems} muzakki
+                  </span>
+                </div>
+              </div>
+
+              {/* ERROR STATE */}
+              {error && (
+                <div className="flex items-center gap-3 p-6 text-xs text-red-600 bg-red-50/50">
+                  <AlertCircle size={18} className="shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* TABLE */}
               <div className="overflow-x-auto">
 
                 <table className="w-full min-w-[620px] text-left">
 
                   <thead>
-
-                    <tr className="border-b border-gray-100 bg-white">
-
-                      <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
+                    <tr className="border-b border-gray-100 bg-slate-50/50">
+                      <th className="px-4 py-3 text-[10px] font-semibold text-gray-500 w-12 text-center">
                         No.
                       </th>
-
                       <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
                         Nama Muzakki
                       </th>
-
                       <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
-                        Kategori
+                        Fakultas / Kategori
                       </th>
-
                       <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
                         Jenis Zakat
                       </th>
-
-                      <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
+                      <th className="px-4 py-3 text-[10px] font-semibold text-gray-500 text-center">
                         Status
                       </th>
-
                     </tr>
-
                   </thead>
 
                   <tbody>
 
-                    {MUZAKKI_TERDAFTAR.map(
-                      (item, index) => (
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-xs text-slate-500">
+                          <div className="flex items-center justify-center gap-2 text-slate-500">
+                            <RefreshCw size={16} className="animate-spin text-[#08734f]" />
+                            <span>Memuat data muzakki dari server...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : paginatedList.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-xs text-slate-500">
+                          Tidak ada data muzakki yang cocok dengan kriteria pencarian.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedList.map((item, index) => {
+                        const rowNum = (page - 1) * perPage + index + 1;
+                        const isUnsil = item.kategori === "Dosen & Staf UNSIL";
 
-                        <tr
-                          key={item.id}
-                          className="border-b border-gray-100 last:border-b-0 hover:bg-green-50/40"
-                        >
+                        return (
+                          <tr
+                            key={item.id}
+                            className="border-b border-gray-100 last:border-b-0 hover:bg-green-50/30 transition-colors"
+                          >
+                            <td className="px-4 py-3 text-xs text-gray-400 text-center font-mono">
+                              {rowNum}
+                            </td>
 
-                          <td className="px-4 py-3 text-xs text-gray-500">
-                            {index + 1}
-                          </td>
-
-                          <td className="px-4 py-3">
-
-                            <div className="flex items-center gap-2">
-
-                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-50 text-[#08734f]">
-
-                                <UserRound size={13} />
-
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${isUnsil ? "bg-emerald-50 text-emerald-700" : "bg-sky-50 text-sky-700"}`}>
+                                  {isUnsil ? <GraduationCap size={14} /> : <UserRound size={13} />}
+                                </div>
+                                <div>
+                                  <span className="text-xs font-semibold text-gray-800 block">
+                                    {item.nama}
+                                  </span>
+                                  {item.unit_kerja && item.unit_kerja !== "Masyarakat Umum" && (
+                                    <span className="text-[10px] text-slate-500 block leading-tight">
+                                      {item.unit_kerja}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
+                            </td>
 
-                              <span className="text-xs font-semibold text-gray-800">
-                                {item.nama}
+                            <td className="px-4 py-3 text-xs">
+                              <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium ${
+                                isUnsil
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
+                                  : "bg-slate-100 text-slate-700 border border-slate-200/60"
+                              }`}>
+                                {isUnsil ? <Building2 size={11} /> : <UserRound size={10} />}
+                                {item.kategori}
                               </span>
+                            </td>
 
-                            </div>
+                            <td className="px-4 py-3 text-xs text-gray-600 font-medium">
+                              {item.jenisZakat}
+                            </td>
 
-                          </td>
-
-                          <td className="px-4 py-3 text-xs text-gray-600">
-                            {item.kategori}
-                          </td>
-
-                          <td className="px-4 py-3 text-xs text-gray-600">
-                            {item.jenisZakat}
-                          </td>
-
-                          <td className="px-4 py-3">
-
-                            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-
-                              <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-
-                              {item.status}
-
-                            </span>
-
-                          </td>
-
-                        </tr>
-
-                      )
+                            <td className="px-4 py-3 text-center">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                                <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
+                                {item.status}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
 
                   </tbody>
@@ -440,22 +449,40 @@ export default function DaftarMuzakkiPage() {
 
               </div>
 
+              {/* PAGINATION */}
+              {!loading && totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+                  <span>
+                    Halaman {page} dari {totalPages}
+                  </span>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                      className="rounded-md border border-slate-200 bg-white px-2.5 py-1 font-medium transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Sebelumnya
+                    </button>
+                    <button
+                      type="button"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                      className="rounded-md border border-slate-200 bg-white px-2.5 py-1 font-medium transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Selanjutnya
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
 
-            {/* =================================================
-                INFO PRIVASI
-            ================================================== */}
-
-            <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5">
-
+            {/* INFO PRIVASI */}
+            <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3.5 py-2.5">
               <p className="text-[10px] leading-4 text-blue-700 sm:text-xs sm:leading-5">
-
-                Data yang ditampilkan merupakan informasi
-                pendaftaran untuk kebutuhan transparansi dan
-                tidak menampilkan data pribadi yang bersifat sensitif.
-
+                Data yang ditampilkan merupakan informasi pendaftaran muzakki resmi untuk kebutuhan transparansi publik dan tidak menampilkan data pribadi yang bersifat rahasia.
               </p>
-
             </div>
 
           </section>
@@ -466,4 +493,4 @@ export default function DaftarMuzakkiPage() {
 
     </div>
   );
-}
+}

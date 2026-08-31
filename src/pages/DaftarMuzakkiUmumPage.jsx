@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ClipboardCheck,
   ShieldCheck,
@@ -16,9 +17,19 @@ import {
   Calculator,
   X,
   Users,
+  Loader2,
 } from "lucide-react";
 
 import { metodePembayaran } from "../data/dummyDonasi";
+import {
+  hitungZakatPenghasilan,
+  hitungZakatMaal,
+  hitungZakatFitrah,
+  getZakatConfig,
+} from "../services/zakatService";
+import { useSettings } from "../services/settingService";
+import { registerPublicMuzakki } from "../services/muzakkiService";
+
 
 // =========================================================
 // ICON METODE PEMBAYARAN
@@ -31,6 +42,8 @@ const METODE_ICON = {
 };
 
 export default function DaftarMuzakkiUmumPage() {
+  const settings = useSettings();
+
   // =========================================================
   // STATE FORM
   // =========================================================
@@ -45,8 +58,8 @@ export default function DaftarMuzakkiUmumPage() {
     alamat: "",
     kota: "",
     kodePos: "",
-    jenisZakat: "",
-    frekuensi: "",
+    jenisZakat: "penghasilan",
+    frekuensi: "bulanan",
     pembayaran: "",
     sumberInformasi: "",
     catatan: "",
@@ -70,19 +83,11 @@ export default function DaftarMuzakkiUmumPage() {
   // =========================================================
 
   const [showKalkulator, setShowKalkulator] = useState(false);
-  const [jenisKalkulator, setJenisKalkulator] =
-    useState("penghasilan");
-
-  const [nilaiKalkulator, setNilaiKalkulator] =
-    useState("");
-
+  const [jenisKalkulator, setJenisKalkulator] = useState("penghasilan");
+  const [nilaiKalkulator, setNilaiKalkulator] = useState("");
   const [jumlahJiwa, setJumlahJiwa] = useState("1");
-
-  const [nominalPerJiwa, setNominalPerJiwa] =
-    useState("50000");
-
-  const [hasilKalkulator, setHasilKalkulator] =
-    useState(null);
+  const [nominalPerJiwa, setNominalPerJiwa] = useState("45000");
+  const [hasilKalkulator, setHasilKalkulator] = useState(null);
 
   // =========================================================
   // HANDLE INPUT
@@ -156,12 +161,13 @@ export default function DaftarMuzakkiUmumPage() {
   // =========================================================
 
   const openKalkulator = () => {
+    const config = getZakatConfig();
     setShowKalkulator(true);
     setHasilKalkulator(null);
     setJenisKalkulator("penghasilan");
     setNilaiKalkulator("");
     setJumlahJiwa("1");
-    setNominalPerJiwa("50000");
+    setNominalPerJiwa(String(Math.round(2.5 * config.hargaBerasPerKg)));
   };
 
   // =========================================================
@@ -169,21 +175,23 @@ export default function DaftarMuzakkiUmumPage() {
   // =========================================================
 
   const handleJenisKalkulator = (value) => {
+    const config = getZakatConfig();
     setJenisKalkulator(value);
     setHasilKalkulator(null);
     setNilaiKalkulator("");
 
     if (value === "fitrah") {
       setJumlahJiwa("1");
-      setNominalPerJiwa("50000");
+      setNominalPerJiwa(String(Math.round(2.5 * config.hargaBerasPerKg)));
     }
   };
 
   // =========================================================
-  // HITUNG KALKULATOR
+  // HITUNG KALKULATOR (SESUAI PENGATURAN SISTEM)
   // =========================================================
 
   const handleHitungKalkulator = () => {
+    // ZAKAT PENGHASILAN
     if (jenisKalkulator === "penghasilan") {
       const penghasilan = Number(
         String(nilaiKalkulator || "").replace(/\D/g, "")
@@ -194,17 +202,21 @@ export default function DaftarMuzakkiUmumPage() {
         return;
       }
 
-      const hasil = penghasilan * 0.025;
+      const hasil = hitungZakatPenghasilan(penghasilan);
 
       setHasilKalkulator({
         label: "Estimasi Zakat Penghasilan",
-        value: hasil,
-        detail: "2,5% dari penghasilan per bulan",
+        value: hasil.jumlahZakat,
+        wajib: hasil.wajibZakat,
+        detail: hasil.wajibZakat
+          ? `Wajib zakat ${hasil.kadarZakatPersen}% (Nisab setara 85 gram emas: Rp ${formatNominal(hasil.nisab)}/thn).`
+          : `Penghasilan belum mencapai nisab (Rp ${formatNominal(hasil.nisab)}/thn atau Rp ${formatNominal(hasil.nisabBulan)}/bln).`,
       });
 
       return;
     }
 
+    // ZAKAT MAAL
     if (jenisKalkulator === "maal") {
       const harta = Number(
         String(nilaiKalkulator || "").replace(/\D/g, "")
@@ -215,24 +227,24 @@ export default function DaftarMuzakkiUmumPage() {
         return;
       }
 
-      const hasil = harta * 0.025;
+      const hasil = hitungZakatMaal(harta);
 
       setHasilKalkulator({
         label: "Estimasi Zakat Maal",
-        value: hasil,
-        detail: "2,5% dari total harta",
+        value: hasil.jumlahZakat,
+        wajib: hasil.wajibZakat,
+        detail: hasil.wajibZakat
+          ? `Wajib zakat ${hasil.kadarZakatPersen}% dari harta bersih (Nisab 85g emas: Rp ${formatNominal(hasil.nisab)}).`
+          : `Harta belum mencapai nisab 85 gram emas (Rp ${formatNominal(hasil.nisab)}).`,
       });
 
       return;
     }
 
+    // ZAKAT FITRAH
     if (jenisKalkulator === "fitrah") {
       const jiwa = Number(
         String(jumlahJiwa || "").replace(/\D/g, "")
-      );
-
-      const perJiwa = Number(
-        String(nominalPerJiwa || "").replace(/\D/g, "")
       );
 
       if (!jiwa || jiwa <= 0) {
@@ -240,28 +252,55 @@ export default function DaftarMuzakkiUmumPage() {
         return;
       }
 
-      if (!perJiwa || perJiwa <= 0) {
-        alert("Silakan masukkan nominal per jiwa.");
-        return;
-      }
-
-      const hasil = jiwa * perJiwa;
+      const hasil = hitungZakatFitrah(jiwa);
 
       setHasilKalkulator({
         label: "Estimasi Zakat Fitrah",
-        value: hasil,
+        value: hasil.jumlahZakat,
+        wajib: true,
         detail: `${jiwa} jiwa × Rp ${formatNominal(
-          perJiwa
-        )}`,
+          hasil.perJiwa
+        )} (Setara 2,5 kg beras @ Rp ${formatNominal(hasil.hargaBeras)}/kg).`,
       });
     }
   };
+
+  // Terapkan hasil kalkulator ke form pendaftaran
+  const terapkanHasilKalkulator = () => {
+    if (hasilKalkulator && hasilKalkulator.value > 0) {
+      setNominal(String(hasilKalkulator.value));
+      if (jenisKalkulator === "penghasilan") {
+        setFormData((prev) => ({
+          ...prev,
+          jenisZakat: "penghasilan",
+          frekuensi: "bulanan",
+        }));
+      } else if (jenisKalkulator === "maal") {
+        setFormData((prev) => ({
+          ...prev,
+          jenisZakat: "maal",
+          frekuensi: "tahunan",
+        }));
+      } else if (jenisKalkulator === "fitrah") {
+        setFormData((prev) => ({
+          ...prev,
+          jenisZakat: "fitrah",
+          frekuensi: "tahunan",
+        }));
+      }
+      setShowKalkulator(false);
+    }
+  };
+
 
   // =========================================================
   // SUBMIT
   // =========================================================
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.namaLengkap.trim()) {
@@ -319,13 +358,29 @@ export default function DaftarMuzakkiUmumPage() {
       return;
     }
 
-    console.log("Data Muzakki Umum:", {
-      ...formData,
-      nominalZakat: Number(nominal),
-    });
+    setSubmitting(true);
+    try {
+      await registerPublicMuzakki({
+        nama: formData.namaLengkap,
+        nik: formData.nik,
+        unit_kerja: formData.instansi || "Masyarakat Umum",
+        email: formData.email || null,
+        no_hp: formData.noHp || null,
+        jenis_zakat: formData.jenisZakat,
+        frekuensi: formData.frekuensi,
+        nominal: Number(nominal),
+        metode_pembayaran: formData.pembayaran,
+      });
 
-    alert("Pendaftaran Muzakki berhasil dikirim!");
+      alert(`Alhamdulillah, pendaftaran Muzakki Umum atas nama ${formData.namaLengkap} berhasil tersimpan ke sistem!`);
+      navigate("/daftar-muzakki");
+    } catch (err) {
+      alert(err.message || "Gagal mengirim pendaftaran. Silakan coba lagi.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -984,14 +1039,22 @@ export default function DaftarMuzakkiUmumPage() {
 
             <button
               type="submit"
-              className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#08734f] text-sm font-semibold text-white transition hover:bg-[#065d40]"
+              disabled={submitting}
+              className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#08734f] text-sm font-semibold text-white transition hover:bg-[#065d40] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-
-              <UserPlus size={19} />
-
-              Daftar sebagai Muzakki
-
+              {submitting ? (
+                <>
+                  <Loader2 size={19} className="animate-spin" />
+                  Menyimpan Pendaftaran...
+                </>
+              ) : (
+                <>
+                  <UserPlus size={19} />
+                  Daftar sebagai Muzakki
+                </>
+              )}
             </button>
+
 
             {/* FOOTER */}
 
@@ -1368,7 +1431,7 @@ export default function DaftarMuzakkiUmumPage() {
 
               <div className="mt-5 rounded-xl border border-green-200 bg-green-50 p-5">
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 font-medium">
                   {hasilKalkulator.label}
                 </p>
 
@@ -1378,13 +1441,25 @@ export default function DaftarMuzakkiUmumPage() {
                   )}
                 </p>
 
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-600 leading-relaxed">
                   {hasilKalkulator.detail}
                 </p>
+
+                {hasilKalkulator.value > 0 && (
+                  <button
+                    type="button"
+                    onClick={terapkanHasilKalkulator}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 active:scale-[0.98]"
+                  >
+                    <Check size={16} />
+                    Gunakan Nominal Ini ke Formulir (Rp {formatNominal(hasilKalkulator.value)})
+                  </button>
+                )}
 
               </div>
 
             )}
+
 
             {/* CATATAN */}
 

@@ -83,12 +83,13 @@ export default function DonasiOnline() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[700px] w-full text-left border-collapse">
+          <table className="min-w-[800px] w-full text-left border-collapse">
             <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-600">
               <tr>
                 <th className="px-5 py-3">Kode</th>
                 <th className="px-5 py-3">Tanggal</th>
                 <th className="px-5 py-3">Kategori</th>
+                <th className="px-5 py-3">Program</th>
                 <th className="px-5 py-3">Keterangan</th>
                 <th className="px-5 py-3">Metode</th>
                 <th className="px-5 py-3 text-right">Nominal</th>
@@ -97,14 +98,14 @@ export default function DonasiOnline() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
+                  <td colSpan={7} className="px-5 py-12 text-center">
                     <div className="w-7 h-7 border-2 border-gray-200 border-t-brand-500 rounded-full animate-spin mx-auto" />
                     <p className="text-gray-400 text-sm mt-3">Memuat data donasi...</p>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-16 text-center">
+                  <td colSpan={7} className="px-5 py-16 text-center">
                     <Globe size={36} className="mx-auto text-gray-200 mb-3" />
                     <p className="text-sm text-gray-500">Belum ada donasi online yang masuk.</p>
                     <p className="text-xs text-gray-400 mt-1">Donasi akan muncul di sini setelah publik mengisi form di halaman /donasi</p>
@@ -118,6 +119,15 @@ export default function DonasiOnline() {
                     <span className="inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
                       {row.kategori}
                     </span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    {row.program_nama ? (
+                      <span className="inline-flex rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                        {row.program_nama}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">Umum</span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-500 max-w-[200px] truncate">{row.deskripsi ?? "-"}</td>
                   <td className="px-5 py-3.5">

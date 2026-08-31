@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   GraduationCap,
   HeartPulse,
@@ -7,6 +8,7 @@ import {
   Home,
   Droplets,
   FolderHeart,
+  Heart,
 } from "lucide-react";
 import Card from "../components/common/Card";
 import { getPublicPrograms } from "../services/programService";
@@ -14,6 +16,7 @@ import { useSettings } from "../services/settingService";
 
 const DEFAULT_PROGRAMS = [
   {
+    id: 1,
     icon: GraduationCap,
     title: "Beasiswa Pendidikan",
     description:
@@ -22,6 +25,7 @@ const DEFAULT_PROGRAMS = [
     collected: 98500000,
   },
   {
+    id: 2,
     icon: HeartPulse,
     title: "Bantuan Kesehatan",
     description:
@@ -30,6 +34,7 @@ const DEFAULT_PROGRAMS = [
     collected: 52000000,
   },
   {
+    id: 3,
     icon: HandHeart,
     title: "Santunan Yatim & Dhuafa",
     description:
@@ -38,6 +43,7 @@ const DEFAULT_PROGRAMS = [
     collected: 45750000,
   },
   {
+    id: 4,
     icon: Store,
     title: "Pemberdayaan Ekonomi",
     description:
@@ -46,6 +52,7 @@ const DEFAULT_PROGRAMS = [
     collected: 41200000,
   },
   {
+    id: 5,
     icon: Home,
     title: "Bedah Rumah Dhuafa",
     description:
@@ -54,6 +61,7 @@ const DEFAULT_PROGRAMS = [
     collected: 67000000,
   },
   {
+    id: 6,
     icon: Droplets,
     title: "Air Bersih & Sanitasi",
     description:
@@ -87,7 +95,7 @@ export default function ProgramPage() {
             title: item.nama,
             description: item.deskripsi || "Program penyaluran bantuan UPZ Unsil.",
             target: item.target_nominal || 10000000,
-            collected: item.nominal_disalurkan || 0,
+            collected: item.nominal_terkumpul || item.nominal_disalurkan || 0,
             icon: FolderHeart,
           }));
           setPrograms(mapped);
@@ -172,6 +180,15 @@ export default function ProgramPage() {
                         </span>
                       </div>
                     </div>
+
+                    <Link
+                      to={`/donasi?program=${program.id || ""}`}
+                      state={{ programId: program.id }}
+                      className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-700 active:scale-[0.98]"
+                    >
+                      <Heart size={14} />
+                      Donasi Sekarang
+                    </Link>
                   </Card>
                 );
               })}
@@ -179,7 +196,8 @@ export default function ProgramPage() {
           )}
         </div>
       </section>
-
     </div>
   );
 }
+
+

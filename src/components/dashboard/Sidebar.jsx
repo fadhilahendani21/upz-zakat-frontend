@@ -28,6 +28,7 @@ const pengelolaan = [
   { label: "Muzakki", icon: Users, to: "/dashboard/muzakki" },
   { label: "Mustahik", icon: Heart, to: "/dashboard/mustahik" },
   { label: "Program", icon: FolderKanban, to: "/dashboard/program" },
+  { label: "Berita & Artikel", icon: BookOpen, to: "/dashboard/berita" },
   { label: "Donasi Online", icon: Globe, to: "/dashboard/donasi-online" },
 ];
 

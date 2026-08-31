@@ -19,6 +19,7 @@ import {
   hitungZakatMaal,
   hitungZakatFitrah,
 } from "../services/zakatService";
+import { useSettings } from "../services/settingService";
 
 const TABS = [
   {
@@ -144,6 +145,7 @@ function HasilCard({
 
 export default function HitungZakatPage() {
   const navigate = useNavigate();
+  const settings = useSettings();
 
   const [tab, setTab] = useState("penghasilan");
 
@@ -153,8 +155,14 @@ export default function HitungZakatPage() {
 
   const [penghasilan, setPenghasilan] = useState(0);
 
-  const hasilPenghasilan =
-    hitungZakatPenghasilan(penghasilan);
+  const customConfig = {
+    hargaEmasPerGram: Number(settings?.zakat?.hargaEmasPerGram) || 1350000,
+    nisabGramEmas: Number(settings?.zakat?.nisabZakatMaalGram) || 85,
+    hargaBerasPerKg: Number(settings?.zakat?.hargaBerasPerKg) || 15000,
+    kadarZakatPersen: Number(settings?.zakat?.kadarZakatPersen) || 2.5,
+  };
+
+  const hasilPenghasilan = hitungZakatPenghasilan(penghasilan, customConfig);
 
   // ======================================================
   // ZAKAT MAAL
@@ -165,7 +173,8 @@ export default function HitungZakatPage() {
 
   const hasilMaal = hitungZakatMaal(
     totalHarta,
-    totalUtang
+    totalUtang,
+    customConfig
   );
 
   // ======================================================
@@ -174,8 +183,7 @@ export default function HitungZakatPage() {
 
   const [jumlahJiwa, setJumlahJiwa] = useState(1);
 
-  const hasilFitrah =
-    hitungZakatFitrah(jumlahJiwa);
+  const hasilFitrah = hitungZakatFitrah(jumlahJiwa, customConfig);
 
   // ======================================================
   // KE HALAMAN PEMBAYARAN
@@ -282,12 +290,7 @@ export default function HitungZakatPage() {
                 />
 
                 <span>
-                  Nisab zakat penghasilan setara 85 gram
-                  emas per tahun (
-                  {formatRupiah(
-                    hasilPenghasilan.nisab
-                  )}
-                  ). Kadar zakat 2,5%.
+                  Nisab zakat penghasilan setara 85 gram emas per tahun ({formatRupiah(hasilPenghasilan.nisab)}/thn atau {formatRupiah(hasilPenghasilan.nisabBulan)}/bln). Kadar zakat {hasilPenghasilan.kadarZakatPersen}%.
                 </span>
 
               </p>
@@ -299,8 +302,8 @@ export default function HitungZakatPage() {
               jumlah={hasilPenghasilan.jumlahZakat}
               keterangan={
                 hasilPenghasilan.wajibZakat
-                  ? "Dihitung dari 2,5% penghasilan bulanan Anda."
-                  : "Penghasilan tahunan Anda belum mencapai nisab."
+                  ? `Dihitung ${hasilPenghasilan.kadarZakatPersen}% dari penghasilan bulanan Anda.`
+                  : `Penghasilan bulanan Anda belum mencapai nisab minimum (${formatRupiah(hasilPenghasilan.nisabBulan)}/bulan).`
               }
             />
 
@@ -318,6 +321,7 @@ export default function HitungZakatPage() {
                 Tunaikan Sekarang
               </Button>
             )}
+
 
           </div>
         )}
@@ -367,11 +371,7 @@ export default function HitungZakatPage() {
                 />
 
                 <span>
-                  Nisab zakat maal setara 85 gram emas (
-                  {formatRupiah(
-                    hasilMaal.nisab
-                  )}
-                  ). Kadar zakat 2,5% dari harta bersih.
+                  Nisab zakat maal setara 85 gram emas ({formatRupiah(hasilMaal.nisab)}). Kadar zakat {hasilMaal.kadarZakatPersen}% dari harta bersih setelah haul 1 tahun.
                 </span>
 
               </p>
@@ -383,10 +383,10 @@ export default function HitungZakatPage() {
               jumlah={hasilMaal.jumlahZakat}
               keterangan={
                 hasilMaal.wajibZakat
-                  ? `Dihitung dari 2,5% harta bersih (${formatRupiah(
+                  ? `Dihitung ${hasilMaal.kadarZakatPersen}% dari harta bersih (${formatRupiah(
                       hasilMaal.hartaBersih
                     )}).`
-                  : "Harta bersih Anda belum mencapai nisab."
+                  : `Harta bersih Anda (${formatRupiah(hasilMaal.hartaBersih)}) belum mencapai nisab minimum (${formatRupiah(hasilMaal.nisab)}).`
               }
             />
 
@@ -467,17 +467,13 @@ export default function HitungZakatPage() {
                 />
 
                 <span>
-                  Setara 2,5 kg makanan pokok per jiwa,
-                  dikonversi{" "}
-                  {formatRupiah(
-                    hasilFitrah.perJiwa
-                  )}{" "}
-                  per jiwa.
+                  Setara 2,5 kg beras per jiwa (Harga beras acuan: {formatRupiah(hasilFitrah.hargaBeras)}/kg = {formatRupiah(hasilFitrah.perJiwa)} per jiwa).
                 </span>
 
               </p>
 
             </Card>
+
 
             <HasilCard
               wajib={jumlahJiwa > 0}

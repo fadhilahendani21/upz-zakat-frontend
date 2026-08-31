@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   CalendarDays,
+  Newspaper,
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -8,82 +10,36 @@ import { Link } from "react-router-dom";
 import Hero from "../components/landing/Hero";
 import FeatureCard from "../components/landing/FeatureCard";
 import StatsBar from "../components/landing/StatsBar";
+import { getPublicBerita } from "../services/beritaService";
 
-// =========================================================
-// FOTO BERITA
-// =========================================================
-
-import berita1Image from "../assets/images/berita 1.jpeg";
-import berita2Image from "../assets/images/berita 2.jpeg";
-import berita3Image from "../assets/images/berita 3.jpeg";
-import berita4Image from "../assets/images/berita 4.jpeg";
-import berita5Image from "../assets/images/berita 5.jpeg";
-import berita6Image from "../assets/images/berita 6.jpeg";
-
-// =========================================================
-// DATA BERITA
-// 1 BERITA TERBARU + 5 BERITA LAINNYA
-// =========================================================
-
-const BERITA = [
+const DEFAULT_BERITA = [
   {
     id: 1,
     tanggal: "12 Agustus 2026",
-    judul:
-      "Penyaluran Beasiswa Semester Ganjil 2026 Resmi Dimulai",
-    deskripsi:
-      "UPZ Zakat Universitas Siliwangi kembali menyalurkan bantuan beasiswa bagi mahasiswa yang membutuhkan.",
-    image: berita1Image,
+    judul: "Penyaluran Beasiswa Semester Ganjil 2026 Resmi Dimulai",
+    deskripsi: "UPZ Zakat Universitas Siliwangi kembali menyalurkan bantuan beasiswa bagi mahasiswa yang membutuhkan.",
+    image: null,
   },
-
   {
     id: 2,
     tanggal: "5 Agustus 2026",
-    judul:
-      "Gerai Zakat UPZ Unsil Kembali Melayani Muzakki",
-    deskripsi:
-      "Layanan gerai zakat hadir untuk memudahkan civitas akademika dan masyarakat dalam menunaikan zakat.",
-    image: berita2Image,
+    judul: "Gerai Zakat UPZ Unsil Kembali Melayani Muzakki",
+    deskripsi: "Layanan gerai zakat hadir untuk memudahkan civitas akademika dan masyarakat dalam menunaikan zakat.",
+    image: null,
   },
-
   {
     id: 3,
     tanggal: "30 Juli 2026",
-    judul:
-      "Penyaluran Beras untuk Mustahik UPZ Universitas Siliwangi",
-    deskripsi:
-      "Bantuan pangan disalurkan kepada penerima manfaat sebagai bentuk kepedulian UPZ Unsil.",
-    image: berita3Image,
+    judul: "Penyaluran Beras untuk Mustahik UPZ Universitas Siliwangi",
+    deskripsi: "Bantuan pangan disalurkan kepada penerima manfaat sebagai bentuk kepedulian UPZ Unsil.",
+    image: null,
   },
-
   {
     id: 4,
     tanggal: "25 Juli 2026",
-    judul:
-      "Penyaluran Al-Qur'an kepada Masyarakat",
-    deskripsi:
-      "UPZ Unsil menyalurkan Al-Qur'an sebagai bagian dari program pembinaan dan kepedulian sosial.",
-    image: berita4Image,
-  },
-
-  {
-    id: 5,
-    tanggal: "18 Juli 2026",
-    judul:
-      "Bantuan Modal Usaha untuk Mustahik UPZ Unsil",
-    deskripsi:
-      "Program pemberdayaan ekonomi kembali dilakukan untuk membantu mustahik mengembangkan usaha.",
-    image: berita5Image,
-  },
-
-  {
-    id: 6,
-    tanggal: "10 Juli 2026",
-    judul:
-      "Program Rutilahu UPZ Unsil Bantu Renovasi Rumah Dhuafa",
-    deskripsi:
-      "UPZ Zakat Universitas Siliwangi membantu renovasi rumah tidak layak huni bagi keluarga yang membutuhkan.",
-    image: berita6Image,
+    judul: "Penyaluran Al-Qur'an kepada Masyarakat",
+    deskripsi: "UPZ Unsil menyalurkan Al-Qur'an sebagai bagian dari program pembinaan dan kepedulian sosial.",
+    image: null,
   },
 ];
 
@@ -92,8 +48,39 @@ const BERITA = [
 // =========================================================
 
 export default function LandingPage() {
-  const beritaUtama = BERITA[0];
-  const beritaLainnya = BERITA.slice(1);
+  const [beritaList, setBeritaList] = useState(DEFAULT_BERITA);
+
+  useEffect(() => {
+    async function loadNews() {
+      try {
+        const res = await getPublicBerita({ perPage: 4 });
+        if (res?.data && res.data.length > 0) {
+          const mapped = res.data.map((item) => ({
+            id: item.id,
+            judul: item.judul,
+            deskripsi:
+              item.ringkasan ||
+              (item.konten ? item.konten.replace(/<[^>]*>?/gm, "").slice(0, 120) : "Berita seputar UPZ Unsil."),
+            tanggal: item.published_at
+              ? new Date(item.published_at).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              : "Terbaru",
+            image: item.gambar || null,
+          }));
+          setBeritaList(mapped);
+        }
+      } catch (err) {
+        console.error("Gagal memuat berita publik:", err);
+      }
+    }
+    loadNews();
+  }, []);
+
+  const beritaUtama = beritaList[0] || DEFAULT_BERITA[0];
+  const beritaLainnya = beritaList.slice(1, 4); // Maksimal 3 berita lainnya
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
@@ -167,43 +154,46 @@ export default function LandingPage() {
 
               {/* FOTO UTAMA */}
 
-              <div className="relative h-[190px] overflow-hidden sm:h-[220px]">
-
-                <img
-                  src={beritaUtama.image}
-                  alt={beritaUtama.judul}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-
-                {/* OVERLAY */}
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-
-                {/* BADGE */}
-
-                <span className="absolute left-4 top-4 rounded-full bg-red-500 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white">
-                  Berita Terbaru
-                </span>
-
-                {/* INFO */}
-
-                <div className="absolute inset-x-0 bottom-0 p-4">
-
-                  <div className="mb-1.5 flex items-center gap-1.5 text-[10px] text-white/85">
-
-                    <CalendarDays size={11} />
-
-                    {beritaUtama.tanggal}
-
+              {beritaUtama.image ? (
+                <div className="relative h-[190px] overflow-hidden sm:h-[220px]">
+                  <img
+                    src={beritaUtama.image}
+                    alt={beritaUtama.judul}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                  <span className="absolute left-4 top-4 rounded-full bg-red-500 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white">
+                    Berita Terbaru
+                  </span>
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] text-white/85">
+                      <CalendarDays size={11} />
+                      {beritaUtama.tanggal}
+                    </div>
+                    <h3 className="text-lg font-bold leading-tight text-white sm:text-xl">
+                      {beritaUtama.judul}
+                    </h3>
                   </div>
-
-                  <h3 className="text-lg font-bold leading-tight text-white sm:text-xl">
-                    {beritaUtama.judul}
-                  </h3>
-
                 </div>
-
-              </div>
+              ) : (
+                <div className="relative h-[190px] sm:h-[220px] bg-gradient-to-br from-brand-700 via-brand-800 to-emerald-900 p-4 sm:p-5 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-white/20 backdrop-blur-xs px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white">
+                      Berita Terbaru
+                    </span>
+                    <Newspaper size={24} className="text-white/40" />
+                  </div>
+                  <div>
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] text-white/80">
+                      <CalendarDays size={11} />
+                      {beritaUtama.tanggal}
+                    </div>
+                    <h3 className="text-lg font-bold leading-tight text-white sm:text-xl line-clamp-2">
+                      {beritaUtama.judul}
+                    </h3>
+                  </div>
+                </div>
+              )}
 
               {/* DESKRIPSI */}
 
@@ -248,15 +238,21 @@ export default function LandingPage() {
                     className="group flex gap-2.5 rounded-lg border border-gray-200 bg-white p-2 shadow-sm transition duration-300 hover:border-brand-200 hover:bg-brand-50/30 hover:shadow-sm"
                   >
 
-                    {/* FOTO KECIL */}
+                    {/* FOTO KECIL / ICON */}
 
-                    <div className="h-[58px] w-[76px] shrink-0 overflow-hidden rounded-md bg-gray-100 sm:h-[64px] sm:w-[84px]">
+                    <div className="h-[58px] w-[76px] shrink-0 overflow-hidden rounded-md bg-gray-100 sm:h-[64px] sm:w-[84px] flex items-center justify-center">
 
-                      <img
-                        src={berita.image}
-                        alt={berita.judul}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
+                      {berita.image ? (
+                        <img
+                          src={berita.image}
+                          alt={berita.judul}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-brand-50 flex items-center justify-center text-brand-600">
+                          <Newspaper size={20} className="opacity-60" />
+                        </div>
+                      )}
 
                     </div>
 

@@ -33,10 +33,15 @@ export default function Footer() {
     settings?.profil?.alamat ||
     "Universitas Siliwangi, Tasikmalaya";
 
-  const whatsapp = "085171014303";
+  const whatsapp =
+    settings?.profil?.whatsapp || "081234567890";
+
+  const whatsappClean = whatsapp.replace(/\D/g, "");
+  const whatsappHref = `https://wa.me/${whatsappClean.startsWith("0") ? "62" + whatsappClean.slice(1) : whatsappClean}`;
 
   const email =
     settings?.profil?.email || "upz@unsil.ac.id";
+
 
   return (
     <footer className="bg-[#175621] text-white">
@@ -274,7 +279,7 @@ export default function Footer() {
                   </p>
 
                   <a
-                    href="https://wa.me/6285171014303"
+                    href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs leading-5 text-green-100 transition-colors hover:text-white"

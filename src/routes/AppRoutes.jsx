@@ -36,6 +36,7 @@ import Penyaluran from "../pages/dashboard/Penyaluran";
 import MuzakkiMustahik from "../pages/dashboard/MuzakkiMustahik";
 import Mustahik from "../pages/dashboard/Mustahik";
 import Program from "../pages/dashboard/Program";
+import BeritaAdmin from "../pages/dashboard/BeritaAdmin";
 import DonasiOnline from "../pages/dashboard/DonasiOnline";
 import Transaksi from "../pages/dashboard/Transaksi";
 import RekeningKas from "../pages/dashboard/RekeningKas";
@@ -204,6 +205,11 @@ export default function AppRoutes() {
           <Route
             path="program"
             element={<Program />}
+          />
+
+          <Route
+            path="berita"
+            element={<BeritaAdmin />}
           />
 
           <Route

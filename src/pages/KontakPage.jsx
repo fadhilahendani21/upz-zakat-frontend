@@ -28,8 +28,10 @@ export default function KontakPage() {
 
   const alamat = profil.alamat || dummyKontak.alamat;
 
-  // Nomor WhatsApp
-  const whatsapp = "085171014303";
+  // Nomor WhatsApp — dibaca dari pengaturan sistem
+  const whatsapp = profil.whatsapp || dummyKontak.whatsapp || "081234567890";
+  const whatsappClean = whatsapp.replace(/\D/g, "");
+  const whatsappHref = `https://wa.me/${whatsappClean.startsWith("0") ? "62" + whatsappClean.slice(1) : whatsappClean}`;
 
   const email = profil.email || dummyKontak.email;
   const orgName =
@@ -79,17 +81,23 @@ export default function KontakPage() {
           </div>
 
           <h3 className="font-semibold text-gray-900 text-sm mb-1">
-            WhatsApp & Layanan
+            WhatsApp &amp; Layanan
           </h3>
 
-          <p className="text-sm text-gray-800 font-semibold mt-1">
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-brand-700 font-semibold mt-1 hover:underline"
+          >
             {whatsapp}
-          </p>
+          </a>
 
           <p className="text-xs text-gray-500 mt-1">
             Layanan Aktif Jam Kerja
           </p>
         </Card>
+
 
         {/* Email */}
         <Card className="text-center">

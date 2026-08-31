@@ -24,6 +24,47 @@ function handle401(res) {
 }
 
 /**
+ * GET /api/public/muzakki?search=&kategori=
+ * Mengambil data transparansi daftar muzakki dari database untuk halaman publik
+ */
+export async function getPublicMuzakki({ search = "", kategori = "" } = {}) {
+  if (!API_URL) return { data: [], stats: { total: 0, dosen_staf: 0, umum: 0 } };
+
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (kategori) params.set("kategori", kategori);
+
+  const res = await fetch(`${API_URL}/public/muzakki?${params}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) throw new Error("Gagal mengambil data muzakki dari database.");
+  return res.json();
+}
+
+/**
+ * POST /api/public/muzakki/register
+ * Pendaftaran Muzakki dari form publik (Dosen/Staf atau Umum)
+ */
+export async function registerPublicMuzakki(payload) {
+  if (!API_URL) return { success: true, message: "Pendaftaran berhasil disimpan (demo)." };
+
+  const res = await fetch(`${API_URL}/public/muzakki/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Gagal melakukan pendaftaran muzakki.");
+  }
+  return res.json();
+}
+
+/**
  * GET /api/muzakki?search=&kategori=&page=&per_page=
  * Mengembalikan { data, meta }
  */
@@ -39,6 +80,7 @@ export async function getMuzakki({ search = "", kategori = "", page = 1, perPage
   if (!res.ok) throw new Error("Gagal mengambil data muzakki.");
   return res.json();
 }
+
 
 /**
  * GET /api/muzakki/options?search=

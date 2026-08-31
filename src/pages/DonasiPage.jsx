@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Heart,
@@ -10,6 +10,7 @@ import {
   User,
   Mail,
   Phone,
+  FolderHeart,
   X,
 } from "lucide-react";
 
@@ -24,6 +25,7 @@ import {
 
 import { formatRupiah } from "../utils/formatRupiah";
 import { submitDonasi } from "../services/donasiService";
+import { getPublicPrograms } from "../services/programService";
 import { useSettings } from "../services/settingService";
 
 const METODE_ICON = {
@@ -33,22 +35,45 @@ const METODE_ICON = {
 };
 
 // ======================================================
-// KHUSUS DONASI: INFAK & SEDEKAH
+// 3 PILIHAN DONASI UTAMA
 // ======================================================
-const JENIS_DONASI = dummyJenisDonasi.filter(
-  (j) => j.id === "infak" || j.id === "sedekah"
-);
+const JENIS_DONASI = [
+  {
+    id: "infak",
+    kategori: "INFAK",
+    nama: "Infak",
+    deskripsi: "Pemberian sukarela tanpa batasan nisab untuk mendukung operasional dan program umum UPZ.",
+  },
+  {
+    id: "sedekah",
+    kategori: "SEDEKAH",
+    nama: "Sedekah",
+    deskripsi: "Pemberian sukarela dalam bentuk apa pun sebagai wujud kepedulian dan kebaikan umum.",
+  },
+  {
+    id: "program",
+    kategori: "PROGRAM",
+    nama: "Donasi by Program",
+    deskripsi: "Salurkan donasi Anda secara spesifik untuk program penyaluran pilihan Anda.",
+  },
+];
 
 export default function DonasiPage() {
   const location = useLocation();
   const settings = useSettings();
 
+  const searchParams = new URLSearchParams(location.search);
+  const initialProgramId = location.state?.programId || searchParams.get("program") || "";
+
   // ======================================================
   // STATE
   // ======================================================
 
+  const [programsList, setProgramsList] = useState([]);
+  const [programId, setProgramId] = useState(initialProgramId);
+
   const [jenisId, setJenisId] = useState(
-    location.state?.jenisId || JENIS_DONASI[0]?.id
+    initialProgramId ? "program" : (location.state?.jenisId || "infak")
   );
 
   const [nominal, setNominal] = useState(
@@ -82,13 +107,59 @@ export default function DonasiPage() {
   // POPUP QRIS
   const [showQris, setShowQris] = useState(false);
 
+  useEffect(() => {
+    async function loadPrograms() {
+      try {
+        const res = await getPublicPrograms();
+        if (res?.data && res.data.length > 0) {
+          setProgramsList(res.data);
+          // Jika sudah mode program tapi belum ada program terpilih, pilih yang pertama
+          if (initialProgramId) {
+            setProgramId(String(initialProgramId));
+          }
+        }
+      } catch (err) {
+        console.error("Gagal memuat program:", err);
+      }
+    }
+    loadPrograms();
+  }, []);
+
+  // Update programId if route/state changes
+  useEffect(() => {
+    const qProg = searchParams.get("program") || location.state?.programId;
+    if (qProg) {
+      setJenisId("program");
+      setProgramId(String(qProg));
+    }
+  }, [location.search, location.state]);
+
   // ======================================================
-  // JENIS DONASI TERPILIH
+  // JENIS & PROGRAM DONASI TERPILIH
   // ======================================================
 
   const jenisTerpilih = JENIS_DONASI.find(
     (j) => j.id === jenisId
   );
+
+  const programTerpilih = programsList.find(
+    (p) => String(p.id) === String(programId)
+  );
+
+  // ======================================================
+  // GANTI JENIS DONASI
+  // ======================================================
+
+  function handlePilihJenis(id) {
+    setJenisId(id);
+    if (id === "program") {
+      if (!programId && programsList.length > 0) {
+        setProgramId(String(programsList[0].id));
+      }
+    } else {
+      setProgramId("");
+    }
+  }
 
   // ======================================================
   // NOMINAL CEPAT
@@ -146,15 +217,23 @@ export default function DonasiPage() {
       return;
     }
 
+    const isProgram = jenisId === "program";
+
+    if (isProgram && !programId) {
+      setErrorMsg("Silakan pilih program penyaluran yang ingin didukung.");
+      return;
+    }
+
     setStatus("loading");
     setErrorMsg("");
 
     try {
       const payload = {
-        kategori: jenisTerpilih.nama,
+        kategori: isProgram ? (programTerpilih?.nama || "Donasi Program") : jenisTerpilih?.nama,
         nominal,
         metode: metodeId,
         anonim,
+        program_id: isProgram && programId ? Number(programId) : null,
 
         ...(anonim
           ? {}
@@ -220,13 +299,26 @@ export default function DonasiPage() {
             {/* JENIS */}
             <div className="mb-3 flex justify-between gap-4 text-sm">
               <span className="text-gray-500">
-                Jenis
+                Jenis Donasi
               </span>
 
               <span className="text-right font-medium text-gray-900">
                 {jenisTerpilih?.nama}
               </span>
             </div>
+
+            {/* PROGRAM (JIKA ADA) */}
+            {jenisId === "program" && (hasil?.program_nama || programTerpilih?.nama) && (
+              <div className="mb-3 flex justify-between gap-4 text-sm">
+                <span className="text-gray-500">
+                  Tujuan Program
+                </span>
+
+                <span className="text-right font-semibold text-brand-700">
+                  {hasil?.program_nama || programTerpilih?.nama}
+                </span>
+              </div>
+            )}
 
             {/* NOMINAL */}
             <div className="mb-3 flex justify-between gap-4 text-sm">
@@ -337,6 +429,10 @@ export default function DonasiPage() {
                   nominal
                 )} untuk ${
                   jenisTerpilih?.nama || "Infaq/Sedekah"
+                }${
+                  jenisId === "program" && (hasil?.program_nama || programTerpilih?.nama)
+                    ? ` (Program ${hasil?.program_nama || programTerpilih?.nama})`
+                    : ""
                 }. Kode transaksi: ${
                   hasil?.kode || hasil?.id || "-"
                 }.`
@@ -393,9 +489,8 @@ export default function DonasiPage() {
           </h1>
 
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-green-50 sm:text-base">
-            Salurkan infaq dan sedekah Anda dengan mudah,
-            aman, dan tepat sasaran untuk membantu masyarakat
-            yang membutuhkan.
+            Salurkan infaq, sedekah, maupun donasi program Anda dengan mudah,
+            aman, dan tepat sasaran untuk membantu masyarakat yang membutuhkan.
           </p>
 
         </div>
@@ -412,7 +507,7 @@ export default function DonasiPage() {
       >
 
         {/* =================================================
-            JENIS DONASI
+            JENIS DONASI (3 PILIHAN)
         ================================================== */}
 
         <Card>
@@ -421,17 +516,17 @@ export default function DonasiPage() {
             Pilih Jenis Donasi
           </h2>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
 
             {JENIS_DONASI.map((j) => (
               <button
                 type="button"
                 key={j.id}
-                onClick={() => setJenisId(j.id)}
-                className={`rounded-xl border p-4 text-left transition-colors ${
+                onClick={() => handlePilihJenis(j.id)}
+                className={`rounded-xl border p-4 text-left transition-all ${
                   jenisId === j.id
-                    ? "border-brand-600 bg-brand-50"
-                    : "border-gray-200 hover:border-brand-300"
+                    ? "border-brand-600 bg-brand-50 shadow-xs ring-1 ring-brand-500/20"
+                    : "border-gray-200 hover:border-brand-300 hover:bg-gray-50/50"
                 }`}
               >
 
@@ -453,6 +548,104 @@ export default function DonasiPage() {
           </div>
 
         </Card>
+
+        {/* =================================================
+            PILIHAN PROGRAM (HANYA MUNCUL JIKA OPSI PROGRAM DIPILIH)
+        ================================================== */}
+
+        {jenisId === "program" && (
+          <Card className="animate-fadeIn border-brand-200 bg-brand-50/20">
+
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h2 className="font-semibold text-gray-900">
+                  Pilih Program Penyaluran
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Pilih salah satu program penyaluran yang ingin Anda dukung secara langsung.
+                </p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
+                <FolderHeart size={16} />
+              </div>
+            </div>
+
+            {programsList.length === 0 ? (
+              <div className="py-8 text-center text-sm text-gray-400">
+                Memuat daftar program...
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-3.5 mt-4">
+                {programsList.map((prog) => {
+                  const isSelected = String(programId) === String(prog.id);
+                  const collected = prog.nominal_terkumpul || 0;
+                  const target = prog.target_nominal || 1;
+                  const percent = Math.min(100, Math.round((collected / target) * 100));
+
+                  return (
+                    <button
+                      type="button"
+                      key={prog.id}
+                      onClick={() => setProgramId(String(prog.id))}
+                      className={`flex flex-col justify-between rounded-2xl border p-4 text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-brand-600 bg-white shadow-md ring-2 ring-brand-500/25"
+                          : "border-gray-200 bg-white hover:border-brand-300 hover:shadow-xs"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2.5">
+                          <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isSelected
+                              ? "bg-brand-600 text-white"
+                              : "bg-brand-50 text-brand-700 border border-brand-100"
+                          }`}>
+                            Program {prog.tahun || ""}
+                          </span>
+
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                            isSelected ? "border-brand-600 bg-brand-600" : "border-gray-300 bg-white"
+                          }`}>
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                        </div>
+
+                        <h3 className="text-sm font-bold text-gray-900 leading-snug">
+                          {prog.nama}
+                        </h3>
+
+                        <p className="mt-1.5 text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                          {prog.deskripsi || "Program penyaluran UPZ Unsil."}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-100 w-full">
+                        <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden mb-1.5">
+                          <div
+                            className="h-full bg-brand-500 rounded-full transition-all duration-500"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-gray-500">
+                            Terkumpul: <strong className="text-brand-700 font-semibold">{formatRupiah(collected)}</strong>
+                          </span>
+                          <span className="text-gray-400">
+                            Target: {formatRupiah(target)}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+          </Card>
+        )}
+
+
 
         {/* =================================================
             NOMINAL

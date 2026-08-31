@@ -45,6 +45,10 @@ export default function DashboardLayout() {
       topbarTitle = "Program Penyaluran";
       topbarSubtitle = `Kelola program-program penyaluran zakat aktif ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
       break;
+    case "/dashboard/berita":
+      topbarTitle = "Berita & Artikel";
+      topbarSubtitle = "Manajemen berita, publikasi, dan artikel kegiatan UPZ.";
+      break;
     case "/dashboard/transaksi":
       topbarTitle = "Transaksi Umum";
       topbarSubtitle = "Riwayat seluruh transaksi yang tercatat di sistem.";
