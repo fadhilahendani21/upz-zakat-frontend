@@ -1,18 +1,44 @@
-import {
-  ArrowRight,
-} from "lucide-react";
-
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import {
-  dummyPengurus,
-} from "../data/dummyTentang";
-
+import { dummyPengurus } from "../data/dummyTentang";
 import { useSettings } from "../services/settingService";
 
 import kepengurusanImage from "../assets/images/kepengurusan.jpeg";
 import visiMisiImage from "../assets/images/visi-misi.jpeg";
 import profilUnsilImage from "../assets/images/profil-unsil.jpeg";
+
+// =========================================================
+// DATA PENGURUS
+// =========================================================
+
+const DATA_PENGURUS = [
+  {
+    nama: "Pak Acep Irham",
+    jabatan: "Ketua UPZ",
+    foto: dummyPengurus[0]?.foto,
+  },
+  {
+    nama: "Dr. Joni, S.E.I., M.E.Sy.",
+    jabatan: "Wakil Ketua UPZ",
+    foto: dummyPengurus[1]?.foto,
+  },
+  {
+    nama: "Dr. Dita Agustian, M.Pd.",
+    jabatan: "Sekretaris UPZ",
+    foto: dummyPengurus[2]?.foto,
+  },
+  {
+    nama: "Ir. Randi Rizal, Ph.D.",
+    jabatan: "Bendahara UPZ",
+    foto: dummyPengurus[3]?.foto,
+  },
+  {
+    nama: "Riza Nurdiana, S.E.",
+    jabatan: "Administrasi",
+    foto: dummyPengurus[4]?.foto,
+  },
+];
 
 // =========================================================
 // TENTANG PAGE
@@ -33,9 +59,7 @@ export default function TentangPage() {
       ====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
-
         <div className="mx-auto max-w-7xl px-6 py-10 lg:py-12">
-
           <div className="text-center">
 
             <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
@@ -49,10 +73,9 @@ export default function TentangPage() {
             </p>
 
           </div>
-
         </div>
-
       </section>
+
 
       {/* =====================================================
           STRUKTUR PENGURUS
@@ -62,9 +85,7 @@ export default function TentangPage() {
 
         <div className="mx-auto max-w-7xl">
 
-          {/* =================================================
-              JUDUL
-          ================================================== */}
+          {/* JUDUL */}
 
           <div className="mb-8 text-center">
 
@@ -73,69 +94,100 @@ export default function TentangPage() {
             </h2>
 
             <p className="mt-2 text-sm text-gray-500">
-              Susunan pengurus UPZ Zakat Universitas Siliwangi
-              periode berjalan.
+              Susunan pengurus UPZ Zakat Universitas Siliwangi.
             </p>
 
           </div>
 
+
           {/* =================================================
               GRID PENGURUS
-              MAKSIMAL 4 PER BARIS
+
+              DESKTOP:
+              5 CARD DALAM 1 BARIS
+              PENUH DARI KIRI SAMPAI KANAN
+
+              TABLET:
+              2 CARD PER BARIS
+
+              MOBILE:
+              1 CARD PER BARIS
           ================================================== */}
 
-          <div className="mx-auto flex max-w-[1200px] flex-wrap justify-center gap-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
 
-            {dummyPengurus.map((p) => (
+            {DATA_PENGURUS.map((p) => (
 
               <div
                 key={p.nama}
-                className="flex w-full max-w-[275px] min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:w-[calc(50%-10px)] lg:w-[calc(25%-15px)]"
+                className="
+                  group
+                  flex
+                  min-w-0
+                  flex-col
+                  overflow-hidden
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
+                  shadow-sm
+                  transition
+                  duration-300
+                  hover:-translate-y-1
+                  hover:shadow-md
+                "
               >
 
                 {/* =================================================
                     FOTO
                 ================================================== */}
 
-                <div className="flex h-[190px] w-full items-center justify-center overflow-hidden bg-gray-50 p-2">
+                <div className="flex h-[210px] w-full items-center justify-center overflow-hidden bg-gray-50">
 
-                  <img
-                    src={p.foto}
-                    alt={p.nama}
-                    className="h-full w-full object-contain"
-                  />
+                  {p.foto ? (
+
+                    <img
+                      src={p.foto}
+                      alt={p.nama}
+                      className="
+                        h-full
+                        w-full
+                        object-contain
+                        transition
+                        duration-500
+                        group-hover:scale-[1.02]
+                      "
+                    />
+
+                  ) : (
+
+                    <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+                      Foto Pengurus
+                    </div>
+
+                  )}
 
                 </div>
+
 
                 {/* =================================================
                     INFORMASI
                 ================================================== */}
 
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex min-h-[110px] flex-1 flex-col items-center justify-center px-4 py-5 text-center">
 
                   {/* NAMA */}
 
-                  <div className="min-h-[54px]">
+                  <p className="text-sm font-bold leading-snug text-gray-900">
+                    {p.nama}
+                  </p>
 
-                    <p className="text-sm font-bold leading-snug text-gray-900">
-                      {p.nama}
-                    </p>
 
-                  </div>
+                  {/* JABATAN */}
 
-                  {/* JABATAN + PERIODE */}
-
-                  <div className="mt-3 flex items-center justify-between gap-2">
-
-                    <p className="text-xs font-semibold text-brand-600">
-                      {p.jabatan}
-                    </p>
-
-                    <span className="shrink-0 whitespace-nowrap rounded-full bg-green-50 px-2.5 py-1 text-[9px] font-semibold text-green-700">
-                      {p.periode}
-                    </span>
-
-                  </div>
+                  <p className="mt-3 text-xs font-semibold text-brand-600 sm:text-sm">
+                    {p.jabatan}
+                  </p>
 
                 </div>
 
@@ -149,17 +201,16 @@ export default function TentangPage() {
 
       </section>
 
+
       {/* =====================================================
           TENTANG KAMI
       ====================================================== */}
 
-      <section className="w-full px-6 pb-14">
+      <section className="w-full px-4 pb-14 sm:px-6">
 
         <div className="mx-auto max-w-7xl">
 
-          {/* =================================================
-              JUDUL
-          ================================================== */}
+          {/* JUDUL */}
 
           <div className="mb-8 text-center">
 
@@ -174,11 +225,13 @@ export default function TentangPage() {
 
           </div>
 
+
           {/* =================================================
               3 PILIHAN HALAMAN
           ================================================== */}
 
           <div className="grid gap-6 md:grid-cols-3">
+
 
             {/* =================================================
                 KEPENGURUSAN
@@ -186,7 +239,19 @@ export default function TentangPage() {
 
             <Link
               to="/tentang/kepengurusan"
-              className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md"
+              className="
+                group
+                overflow-hidden
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                shadow-sm
+                transition
+                duration-300
+                hover:-translate-y-1
+                hover:shadow-md
+              "
             >
 
               <div className="h-52 w-full overflow-hidden bg-gray-100">
@@ -194,10 +259,18 @@ export default function TentangPage() {
                 <img
                   src={kepengurusanImage}
                   alt="Kepengurusan UPZ Zakat Universitas Siliwangi"
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  className="
+                    h-full
+                    w-full
+                    object-cover
+                    transition
+                    duration-500
+                    group-hover:scale-105
+                  "
                 />
 
               </div>
+
 
               <div className="p-5">
 
@@ -229,13 +302,26 @@ export default function TentangPage() {
 
             </Link>
 
+
             {/* =================================================
                 VISI & MISI
             ================================================== */}
 
             <Link
               to="/tentang/visi-misi"
-              className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md"
+              className="
+                group
+                overflow-hidden
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                shadow-sm
+                transition
+                duration-300
+                hover:-translate-y-1
+                hover:shadow-md
+              "
             >
 
               <div className="h-52 w-full overflow-hidden bg-gray-100">
@@ -243,10 +329,18 @@ export default function TentangPage() {
                 <img
                   src={visiMisiImage}
                   alt="Visi dan Misi UPZ Zakat Universitas Siliwangi"
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  className="
+                    h-full
+                    w-full
+                    object-cover
+                    transition
+                    duration-500
+                    group-hover:scale-105
+                  "
                 />
 
               </div>
+
 
               <div className="p-5">
 
@@ -278,13 +372,26 @@ export default function TentangPage() {
 
             </Link>
 
+
             {/* =================================================
                 PROFIL LEMBAGA
             ================================================== */}
 
             <Link
               to="/tentang/profil-unsil"
-              className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md"
+              className="
+                group
+                overflow-hidden
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                shadow-sm
+                transition
+                duration-300
+                hover:-translate-y-1
+                hover:shadow-md
+              "
             >
 
               <div className="h-52 w-full overflow-hidden bg-gray-100">
@@ -292,10 +399,18 @@ export default function TentangPage() {
                 <img
                   src={profilUnsilImage}
                   alt="Profil Lembaga Universitas Siliwangi"
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  className="
+                    h-full
+                    w-full
+                    object-cover
+                    transition
+                    duration-500
+                    group-hover:scale-105
+                  "
                 />
 
               </div>
+
 
               <div className="p-5">
 

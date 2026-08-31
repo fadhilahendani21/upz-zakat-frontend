@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Calendar, ArrowLeft, ArrowRight, User, Newspaper } from "lucide-react";
-import { getPublicBerita, getPublicBeritaDetail, formatImageUrl } from "../services/beritaService";
+import {
+  Calendar,
+  ArrowLeft,
+  ArrowRight,
+  User,
+  Newspaper,
+} from "lucide-react";
+
+import {
+  getPublicBerita,
+  getPublicBeritaDetail,
+  formatImageUrl,
+} from "../services/beritaService";
 
 import berita1 from "../assets/images/berita 1.jpeg";
 import berita2 from "../assets/images/berita 2.jpeg";
@@ -9,6 +20,10 @@ import berita3 from "../assets/images/berita 3.jpeg";
 import berita4 from "../assets/images/berita 4.jpeg";
 import berita5 from "../assets/images/berita 5.jpeg";
 import berita6 from "../assets/images/berita 6.jpeg";
+
+// =========================================================
+// FALLBACK NEWS
+// =========================================================
 
 const FALLBACK_NEWS = [
   {
@@ -23,6 +38,7 @@ Gerai Zakat menjadi salah satu layanan yang dapat dimanfaatkan oleh masyarakat u
 
 Melalui Gerai Zakat, UPZ Zakat Universitas Siliwangi terus berkomitmen untuk memberikan pelayanan yang amanah, transparan, dan mudah dijangkau oleh masyarakat. Dana yang dihimpun selanjutnya akan dikelola dan disalurkan kepada penerima manfaat sesuai dengan ketentuan yang berlaku.`,
   },
+
   {
     id: 2,
     category: "Penyaluran",
@@ -35,6 +51,7 @@ Bantuan beras diberikan kepada penerima manfaat yang telah melalui proses pendat
 
 Program bantuan pangan ini diharapkan dapat membantu meringankan beban pengeluaran keluarga penerima manfaat. UPZ Zakat Universitas Siliwangi akan terus berupaya menghadirkan program penyaluran yang memberikan manfaat nyata dan tepat sasaran bagi masyarakat.`,
   },
+
   {
     id: 3,
     category: "Penyaluran",
@@ -47,6 +64,7 @@ Penyaluran dilakukan berdasarkan data penerima manfaat yang telah dikumpulkan da
 
 Kegiatan penyaluran rutin ini juga menjadi bagian dari upaya UPZ untuk menjaga kepercayaan para muzakki. Dengan pengelolaan dan penyaluran yang dilakukan secara berkelanjutan, dana zakat diharapkan dapat membantu meningkatkan kesejahteraan masyarakat yang membutuhkan.`,
   },
+
   {
     id: 4,
     category: "Kegiatan",
@@ -59,6 +77,7 @@ Bantuan Al-Qur’an disalurkan kepada beberapa penerima yang membutuhkan, termas
 
 Melalui program ini, UPZ berharap bantuan yang diberikan tidak hanya memenuhi kebutuhan sarana keagamaan, tetapi juga dapat mendorong semangat masyarakat untuk membaca, mempelajari, dan mengamalkan nilai-nilai yang terkandung dalam Al-Qur’an.`,
   },
+
   {
     id: 5,
     category: "Pemberdayaan",
@@ -71,6 +90,7 @@ Bantuan modal diberikan berdasarkan kondisi dan kebutuhan penerima manfaat. Sela
 
 Program pemberdayaan ekonomi ini diharapkan dapat menjadi langkah awal bagi mustahik untuk meningkatkan kesejahteraan dan kemandirian ekonomi. UPZ Zakat Universitas Siliwangi berkomitmen untuk terus mengembangkan program yang tidak hanya bersifat konsumtif, tetapi juga memberikan manfaat jangka panjang bagi penerima zakat.`,
   },
+
   {
     id: 6,
     category: "Penyaluran",
@@ -85,24 +105,40 @@ Program Rutilahu merupakan salah satu bentuk kepedulian UPZ terhadap kesejahtera
   },
 ];
 
+// =========================================================
+// BERITA DETAIL PAGE
+// =========================================================
+
 export default function BeritaDetailPage() {
   const { id } = useParams();
+
   const [news, setNews] = useState(null);
   const [otherNews, setOtherNews] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // =======================================================
+  // AMBIL DATA BERITA
+  // =======================================================
+
   useEffect(() => {
     async function fetchDetail() {
       setLoading(true);
+
       try {
-        // 1. Ambil detail berita aktif
+        // =================================================
+        // 1. DETAIL BERITA
+        // =================================================
+
         const resDetail = await getPublicBeritaDetail(id);
+
         if (resDetail?.data) {
           const d = resDetail.data;
+
           setNews({
             id: d.id,
             category: d.kategori || "Kegiatan",
             title: d.judul,
+
             date: d.published_at
               ? new Date(d.published_at).toLocaleDateString("id-ID", {
                   day: "numeric",
@@ -110,68 +146,112 @@ export default function BeritaDetailPage() {
                   year: "numeric",
                 })
               : "Terbaru",
+
             image: formatImageUrl(d.gambar) || null,
             content: d.konten,
             author: d.author?.name || null,
           });
         } else {
-          // Cek di fallback data
-          const found = FALLBACK_NEWS.find((item) => String(item.id) === String(id));
+          const found = FALLBACK_NEWS.find(
+            (item) => String(item.id) === String(id)
+          );
+
           setNews(found || null);
         }
 
-        // 2. Ambil daftar berita lainnya (maksimal 3 berita)
-        const resList = await getPublicBerita({ perPage: 6 });
+        // =================================================
+        // 2. BERITA LAINNYA
+        // =================================================
+
+        const resList = await getPublicBerita({
+          perPage: 6,
+        });
+
         if (resList?.data && resList.data.length > 0) {
           const others = resList.data
-            .filter((item) => String(item.id) !== String(id))
+            .filter(
+              (item) => String(item.id) !== String(id)
+            )
             .slice(0, 3)
             .map((item) => ({
               id: item.id,
               category: item.kategori || "Kegiatan",
               title: item.judul,
+
               excerpt:
                 item.ringkasan ||
-                (item.konten ? item.konten.replace(/<[^>]*>?/gm, "").slice(0, 100) : ""),
+                (item.konten
+                  ? item.konten
+                      .replace(/<[^>]*>?/gm, "")
+                      .slice(0, 100)
+                  : ""),
+
               date: item.published_at
-                ? new Date(item.published_at).toLocaleDateString("id-ID", {
+                ? new Date(
+                    item.published_at
+                  ).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                   })
                 : "Terbaru",
+
               image: formatImageUrl(item.gambar) || null,
             }));
+
           setOtherNews(others);
         } else {
           const fallbackOthers = FALLBACK_NEWS.filter(
             (item) => String(item.id) !== String(id)
           ).slice(0, 3);
+
           setOtherNews(fallbackOthers);
         }
       } catch (err) {
-        console.error("Gagal memuat detail berita:", err);
-        const found = FALLBACK_NEWS.find((item) => String(item.id) === String(id));
+        console.error(
+          "Gagal memuat detail berita:",
+          err
+        );
+
+        const found = FALLBACK_NEWS.find(
+          (item) => String(item.id) === String(id)
+        );
+
         setNews(found || null);
-        setOtherNews(FALLBACK_NEWS.filter((item) => String(item.id) !== String(id)).slice(0, 3));
+
+        setOtherNews(
+          FALLBACK_NEWS.filter(
+            (item) => String(item.id) !== String(id)
+          ).slice(0, 3)
+        );
       } finally {
         setLoading(false);
       }
     }
 
     fetchDetail();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }, [id]);
 
   // =======================================================
-  // LOADING STATE
+  // LOADING
   // =======================================================
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8faf9] flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#f8faf9]">
         <div className="text-center">
-          <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Memuat detail berita...</p>
+
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+
+          <p className="text-sm text-gray-500">
+            Memuat detail berita...
+          </p>
+
         </div>
       </div>
     );
@@ -180,29 +260,42 @@ export default function BeritaDetailPage() {
   // =======================================================
   // BERITA TIDAK DITEMUKAN
   // =======================================================
+
   if (!news) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8faf9] px-6">
+
         <div className="text-center">
+
           <h1 className="text-xl font-bold text-gray-900">
             Berita tidak ditemukan
           </h1>
+
           <p className="mt-2 text-sm text-gray-500">
-            Berita yang Anda cari belum tersedia atau telah dihapus.
+            Berita yang Anda cari belum tersedia atau
+            telah dihapus.
           </p>
+
           <Link
             to="/berita"
-            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition shadow-sm"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-700"
           >
             <ArrowLeft size={14} />
             Kembali ke Daftar Berita
           </Link>
+
         </div>
+
       </div>
     );
   }
 
-  const isHtml = news.content && news.content.includes("<");
+  const isHtml =
+    news.content && news.content.includes("<");
+
+  // =======================================================
+  // TAMPILAN DETAIL
+  // =======================================================
 
   return (
     <div className="min-h-screen bg-[#f8faf9]">
@@ -211,156 +304,234 @@ export default function BeritaDetailPage() {
           CONTENT
       ====================================================== */}
 
-      <main className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-12">
-
-        {/* Back Link */}
-        <div className="mb-6">
-          <Link
-            to="/berita"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-brand-700 transition"
-          >
-            <ArrowLeft size={14} />
-            Kembali ke Daftar Berita
-          </Link>
-        </div>
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
 
         {/* =================================================
-            HEADER BERITA
+            ARTIKEL
         ================================================== */}
 
-        <article className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-10 shadow-sm">
+        <article className="w-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:rounded-3xl sm:p-8 lg:p-10">
 
-          {/* KATEGORI */}
+          {/* =================================================
+              KATEGORI
+          ================================================== */}
+
           <span className="inline-flex rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
             {news.category}
           </span>
 
-          {/* JUDUL */}
-          <h1 className="mt-4 text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
+          {/* =================================================
+              JUDUL
+          ================================================== */}
+
+          <h1 className="mt-4 max-w-6xl text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
             {news.title}
           </h1>
 
-          {/* TANGGAL & PENULIS */}
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-500 border-b border-gray-100 pb-5">
+          {/* =================================================
+              TANGGAL & PENULIS
+          ================================================== */}
+
+          <div className="mt-4 flex flex-wrap items-center gap-4 border-b border-gray-100 pb-5 text-xs text-gray-500 sm:text-sm">
+
             <div className="flex items-center gap-1.5">
               <Calendar size={15} />
               <span>{news.date}</span>
             </div>
+
             {news.author && (
               <div className="flex items-center gap-1.5">
                 <User size={15} />
-                <span>Oleh: {news.author}</span>
+                <span>
+                  Oleh: {news.author}
+                </span>
               </div>
             )}
+
           </div>
 
           {/* =================================================
-              FOTO
+              FOTO BERITA
+              
+              FOTO DIBUAT LEBIH PROPORSIONAL
+              DAN TIDAK DIPOTONG
           ================================================== */}
 
           {news.image && (
-            <div className="mt-7 overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-xs max-h-[420px] flex items-center justify-center relative">
+            <div className="mt-7 flex w-full items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
+
               <img
                 src={formatImageUrl(news.image)}
                 alt={news.title}
-                className="w-full h-full object-cover"
+                className="block h-auto max-h-[480px] w-full object-contain"
                 onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement?.classList.add("hidden");
+                  e.currentTarget.style.display =
+                    "none";
+
+                  e.currentTarget.parentElement?.classList.add(
+                    "hidden"
+                  );
                 }}
               />
+
             </div>
           )}
 
           {/* =================================================
               ISI BERITA
+              
+              WIDTH SAMA DENGAN FOTO
+              DAN RATA KANAN-KIRI
           ================================================== */}
 
-          <div className="mt-8 text-gray-800 leading-relaxed text-sm sm:text-base">
+          <div className="mt-8 w-full text-sm leading-relaxed text-gray-800 sm:text-base">
+
             {isHtml ? (
+
               <div
-                className="prose prose-brand max-w-none text-gray-800 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: news.content }}
+                className="prose prose-brand max-w-none text-justify leading-7 text-gray-800 sm:leading-8"
+                dangerouslySetInnerHTML={{
+                  __html: news.content,
+                }}
               />
+
             ) : (
-              <div className="whitespace-pre-line text-justify leading-7 sm:leading-8">
+
+              <div className="w-full whitespace-pre-line text-justify leading-7 sm:leading-8">
                 {news.content}
               </div>
+
             )}
+
           </div>
 
         </article>
 
-        {/* =================================================
-            BERITA LAINNYA (MAKSIMAL 3 BERITA)
-        ================================================== */}
+        {/* =====================================================
+            BERITA LAINNYA
+        ====================================================== */}
 
         {otherNews.length > 0 && (
-          <section className="mt-14">
-            <div className="flex items-center justify-between mb-6">
+
+          <section className="mt-10 lg:mt-12">
+
+            <div className="mb-5 flex items-center justify-between">
+
               <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                 Berita Lainnya
               </h2>
+
               <Link
                 to="/berita"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:gap-1.5 transition-all"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 transition-all hover:gap-1.5"
               >
                 Lihat Semua
                 <ArrowRight size={13} />
               </Link>
+
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* =================================================
+                GRID BERITA
+            ================================================== */}
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
               {otherNews.map((item) => (
+
                 <Link
                   key={item.id}
                   to={`/berita/${item.id}`}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md hover:-translate-y-0.5 transition duration-200"
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <div className="w-full h-36 bg-gray-100 overflow-hidden relative flex items-center justify-center">
+
+                  {/* FOTO */}
+
+                  <div className="relative flex h-36 w-full items-center justify-center overflow-hidden bg-gray-100">
+
                     {item.image ? (
+
                       <>
                         <img
-                          src={formatImageUrl(item.image)}
+                          src={formatImageUrl(
+                            item.image
+                          )}
                           alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                            const fallback = e.currentTarget.parentElement?.querySelector(".other-fallback");
-                            if (fallback) fallback.classList.remove("hidden");
+                            e.currentTarget.style.display =
+                              "none";
+
+                            const fallback =
+                              e.currentTarget.parentElement?.querySelector(
+                                ".other-fallback"
+                              );
+
+                            if (fallback) {
+                              fallback.classList.remove(
+                                "hidden"
+                              );
+                            }
                           }}
                         />
-                        <div className="other-fallback hidden w-full h-full bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 flex items-center justify-center text-brand-600">
-                          <Newspaper size={28} className="opacity-60" />
+
+                        <div className="other-fallback hidden h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 text-brand-600">
+                          <Newspaper
+                            size={28}
+                            className="opacity-60"
+                          />
                         </div>
                       </>
+
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 flex items-center justify-center text-brand-600">
-                        <Newspaper size={28} className="opacity-60" />
+
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 text-brand-600">
+                        <Newspaper
+                          size={28}
+                          className="opacity-60"
+                        />
                       </div>
+
                     )}
+
                   </div>
-                  <div className="p-4 flex flex-col flex-1">
-                    <span className="inline-flex w-fit items-center text-[10px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full mb-2">
+
+                  {/* INFORMASI */}
+
+                  <div className="flex flex-1 flex-col p-4">
+
+                    <span className="mb-2 inline-flex w-fit items-center rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
                       {item.category}
                     </span>
-                    <h3 className="text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-brand-700 transition">
+
+                    <h3 className="line-clamp-2 text-sm font-bold text-gray-900 transition group-hover:text-brand-700">
                       {item.title}
                     </h3>
-                    <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-[11px] text-gray-400">
+
                       <span className="flex items-center gap-1">
                         <Calendar size={11} />
                         {item.date}
                       </span>
-                      <span className="text-brand-700 font-semibold flex items-center gap-0.5">
-                        Baca <ArrowRight size={11} />
+
+                      <span className="flex items-center gap-0.5 font-semibold text-brand-700">
+                        Baca
+                        <ArrowRight size={11} />
                       </span>
+
                     </div>
+
                   </div>
+
                 </Link>
+
               ))}
+
             </div>
+
           </section>
+
         )}
 
       </main>

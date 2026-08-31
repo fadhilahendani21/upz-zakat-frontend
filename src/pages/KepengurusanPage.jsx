@@ -7,25 +7,24 @@ export default function KepengurusanPage() {
 
       {/* =====================================================
           HERO
-      ===================================================== */}
+      ====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
 
-        <div className="mx-auto flex min-h-[260px] items-center justify-center px-6 py-12 text-center sm:min-h-[290px] lg:min-h-[310px]">
+        <div className="flex min-h-[220px] w-full items-center justify-center px-6 py-10 text-center sm:min-h-[240px] lg:min-h-[260px]">
 
           <div className="max-w-3xl">
 
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-200 sm:text-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-200">
               Tentang Kami
             </p>
 
-            <h1 className="mt-3 text-3xl font-bold sm:text-4xl lg:text-5xl">
+            <h1 className="mt-2 text-2xl font-bold sm:text-3xl lg:text-4xl">
               Kepengurusan
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-green-50 sm:text-base">
-              Susunan pengurus Unit Pengumpul Zakat Universitas Siliwangi
-              periode berjalan.
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-green-50">
+              Susunan pengurus Unit Pengumpul Zakat Universitas Siliwangi.
             </p>
 
           </div>
@@ -34,11 +33,12 @@ export default function KepengurusanPage() {
 
       </section>
 
+
       {/* =====================================================
           CONTENT
-      ===================================================== */}
+      ====================================================== */}
 
-      <main className="mx-auto max-w-6xl px-6 py-10 sm:py-12">
+      <main className="w-full px-6 py-8 sm:px-8 sm:py-10 lg:px-12 xl:px-16">
 
         {/* =================================================
             TOMBOL KEMBALI
@@ -52,16 +52,17 @@ export default function KepengurusanPage() {
           Kembali ke Tentang Kami
         </Link>
 
+
         {/* =================================================
             JUDUL
         ================================================== */}
 
-        <div className="mb-8 mt-8">
+        <div className="mb-7 mt-7">
 
           <div className="flex items-center gap-3">
 
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-              <Users size={22} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+              <Users size={20} />
             </div>
 
             <div>
@@ -70,7 +71,7 @@ export default function KepengurusanPage() {
                 Struktur Organisasi
               </p>
 
-              <h2 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">
+              <h2 className="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
                 Kepengurusan UPZ Zakat
               </h2>
 
@@ -80,19 +81,21 @@ export default function KepengurusanPage() {
 
         </div>
 
+
         {/* =================================================
             KEPENGURUSAN
         ================================================== */}
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
           {/* =================================================
               1. KEPENGURUSAN
           ================================================== */}
 
-          <h3 className="text-lg font-bold text-gray-900 sm:text-xl">
+          <h3 className="text-lg font-bold text-gray-900">
             1. Kepengurusan
           </h3>
+
 
           {/* =================================================
               PENASEHAT
@@ -100,11 +103,11 @@ export default function KepengurusanPage() {
 
           <div className="mt-7">
 
-            <h4 className="font-bold text-gray-900">
+            <h4 className="text-base font-bold text-gray-900">
               Penasehat
             </h4>
 
-            <ol className="mt-4 list-decimal space-y-3 pl-6 text-sm leading-relaxed text-gray-700 sm:text-base">
+            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-6 text-gray-700">
 
               <li>
                 Rektor Universitas Siliwangi
@@ -136,70 +139,90 @@ export default function KepengurusanPage() {
 
           </div>
 
+
           {/* =================================================
-              PENGURUS
+              PENGURUS UTAMA
           ================================================== */}
 
           <div className="mt-9">
 
-            <h4 className="font-bold text-gray-900">
+            <h4 className="text-base font-bold text-gray-900">
               Pengurus
             </h4>
 
-            <div className="mt-5 space-y-5">
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
               {/* KETUA */}
 
-              <div>
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
 
-                <p className="text-sm font-semibold text-brand-700 sm:text-base">
+                <p className="text-sm font-semibold text-brand-700">
                   Ketua
                 </p>
 
-                <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                  Dr. H. Cucu Hidayat, M.Pd.
+                <p className="mt-1 text-sm leading-6 text-gray-700">
+                  Pak Acep Irham
                 </p>
 
               </div>
+
 
               {/* WAKIL KETUA */}
 
-              <div>
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
 
-                <p className="text-sm font-semibold text-brand-700 sm:text-base">
+                <p className="text-sm font-semibold text-brand-700">
                   Wakil Ketua
                 </p>
 
-                <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                  Dr. H. Acep Zoni Saefuk Mubarok, M.Ag.
+                <p className="mt-1 text-sm leading-6 text-gray-700">
+                  Dr. Joni, S.E.I., M.E.Sy.
                 </p>
 
               </div>
+
 
               {/* SEKRETARIS */}
 
-              <div>
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
 
-                <p className="text-sm font-semibold text-brand-700 sm:text-base">
+                <p className="text-sm font-semibold text-brand-700">
                   Sekretaris
                 </p>
 
-                <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                  Darwis Darmawan, S.Pd., M.Pd.
+                <p className="mt-1 text-sm leading-6 text-gray-700">
+                  Dr. Dita Agustian, M.Pd.
                 </p>
 
               </div>
 
+
               {/* BENDAHARA */}
 
-              <div>
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
 
-                <p className="text-sm font-semibold text-brand-700 sm:text-base">
+                <p className="text-sm font-semibold text-brand-700">
                   Bendahara
                 </p>
 
-                <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                  Hj. Euis Rosidah, S.E., M.Ak.
+                <p className="mt-1 text-sm leading-6 text-gray-700">
+                  Ir. Randi Rizal, Ph.D.
+                </p>
+
+              </div>
+
+
+              {/* ADMINISTRASI */}
+
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+
+                <p className="text-sm font-semibold text-brand-700">
+                  Administrasi
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-gray-700">
+                  Riza Nurdiana, S.E.
                 </p>
 
               </div>
@@ -208,37 +231,39 @@ export default function KepengurusanPage() {
 
           </div>
 
+
           {/* =================================================
               BIDANG PENGUMPULAN
           ================================================== */}
 
           <div className="mt-9">
 
-            <h4 className="font-bold text-gray-900">
+            <h4 className="text-base font-bold text-gray-900">
               Bidang Pengumpulan
             </h4>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
 
-              <div>
+              <div className="rounded-xl bg-gray-50 p-4">
 
                 <p className="text-sm font-semibold text-gray-700">
                   Koordinator
                 </p>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm leading-6 text-gray-600">
                   Drs. H. Asep Saepullah, M.Ag.
                 </p>
 
               </div>
 
-              <div>
+
+              <div className="rounded-xl bg-gray-50 p-4">
 
                 <p className="text-sm font-semibold text-gray-700">
                   Anggota
                 </p>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm leading-6 text-gray-600">
                   Adhi Amjad Mughni, S.E.I., M.E.Sy.
                 </p>
 
@@ -248,37 +273,39 @@ export default function KepengurusanPage() {
 
           </div>
 
+
           {/* =================================================
               BIDANG PENDISTRIBUSIAN
           ================================================== */}
 
           <div className="mt-9">
 
-            <h4 className="font-bold text-gray-900">
+            <h4 className="text-base font-bold text-gray-900">
               Bidang Pendistribusian
             </h4>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
 
-              <div>
+              <div className="rounded-xl bg-gray-50 p-4">
 
                 <p className="text-sm font-semibold text-gray-700">
                   Koordinator
                 </p>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm leading-6 text-gray-600">
                   Andik Setiyono, S.K.M., M.Kes.
                 </p>
 
               </div>
 
-              <div>
+
+              <div className="rounded-xl bg-gray-50 p-4">
 
                 <p className="text-sm font-semibold text-gray-700">
                   Anggota
                 </p>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm leading-6 text-gray-600">
                   Medina Almunawwaroh, S.Mn., M.Ak.
                 </p>
 
@@ -288,37 +315,39 @@ export default function KepengurusanPage() {
 
           </div>
 
+
           {/* =================================================
               BIDANG PENDAYAGUNAAN
           ================================================== */}
 
           <div className="mt-9">
 
-            <h4 className="font-bold text-gray-900">
+            <h4 className="text-base font-bold text-gray-900">
               Bidang Pendayagunaan
             </h4>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
 
-              <div>
+              <div className="rounded-xl bg-gray-50 p-4">
 
                 <p className="text-sm font-semibold text-gray-700">
                   Koordinator
                 </p>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm leading-6 text-gray-600">
                   H. Acep Irham Gufroni, S.Kom., M.EI.
                 </p>
 
               </div>
 
-              <div>
+
+              <div className="rounded-xl bg-gray-50 p-4">
 
                 <p className="text-sm font-semibold text-gray-700">
                   Anggota
                 </p>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm leading-6 text-gray-600">
                   Dita Agustian, S.Pd., M.Pd.
                 </p>
 
@@ -328,27 +357,29 @@ export default function KepengurusanPage() {
 
           </div>
 
+
           {/* =================================================
               LEGAL FORMAL
           ================================================== */}
 
-          <div className="mt-10 border-t border-gray-100 pt-8">
+          <div className="mt-9 border-t border-gray-100 pt-7">
 
-            <h4 className="font-bold text-gray-900">
+            <h4 className="text-base font-bold text-gray-900">
               Legal Formal
             </h4>
 
-            <p className="mt-4 text-sm leading-relaxed text-gray-700 sm:text-base">
+            <p className="mt-3 text-sm leading-6 text-gray-700">
               SK Pengurus UPZ Universitas Siliwangi
             </p>
 
           </div>
 
+
           {/* =================================================
               ALAMAT KANTOR
           ================================================== */}
 
-          <div className="mt-8 border-t border-gray-100 pt-8">
+          <div className="mt-7 border-t border-gray-100 pt-7">
 
             <div className="flex items-start gap-3">
 
@@ -358,15 +389,15 @@ export default function KepengurusanPage() {
 
               <div>
 
-                <h4 className="font-bold text-gray-900">
+                <h4 className="text-base font-bold text-gray-900">
                   Alamat Kantor
                 </h4>
 
-                <p className="mt-3 text-sm leading-relaxed text-gray-700 sm:text-base">
+                <p className="mt-2 text-sm leading-6 text-gray-700">
                   Masjid Kampus Al-Muhajirin Universitas Siliwangi.
                 </p>
 
-                <p className="mt-2 text-sm leading-relaxed text-gray-700 sm:text-base">
+                <p className="mt-1 text-sm leading-6 text-gray-700">
                   Jl. Siliwangi No. 24 Kel. Kahuripan Kec. Tawang
                   Kota Tasikmalaya 46115
                 </p>
@@ -379,15 +410,16 @@ export default function KepengurusanPage() {
 
         </div>
 
+
         {/* =================================================
             TOMBOL KEMBALI
         ================================================== */}
 
-        <div className="mt-8 text-center">
+        <div className="mt-7 text-center">
 
           <Link
             to="/tentang"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800"
           >
             <ArrowLeft size={16} />
             Kembali ke Tentang Kami

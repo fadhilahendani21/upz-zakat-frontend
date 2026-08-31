@@ -31,6 +31,7 @@ function formatRupiah(value) {
 
 function RincianList({ title, items, total }) {
   const safeTotal = total > 0 ? total : 1;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       <h3 className="text-base font-bold text-gray-900 mb-4">
@@ -39,7 +40,10 @@ function RincianList({ title, items, total }) {
 
       <div className="space-y-4">
         {items.map((item) => {
-          const percent = Math.min(100, Math.round((item.amount / safeTotal) * 100));
+          const percent = Math.min(
+            100,
+            Math.round((item.amount / safeTotal) * 100)
+          );
 
           return (
             <div key={item.label}>
@@ -79,14 +83,16 @@ function RincianList({ title, items, total }) {
 
 export default function LaporanPage() {
   const settings = useSettings();
-  const [data, setData]       = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadLaporan() {
       setLoading(true);
+
       try {
         const res = await getPublicLaporan();
+
         if (res) {
           setData(res);
         }
@@ -96,6 +102,7 @@ export default function LaporanPage() {
         setLoading(false);
       }
     }
+
     loadLaporan();
   }, []);
 
@@ -107,21 +114,34 @@ export default function LaporanPage() {
     ? data.penyaluran.reduce((sum, i) => sum + i.amount, 0)
     : DEFAULT_PENYALURAN.reduce((sum, i) => sum + i.amount, 0);
 
-  const penerimaanList = data?.penerimaan?.length ? data.penerimaan : DEFAULT_PENERIMAAN;
-  const penyaluranList = data?.penyaluran?.length ? data.penyaluran : DEFAULT_PENYALURAN;
+  const penerimaanList = data?.penerimaan?.length
+    ? data.penerimaan
+    : DEFAULT_PENERIMAAN;
+
+  const penyaluranList = data?.penyaluran?.length
+    ? data.penyaluran
+    : DEFAULT_PENYALURAN;
 
   const stats = [
     {
       icon: Wallet,
       label: "Total Dana Terkumpul",
-      value: formatRupiah(data?.total_masuk ?? totalPenerimaan),
-      period: `Tahun ${data?.tahun || new Date().getFullYear()}`,
+      value: formatRupiah(
+        data?.total_masuk ?? totalPenerimaan
+      ),
+      period: `Tahun ${
+        data?.tahun || new Date().getFullYear()
+      }`,
     },
     {
       icon: HandCoins,
       label: "Total Dana Disalurkan",
-      value: formatRupiah(data?.total_keluar ?? totalPenyaluran),
-      period: `Tahun ${data?.tahun || new Date().getFullYear()}`,
+      value: formatRupiah(
+        data?.total_keluar ?? totalPenyaluran
+      ),
+      period: `Tahun ${
+        data?.tahun || new Date().getFullYear()
+      }`,
     },
     {
       icon: Users,
@@ -140,42 +160,71 @@ export default function LaporanPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
-      {/* Header */}
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
+
       <section className="w-full bg-brand-700 text-white">
+
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14">
+
           <div className="text-center">
+
             <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
               Laporan Keuangan & Transparansi
             </h1>
 
             <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
-              {settings?.profil?.namaLembaga || "UPZ Unsil"} berkomitmen mengelola dana zakat, infak, dan sedekah
-              secara transparan dan akuntabel. Berikut ringkasan penerimaan
-              dan penyaluran dana publik.
+              {settings?.profil?.namaLembaga ||
+                "UPZ Unsil"}{" "}
+              berkomitmen mengelola dana zakat, infak, dan sedekah
+              secara transparan dan akuntabel. Berikut ringkasan
+              penerimaan dan penyaluran dana publik.
             </p>
+
           </div>
+
         </div>
+
       </section>
 
-      {/* Statistik */}
-      <section className="max-w-6xl mx-auto px-6 pt-12 pb-10">
+      {/* =====================================================
+          STATISTIK
+      ====================================================== */}
+
+      <section className="max-w-7xl mx-auto px-6 pt-12 pb-10">
+
         {loading ? (
+
           <div className="text-center py-8">
+
             <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-xs text-gray-400">Memuat laporan dari database...</p>
+
+            <p className="text-xs text-gray-400">
+              Memuat laporan dari database...
+            </p>
+
           </div>
+
         ) : (
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
             {stats.map((stat) => {
+
               const Icon = stat.icon;
 
               return (
+
                 <div
                   key={stat.label}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
                 >
+
                   <div className="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center">
+
                     <Icon size={18} />
+
                   </div>
 
                   <p className="mt-3 text-xs text-gray-500">
@@ -189,15 +238,24 @@ export default function LaporanPage() {
                   <p className="text-[11px] text-gray-400">
                     {stat.period}
                   </p>
+
                 </div>
+
               );
             })}
+
           </div>
+
         )}
+
       </section>
 
-      {/* Rincian */}
-      <section className="max-w-4xl mx-auto px-6 pb-16 grid sm:grid-cols-2 gap-6">
+      {/* =====================================================
+          RINCIAN
+      ====================================================== */}
+
+      <section className="max-w-7xl mx-auto px-6 pb-16 grid sm:grid-cols-2 gap-6">
+
         <RincianList
           title="Rincian Penerimaan"
           items={penerimaanList}
@@ -209,8 +267,9 @@ export default function LaporanPage() {
           items={penyaluranList}
           total={totalPenyaluran}
         />
+
       </section>
 
     </div>
   );
-}
+}

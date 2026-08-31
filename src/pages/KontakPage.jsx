@@ -29,58 +29,90 @@ export default function KontakPage() {
   const alamat = profil.alamat || dummyKontak.alamat;
 
   // Nomor WhatsApp — dibaca dari pengaturan sistem
-  const whatsapp = profil.whatsapp || dummyKontak.whatsapp || "081234567890";
+  const whatsapp =
+    profil.whatsapp || dummyKontak.whatsapp || "081234567890";
+
   const whatsappClean = whatsapp.replace(/\D/g, "");
-  const whatsappHref = `https://wa.me/${whatsappClean.startsWith("0") ? "62" + whatsappClean.slice(1) : whatsappClean}`;
+
+  const whatsappHref = `https://wa.me/${
+    whatsappClean.startsWith("0")
+      ? "62" + whatsappClean.slice(1)
+      : whatsappClean
+  }`;
 
   const email = profil.email || dummyKontak.email;
+
   const orgName =
     profil.namaLembaga || "UPZ Zakat Universitas Siliwangi";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
-      {/* Header */}
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
       <section className="w-full bg-brand-700 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14">
+
+        <div className="mx-auto max-w-7xl px-6 py-12 lg:py-14">
+
           <div className="text-center">
-            <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
+
+            <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
               Kami Siap Membantu Anda
             </h1>
 
-            <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
+            <p className="mx-auto mt-4 max-w-3xl text-sm leading-relaxed text-green-50 sm:text-base">
               Ada pertanyaan seputar zakat, infak, sedekah, atau program
               penyaluran? Hubungi tim {orgName} lewat salah satu kanal di bawah.
             </p>
+
           </div>
+
         </div>
+
       </section>
 
-      {/* Info Kontak Singkat */}
-      <section className="max-w-5xl mx-auto px-6 pt-12 pb-10 grid sm:grid-cols-3 gap-5">
 
-        {/* Alamat */}
+      {/* =====================================================
+          INFO KONTAK SINGKAT
+          MAX-WIDTH DIUBAH DARI 5XL -> 7XL
+      ====================================================== */}
+      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-5 px-6 pb-10 pt-12 sm:grid-cols-3">
+
+        {/* =================================================
+            ALAMAT
+        ================================================== */}
         <Card className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3 mx-auto">
+
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+
             <MapPin size={20} />
+
           </div>
 
-          <h3 className="font-semibold text-gray-900 text-sm mb-1">
+          <h3 className="mb-1 text-sm font-semibold text-gray-900">
             Alamat Kantor
           </h3>
 
-          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          <p className="text-xs leading-relaxed text-gray-600 sm:text-sm">
             {alamat}
           </p>
+
         </Card>
 
-        {/* WhatsApp */}
+
+        {/* =================================================
+            WHATSAPP
+        ================================================== */}
         <Card className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3 mx-auto">
+
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+
             <Phone size={20} />
+
           </div>
 
-          <h3 className="font-semibold text-gray-900 text-sm mb-1">
+          <h3 className="mb-1 text-sm font-semibold text-gray-900">
             WhatsApp &amp; Layanan
           </h3>
 
@@ -88,117 +120,170 @@ export default function KontakPage() {
             href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-brand-700 font-semibold mt-1 hover:underline"
+            className="mt-1 text-sm font-semibold text-brand-700 hover:underline"
           >
             {whatsapp}
           </a>
 
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             Layanan Aktif Jam Kerja
           </p>
+
         </Card>
 
 
-        {/* Email */}
+        {/* =================================================
+            EMAIL
+        ================================================== */}
         <Card className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 mb-3 mx-auto">
+
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+
             <Mail size={20} />
+
           </div>
 
-          <h3 className="font-semibold text-gray-900 text-sm mb-1">
+          <h3 className="mb-1 text-sm font-semibold text-gray-900">
             Email Resmi
           </h3>
 
-          <p className="text-sm text-gray-800 font-medium mt-1">
+          <p className="mt-1 text-sm font-medium text-gray-800">
             {email}
           </p>
 
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             Respon Cepat 1x24 Jam
           </p>
+
         </Card>
 
       </section>
 
-      {/* Peta + Jam Operasional & Sosial Media */}
-      <section className="max-w-5xl mx-auto px-6 pb-16 grid lg:grid-cols-3 gap-5">
 
-        {/* Peta */}
-        <Card className="lg:col-span-2 p-0 overflow-hidden">
+      {/* =====================================================
+          PETA + JAM OPERASIONAL + SOSIAL MEDIA
+          MAX-WIDTH DIUBAH DARI 5XL -> 7XL
+      ====================================================== */}
+      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-5 px-6 pb-16 lg:grid-cols-3">
+
+        {/* =================================================
+            PETA
+        ================================================== */}
+        <Card className="overflow-hidden p-0 lg:col-span-2">
+
           <iframe
             title="Lokasi Universitas Siliwangi"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3261.4603646424735!2d108.22021287404235!3d-7.350249372311004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f5765c64bb1f9%3A0xd8b04746f0f62ad4!2sUniversitas%20Siliwangi!5e1!3m2!1sid!2sid!4v1786676648205!5m2!1sid!2sid"
-            className="w-full h-72 lg:h-full min-h-[280px] border-0"
+            className="min-h-[280px] h-72 w-full border-0 lg:h-full"
             allowFullScreen
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
           />
+
         </Card>
 
-        {/* Jam Operasional + Sosial Media */}
+
+        {/* =================================================
+            JAM OPERASIONAL + SOSIAL MEDIA
+        ================================================== */}
         <div className="space-y-5">
 
-          {/* Jam Operasional */}
+          {/* =================================================
+              JAM OPERASIONAL
+          ================================================== */}
           <Card>
-            <div className="flex items-center gap-2 mb-3">
-              <Clock size={18} className="text-brand-600" />
 
-              <h3 className="font-semibold text-gray-900 text-sm">
+            <div className="mb-3 flex items-center gap-2">
+
+              <Clock
+                size={18}
+                className="text-brand-600"
+              />
+
+              <h3 className="text-sm font-semibold text-gray-900">
                 Jam Operasional
               </h3>
+
             </div>
 
             <ul className="space-y-2">
 
-              <li className="flex justify-between text-sm text-gray-600 gap-3">
-                <span>Senin – Jumat</span>
+              <li className="flex justify-between gap-3 text-sm text-gray-600">
 
-                <span className="font-medium text-gray-800 text-right">
+                <span>
+                  Senin – Jumat
+                </span>
+
+                <span className="text-right font-medium text-gray-800">
                   09.00 – 16.00 WIB
                 </span>
+
               </li>
 
-              <li className="flex justify-between text-sm text-gray-600 gap-3">
-                <span>Sabtu, Minggu, & Hari Libur</span>
+              <li className="flex justify-between gap-3 text-sm text-gray-600">
 
-                <span className="font-medium text-gray-800 text-right">
+                <span>
+                  Sabtu, Minggu, &amp; Hari Libur
+                </span>
+
+                <span className="text-right font-medium text-gray-800">
                   Tutup
                 </span>
+
               </li>
 
             </ul>
+
           </Card>
 
-          {/* Sosial Media */}
+
+          {/* =================================================
+              SOSIAL MEDIA
+          ================================================== */}
           <Card>
-            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+
+            <h3 className="mb-3 text-sm font-semibold text-gray-900">
               Ikuti Kami
             </h3>
 
             <ul className="space-y-2.5">
+
               {dummyKontak.sosialMedia.map((s) => {
+
                 const Icon =
                   SOSMED_ICON[s.label] || MessageCircle;
 
                 return (
+
                   <li key={s.label}>
+
                     <a
                       href={s.url}
-                      className="flex items-center gap-3 text-sm text-gray-600 hover:text-brand-700 transition-colors"
+                      className="flex items-center gap-3 text-sm text-gray-600 transition-colors hover:text-brand-700"
                     >
-                      <span className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
+
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+
                         <Icon size={16} />
+
                       </span>
 
                       {s.handle}
+
                     </a>
+
                   </li>
+
                 );
+
               })}
+
             </ul>
+
           </Card>
 
         </div>
+
       </section>
 
     </div>

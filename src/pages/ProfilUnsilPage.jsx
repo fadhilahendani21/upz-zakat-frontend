@@ -49,19 +49,19 @@ export default function ProfilUnsilPage() {
 
       <section className="w-full bg-brand-700 text-white">
 
-        <div className="mx-auto flex min-h-[260px] items-center justify-center px-6 py-12 text-center sm:min-h-[290px] lg:min-h-[310px]">
+        <div className="flex min-h-[230px] w-full items-center justify-center px-6 py-10 text-center sm:min-h-[250px] sm:py-12">
 
-          <div className="max-w-3xl">
+          <div className="w-full">
 
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-200 sm:text-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-200 sm:text-sm">
               Tentang Kami
             </p>
 
-            <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+            <h1 className="mt-3 text-2xl font-bold leading-tight sm:text-3xl">
               Profil Lembaga UPZ UNSIL
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-green-50 sm:text-base">
+            <p className="mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-green-50">
               Landasan hukum, fungsi, dan tugas Unit Pengumpul Zakat
               Universitas Siliwangi.
             </p>
@@ -72,11 +72,12 @@ export default function ProfilUnsilPage() {
 
       </section>
 
+
       {/* =====================================================
           CONTENT
       ====================================================== */}
 
-      <main className="mx-auto max-w-6xl px-6 py-10 sm:py-12">
+      <main className="w-full px-5 py-8 sm:px-8 sm:py-10 lg:px-12">
 
         {/* =================================================
             KEMBALI
@@ -90,41 +91,49 @@ export default function ProfilUnsilPage() {
           Kembali ke Tentang Kami
         </Link>
 
+
         {/* =================================================
             KONTEN UTAMA
         ================================================== */}
 
-        <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mt-7 w-full rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7 lg:p-8">
+
 
           {/* =================================================
               PENJELASAN UMUM
           ================================================== */}
 
-          <p className="text-sm leading-relaxed text-gray-700 sm:text-base">
+          <div>
 
-            Unit Pengumpul Zakat (UPZ) Universitas Siliwangi adalah Lembaga
-            resmi pengumpul zakat, infak dan sedekah, merupakan satuan
-            organisasi yang dibentuk oleh BAZNAS Jawa Barat untuk membantu
-            mengumpulkan zakat. Dibentuk sesuai dengan amanat Undang-Undang
-            No. 23 Tahun 2011 BAB VI tentang Lingkup Kewenangan Pengumpulan
-            Zakat Pasal 53 ayat 2 yang berbunyi:
+            <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
+              Profil Lembaga
+            </h2>
 
-          </p>
+            <p className="mt-4 text-sm leading-7 text-gray-700">
+              Unit Pengumpul Zakat (UPZ) Universitas Siliwangi adalah
+              lembaga resmi pengumpul zakat, infak, dan sedekah,
+              merupakan satuan organisasi yang dibentuk oleh BAZNAS
+              Jawa Barat untuk membantu mengumpulkan zakat. Dibentuk
+              sesuai dengan amanat Undang-Undang No. 23 Tahun 2011
+              BAB VI tentang Lingkup Kewenangan Pengumpulan Zakat
+              Pasal 53 ayat 2 yang berbunyi:
+            </p>
+
+          </div>
+
 
           {/* =================================================
               UPZ PADA
           ================================================== */}
 
-          <div className="mt-6">
+          <div className="mt-8">
 
-            <p className="text-sm font-semibold leading-relaxed text-gray-900 sm:text-base">
+            <h3 className="text-base font-bold leading-relaxed text-gray-900 sm:text-lg">
+              Pengumpulan zakat melalui UPZ sebagaimana dimaksud
+              pada ayat (1) dilakukan dengan cara membentuk UPZ pada:
+            </h3>
 
-              Pengumpulan zakat melalui UPZ sebagaimana dimaksud pada
-              ayat (1) dilakukan dengan cara membentuk UPZ pada:
-
-            </p>
-
-            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-relaxed text-gray-700 sm:text-base">
+            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-7 text-gray-700">
 
               {UPZ_PADA.map((item, i) => (
                 <li key={i}>
@@ -136,11 +145,12 @@ export default function ProfilUnsilPage() {
 
           </div>
 
+
           {/* =================================================
               FUNGSI UPZ
           ================================================== */}
 
-          <div className="mt-10">
+          <div className="mt-10 border-t border-gray-100 pt-8">
 
             <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
               UPZ Melaksanakan Fungsi
@@ -150,7 +160,7 @@ export default function ProfilUnsilPage() {
               (Pasal 8 dalam Peraturan BAZNAS Nomor 2 Tahun 2016)
             </p>
 
-            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-relaxed text-gray-700 sm:text-base">
+            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-7 text-gray-700">
 
               {FUNGSI.map((item, i) => (
                 <li key={i}>
@@ -162,17 +172,18 @@ export default function ProfilUnsilPage() {
 
           </div>
 
+
           {/* =================================================
               TUGAS PENGURUS
           ================================================== */}
 
-          <div className="mt-10">
+          <div className="mt-10 border-t border-gray-100 pt-8">
 
             <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
               Tugas Pengurus UPZ
             </h2>
 
-            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-relaxed text-gray-700 sm:text-base">
+            <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-7 text-gray-700">
 
               {TUGAS_PENGURUS.map((item, i) => (
                 <li key={i}>
@@ -184,23 +195,22 @@ export default function ProfilUnsilPage() {
 
           </div>
 
+
         </div>
+
 
         {/* =================================================
             TOMBOL KEMBALI
         ================================================== */}
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 flex justify-start">
 
           <Link
             to="/tentang"
             className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800"
           >
-
             <ArrowLeft size={16} />
-
             Kembali ke Tentang Kami
-
           </Link>
 
         </div>
