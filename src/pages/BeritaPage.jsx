@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import { Calendar, ArrowRight, Search, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSettings } from "../services/settingService";
-import { getPublicBerita } from "../services/beritaService";
+import { getPublicBerita, formatImageUrl } from "../services/beritaService";
+
+import berita1 from "../assets/images/berita 1.jpeg";
+import berita2 from "../assets/images/berita 2.jpeg";
+import berita3 from "../assets/images/berita 3.jpeg";
+import berita4 from "../assets/images/berita 4.jpeg";
+import berita5 from "../assets/images/berita 5.jpeg";
+import berita6 from "../assets/images/berita 6.jpeg";
 
 const FALLBACK_NEWS = [
   {
@@ -12,7 +19,7 @@ const FALLBACK_NEWS = [
     excerpt:
       "UPZ Zakat Universitas Siliwangi membuka layanan Gerai Zakat sebagai sarana bagi sivitas akademika dan masyarakat untuk menunaikan zakat, infak, dan sedekah dengan lebih mudah.",
     date: "15 Agustus 2026",
-    image: null,
+    image: berita1,
   },
   {
     id: 2,
@@ -21,7 +28,7 @@ const FALLBACK_NEWS = [
     excerpt:
       "Sebagai bentuk kepedulian terhadap masyarakat, UPZ Zakat Universitas Siliwangi menyalurkan bantuan beras kepada sejumlah keluarga penerima manfaat untuk membantu memenuhi kebutuhan pangan sehari-hari.",
     date: "10 Agustus 2026",
-    image: null,
+    image: berita2,
   },
   {
     id: 3,
@@ -30,7 +37,7 @@ const FALLBACK_NEWS = [
     excerpt:
       "UPZ Zakat Universitas Siliwangi secara rutin menyalurkan dana zakat kepada penerima manfaat yang telah terdata sebagai bagian dari komitmen untuk memastikan dana zakat tepat sasaran.",
     date: "5 Agustus 2026",
-    image: null,
+    image: berita3,
   },
   {
     id: 4,
@@ -39,7 +46,7 @@ const FALLBACK_NEWS = [
     excerpt:
       "UPZ Zakat Universitas Siliwangi menyalurkan bantuan Al-Qur’an kepada masyarakat dan lembaga yang membutuhkan sebagai bentuk dukungan terhadap kegiatan keagamaan.",
     date: "28 Juli 2026",
-    image: null,
+    image: berita4,
   },
   {
     id: 5,
@@ -48,7 +55,7 @@ const FALLBACK_NEWS = [
     excerpt:
       "UPZ Zakat Universitas Siliwangi memberikan bantuan modal usaha kepada sejumlah mustahik untuk membantu mengembangkan usaha kecil dan meningkatkan kemandirian ekonomi.",
     date: "20 Juli 2026",
-    image: null,
+    image: berita5,
   },
   {
     id: 6,
@@ -57,7 +64,7 @@ const FALLBACK_NEWS = [
     excerpt:
       "Melalui program Rutilahu, UPZ Zakat Universitas Siliwangi membantu renovasi rumah tidak layak huni agar keluarga penerima manfaat dapat memiliki tempat tinggal yang lebih aman dan nyaman.",
     date: "12 Juli 2026",
-    image: null,
+    image: berita6,
   },
 ];
 
@@ -96,7 +103,7 @@ export default function BeritaPage() {
                   year: "numeric",
                 })
               : "Terbaru",
-            image: item.gambar || null,
+            image: formatImageUrl(item.gambar) || null,
           }));
           setNewsList(mapped);
           setMeta(res.meta || { current_page: 1, last_page: 1, total: mapped.length });
@@ -156,12 +163,20 @@ export default function BeritaPage() {
               >
                 {/* Gambar Berita / Placeholder */}
                 {news.image ? (
-                  <div className="w-full h-44 bg-gray-100 overflow-hidden">
+                  <div className="w-full h-44 bg-gray-100 overflow-hidden relative flex items-center justify-center">
                     <img
-                      src={news.image}
+                      src={formatImageUrl(news.image)}
                       alt={news.title}
                       className="w-full h-full object-cover transition duration-300 hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        const fallback = e.currentTarget.parentElement?.querySelector(".news-fallback");
+                        if (fallback) fallback.classList.remove("hidden");
+                      }}
                     />
+                    <div className="news-fallback hidden w-full h-full bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 flex items-center justify-center text-brand-600">
+                      <Newspaper size={36} className="opacity-60" />
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full h-44 bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 flex items-center justify-center text-brand-600">

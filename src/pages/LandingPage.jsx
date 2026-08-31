@@ -10,7 +10,12 @@ import { Link } from "react-router-dom";
 import Hero from "../components/landing/Hero";
 import FeatureCard from "../components/landing/FeatureCard";
 import StatsBar from "../components/landing/StatsBar";
-import { getPublicBerita } from "../services/beritaService";
+import { getPublicBerita, formatImageUrl } from "../services/beritaService";
+
+import berita1 from "../assets/images/berita 1.jpeg";
+import berita2 from "../assets/images/berita 2.jpeg";
+import berita3 from "../assets/images/berita 3.jpeg";
+import berita4 from "../assets/images/berita 4.jpeg";
 
 const DEFAULT_BERITA = [
   {
@@ -18,28 +23,28 @@ const DEFAULT_BERITA = [
     tanggal: "12 Agustus 2026",
     judul: "Penyaluran Beasiswa Semester Ganjil 2026 Resmi Dimulai",
     deskripsi: "UPZ Zakat Universitas Siliwangi kembali menyalurkan bantuan beasiswa bagi mahasiswa yang membutuhkan.",
-    image: null,
+    image: berita1,
   },
   {
     id: 2,
     tanggal: "5 Agustus 2026",
     judul: "Gerai Zakat UPZ Unsil Kembali Melayani Muzakki",
     deskripsi: "Layanan gerai zakat hadir untuk memudahkan civitas akademika dan masyarakat dalam menunaikan zakat.",
-    image: null,
+    image: berita2,
   },
   {
     id: 3,
     tanggal: "30 Juli 2026",
     judul: "Penyaluran Beras untuk Mustahik UPZ Universitas Siliwangi",
     deskripsi: "Bantuan pangan disalurkan kepada penerima manfaat sebagai bentuk kepedulian UPZ Unsil.",
-    image: null,
+    image: berita3,
   },
   {
     id: 4,
     tanggal: "25 Juli 2026",
     judul: "Penyaluran Al-Qur'an kepada Masyarakat",
     deskripsi: "UPZ Unsil menyalurkan Al-Qur'an sebagai bagian dari program pembinaan dan kepedulian sosial.",
-    image: null,
+    image: berita4,
   },
 ];
 
@@ -68,7 +73,7 @@ export default function LandingPage() {
                   year: "numeric",
                 })
               : "Terbaru",
-            image: item.gambar || null,
+            image: formatImageUrl(item.gambar) || null,
           }));
           setBeritaList(mapped);
         }
@@ -155,17 +160,20 @@ export default function LandingPage() {
               {/* FOTO UTAMA */}
 
               {beritaUtama.image ? (
-                <div className="relative h-[190px] overflow-hidden sm:h-[220px]">
+                <div className="relative h-[190px] overflow-hidden sm:h-[220px] bg-brand-800 flex items-center justify-center">
                   <img
-                    src={beritaUtama.image}
+                    src={formatImageUrl(beritaUtama.image)}
                     alt={beritaUtama.judul}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                  <span className="absolute left-4 top-4 rounded-full bg-red-500 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent pointer-events-none" />
+                  <span className="absolute left-4 top-4 rounded-full bg-red-500 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white z-10">
                     Berita Terbaru
                   </span>
-                  <div className="absolute inset-x-0 bottom-0 p-4">
+                  <div className="absolute inset-x-0 bottom-0 p-4 z-10">
                     <div className="mb-1.5 flex items-center gap-1.5 text-[10px] text-white/85">
                       <CalendarDays size={11} />
                       {beritaUtama.tanggal}
@@ -240,14 +248,24 @@ export default function LandingPage() {
 
                     {/* FOTO KECIL / ICON */}
 
-                    <div className="h-[58px] w-[76px] shrink-0 overflow-hidden rounded-md bg-gray-100 sm:h-[64px] sm:w-[84px] flex items-center justify-center">
+                    <div className="h-[58px] w-[76px] shrink-0 overflow-hidden rounded-md bg-gray-100 sm:h-[64px] sm:w-[84px] flex items-center justify-center relative">
 
                       {berita.image ? (
-                        <img
-                          src={berita.image}
-                          alt={berita.judul}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                        />
+                        <>
+                          <img
+                            src={formatImageUrl(berita.image)}
+                            alt={berita.judul}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              const fallback = e.currentTarget.parentElement?.querySelector(".side-fallback");
+                              if (fallback) fallback.classList.remove("hidden");
+                            }}
+                          />
+                          <div className="side-fallback hidden w-full h-full bg-brand-50 flex items-center justify-center text-brand-600">
+                            <Newspaper size={20} className="opacity-60" />
+                          </div>
+                        </>
                       ) : (
                         <div className="w-full h-full bg-brand-50 flex items-center justify-center text-brand-600">
                           <Newspaper size={20} className="opacity-60" />

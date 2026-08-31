@@ -25,6 +25,8 @@ import {
   updateBerita,
   deleteBerita,
   uploadBeritaImage,
+  formatImageUrl,
+  fileToDataUrl,
 } from "../../services/beritaService";
 
 const KATEGORI_OPTIONS = [
@@ -40,6 +42,32 @@ const STATUS_LABEL = {
   published: "Dipublikasikan",
   draft: "Draf",
 };
+
+function BeritaThumbnail({ src, alt = "", className = "w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-100" }) {
+  const [hasError, setHasError] = useState(false);
+  const resolved = formatImageUrl(src);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
+
+  if (!resolved || hasError) {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-gray-400 border border-gray-100">
+        <ImageIcon size={16} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={resolved}
+      alt={alt}
+      className={className}
+      onError={() => setHasError(true)}
+    />
+  );
+}
 
 // ── Helper Modal Form Berita ───────────────────────────────────────────────────
 function ModalFormBerita({ initial, onClose, onSaved }) {
@@ -58,6 +86,7 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
 
   const [loading, setLoading] = useState(false);
   const [uploadingThumb, setUploadingThumb] = useState(false);
+  const [localPreview, setLocalPreview] = useState(null);
   const [errors, setErrors] = useState({});
 
   function setField(field, val) {
@@ -79,14 +108,29 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Instant local preview
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
+
     setUploadingThumb(true);
     try {
-      const res = await uploadBeritaImage(file);
-      if (res.url) {
-        setField("gambar", res.url);
+      // 1. Try uploading to backend server
+      try {
+        const res = await uploadBeritaImage(file);
+        if (res.url) {
+          setField("gambar", res.url);
+          return;
+        }
+      } catch (uploadErr) {
+        console.warn("Backend upload failed, falling back to client-compressed data URL", uploadErr);
       }
+
+      // 2. Fallback: compress image and save as permanent Data URL
+      const dataUrl = await fileToDataUrl(file);
+      setField("gambar", dataUrl);
     } catch (err) {
-      alert("Gagal mengunggah thumbnail: " + err.message);
+      alert("Gagal memproses thumbnail: " + err.message);
+      setLocalPreview(null);
     } finally {
       setUploadingThumb(false);
       e.target.value = "";
@@ -230,17 +274,30 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
               Gambar Sampul (Thumbnail Berita)
             </label>
             <div className="flex flex-col sm:flex-row gap-4 items-start">
-              {form.gambar ? (
-                <div className="relative group w-full sm:w-48 h-32 rounded-xl overflow-hidden border border-gray-200 shrink-0 bg-gray-50">
+              {localPreview || form.gambar ? (
+                <div className="relative group w-full sm:w-48 h-32 rounded-xl overflow-hidden border border-gray-200 shrink-0 bg-gray-50 flex items-center justify-center">
                   <img
-                    src={form.gambar}
+                    key={localPreview || form.gambar}
+                    src={localPreview || formatImageUrl(form.gambar)}
                     alt="Thumbnail Preview"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      const fallback = e.currentTarget.parentElement?.querySelector(".thumb-error");
+                      if (fallback) fallback.classList.remove("hidden");
+                    }}
                   />
+                  <div className="thumb-error hidden flex-col items-center justify-center p-3 text-center text-xs text-amber-700 bg-amber-50 w-full h-full">
+                    <ImageIcon size={22} className="mb-1 text-amber-500" />
+                    <span>Gambar tidak dapat dimuat</span>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setField("gambar", "")}
-                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-lg opacity-90 hover:opacity-100 transition shadow-sm"
+                    onClick={() => {
+                      setLocalPreview(null);
+                      setField("gambar", "");
+                    }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-lg opacity-90 hover:opacity-100 transition shadow-sm z-10"
                     title="Hapus gambar"
                   >
                     <Trash2 size={14} />
@@ -269,10 +326,13 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
                   <span className="text-xs text-gray-400">atau</span>
                 </div>
                 <input
-                  type="url"
-                  placeholder="Masukkan URL gambar langsung (https://...)"
+                  type="text"
+                  placeholder="URL gambar (https://...), path (/storage/...), atau unggah file di samping"
                   value={form.gambar}
-                  onChange={(e) => setField("gambar", e.target.value)}
+                  onChange={(e) => {
+                    setLocalPreview(null);
+                    setField("gambar", e.target.value);
+                  }}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
                 />
                 <p className="text-[11px] text-gray-400">
@@ -409,11 +469,14 @@ function ModalPreviewBerita({ berita, onClose, onEdit, onDelete }) {
 
           {/* Gambar Berita */}
           {berita.gambar && (
-            <div className="w-full max-h-72 rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50">
+            <div className="w-full max-h-72 rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 flex items-center justify-center">
               <img
-                src={berita.gambar}
+                src={formatImageUrl(berita.gambar)}
                 alt={berita.judul}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
               />
             </div>
           )}
@@ -647,17 +710,7 @@ export default function BeritaAdmin() {
                   <tr key={item.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-5 py-3.5 max-w-xs sm:max-w-md">
                       <div className="flex items-center gap-3">
-                        {item.gambar ? (
-                          <img
-                            src={item.gambar}
-                            alt=""
-                            className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-100"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-gray-400 border border-gray-100">
-                            <ImageIcon size={16} />
-                          </div>
-                        )}
+                        <BeritaThumbnail src={item.gambar} alt={item.judul} />
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-gray-800 line-clamp-1">
                             {item.judul}

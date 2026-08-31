@@ -20,8 +20,8 @@ import {
   Minus,
   RemoveFormatting,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { uploadBeritaImage } from "../../services/beritaService";
+import { useEffect, useRef, useState } from "react";
+import { uploadBeritaImage, formatImageUrl, fileToDataUrl } from "../../services/beritaService";
 
 function ToolbarButton({ onClick, isActive = false, disabled = false, children, title }) {
   return (
@@ -43,6 +43,7 @@ function ToolbarButton({ onClick, isActive = false, disabled = false, children, 
 
 export default function TipTapEditor({ content, onChange, placeholder = "Tulis isi berita di sini..." }) {
   const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -111,14 +112,26 @@ export default function TipTapEditor({ content, onChange, placeholder = "Tulis i
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsUploading(true);
     try {
-      const res = await uploadBeritaImage(file);
-      if (res.url) {
-        editor.chain().focus().setImage({ src: res.url, alt: file.name }).run();
+      try {
+        const res = await uploadBeritaImage(file);
+        if (res.url) {
+          const resolvedUrl = formatImageUrl(res.url);
+          editor.chain().focus().setImage({ src: resolvedUrl, alt: file.name }).run();
+          return;
+        }
+      } catch (uploadErr) {
+        console.warn("Upload backend failed, falling back to data URL", uploadErr);
       }
+
+      // Fallback: convert to compressed WebP data URL
+      const dataUrl = await fileToDataUrl(file);
+      editor.chain().focus().setImage({ src: dataUrl, alt: file.name }).run();
     } catch (err) {
-      alert("Gagal mengunggah gambar: " + err.message);
+      alert("Gagal memproses gambar: " + err.message);
     } finally {
+      setIsUploading(false);
       e.target.value = "";
     }
   };
@@ -222,15 +235,21 @@ export default function TipTapEditor({ content, onChange, placeholder = "Tulis i
 
         <ToolbarButton
           onClick={() => fileInputRef.current?.click()}
-          title="Sisipkan Gambar"
+          disabled={isUploading}
+          title={isUploading ? "Mengunggah gambar..." : "Sisipkan Gambar"}
         >
-          <ImageIcon size={16} />
+          {isUploading ? (
+            <div className="w-4 h-4 border-2 border-brand-300 border-t-brand-600 rounded-full animate-spin" />
+          ) : (
+            <ImageIcon size={16} />
+          )}
         </ToolbarButton>
         <input
           type="file"
           ref={fileInputRef}
           onChange={handleImageUpload}
           accept="image/*"
+          disabled={isUploading}
           className="hidden"
         />
 

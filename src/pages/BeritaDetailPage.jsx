@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, ArrowLeft, ArrowRight, User, Newspaper } from "lucide-react";
-import { getPublicBerita, getPublicBeritaDetail } from "../services/beritaService";
+import { getPublicBerita, getPublicBeritaDetail, formatImageUrl } from "../services/beritaService";
+
+import berita1 from "../assets/images/berita 1.jpeg";
+import berita2 from "../assets/images/berita 2.jpeg";
+import berita3 from "../assets/images/berita 3.jpeg";
+import berita4 from "../assets/images/berita 4.jpeg";
+import berita5 from "../assets/images/berita 5.jpeg";
+import berita6 from "../assets/images/berita 6.jpeg";
 
 const FALLBACK_NEWS = [
   {
@@ -9,7 +16,7 @@ const FALLBACK_NEWS = [
     category: "Kegiatan",
     title: "Gerai Zakat UPZ Unsil Hadirkan Kemudahan Berzakat",
     date: "15 Agustus 2026",
-    image: null,
+    image: berita1,
     content: `UPZ Zakat Universitas Siliwangi menghadirkan layanan Gerai Zakat sebagai salah satu upaya untuk memberikan kemudahan kepada sivitas akademika dan masyarakat dalam menunaikan zakat, infak, dan sedekah.
 
 Gerai Zakat menjadi salah satu layanan yang dapat dimanfaatkan oleh masyarakat untuk memperoleh informasi mengenai zakat sekaligus menyalurkan dana zakat dengan lebih mudah. Kehadiran layanan ini diharapkan dapat meningkatkan kesadaran masyarakat untuk menunaikan kewajiban zakat serta memperkuat budaya berbagi di lingkungan Universitas Siliwangi.
@@ -21,7 +28,7 @@ Melalui Gerai Zakat, UPZ Zakat Universitas Siliwangi terus berkomitmen untuk mem
     category: "Penyaluran",
     title: "UPZ Unsil Salurkan Bantuan Beras bagi Keluarga Membutuhkan",
     date: "10 Agustus 2026",
-    image: null,
+    image: berita2,
     content: `UPZ Zakat Universitas Siliwangi kembali melaksanakan penyaluran bantuan beras kepada sejumlah keluarga yang membutuhkan. Kegiatan ini merupakan bentuk kepedulian UPZ terhadap kondisi masyarakat, khususnya keluarga yang memiliki keterbatasan dalam memenuhi kebutuhan pangan sehari-hari.
 
 Bantuan beras diberikan kepada penerima manfaat yang telah melalui proses pendataan dan verifikasi. Penyaluran dilakukan secara langsung agar bantuan dapat diterima oleh masyarakat yang benar-benar membutuhkan.
@@ -33,7 +40,7 @@ Program bantuan pangan ini diharapkan dapat membantu meringankan beban pengeluar
     category: "Penyaluran",
     title: "Penyaluran Rutin UPZ Unsil Terus Berikan Manfaat",
     date: "5 Agustus 2026",
-    image: null,
+    image: berita3,
     content: `UPZ Zakat Universitas Siliwangi secara rutin melaksanakan penyaluran dana zakat kepada masyarakat yang telah ditetapkan sebagai penerima manfaat. Program ini menjadi salah satu bentuk komitmen UPZ dalam memastikan dana zakat yang telah dihimpun dapat memberikan manfaat secara langsung.
 
 Penyaluran dilakukan berdasarkan data penerima manfaat yang telah dikumpulkan dan diverifikasi oleh tim UPZ. Bantuan diberikan sesuai dengan kebutuhan dan kondisi masing-masing penerima sehingga diharapkan dapat memberikan dampak yang lebih tepat sasaran.
@@ -45,7 +52,7 @@ Kegiatan penyaluran rutin ini juga menjadi bagian dari upaya UPZ untuk menjaga k
     category: "Kegiatan",
     title: "UPZ Unsil Salurkan Al-Qur’an untuk Masyarakat",
     date: "28 Juli 2026",
-    image: null,
+    image: berita4,
     content: `UPZ Zakat Universitas Siliwangi menyalurkan bantuan Al-Qur’an kepada masyarakat dan lembaga yang membutuhkan. Program ini menjadi salah satu bentuk kepedulian UPZ dalam mendukung kegiatan keagamaan serta meningkatkan akses masyarakat terhadap Al-Qur’an.
 
 Bantuan Al-Qur’an disalurkan kepada beberapa penerima yang membutuhkan, termasuk tempat-tempat yang digunakan untuk kegiatan pembelajaran dan pengajian masyarakat. Penyaluran dilakukan sebagai bagian dari pemanfaatan dana zakat, infak, dan sedekah untuk kegiatan yang memberikan manfaat bagi masyarakat.
@@ -57,7 +64,7 @@ Melalui program ini, UPZ berharap bantuan yang diberikan tidak hanya memenuhi ke
     category: "Pemberdayaan",
     title: "Bantuan Modal Usaha Dorong Kemandirian Mustahik",
     date: "20 Juli 2026",
-    image: null,
+    image: berita5,
     content: `UPZ Zakat Universitas Siliwangi memberikan bantuan modal usaha kepada sejumlah mustahik sebagai bagian dari program pemberdayaan ekonomi masyarakat. Bantuan ini ditujukan untuk membantu penerima manfaat dalam memulai maupun mengembangkan usaha yang telah dijalankan.
 
 Bantuan modal diberikan berdasarkan kondisi dan kebutuhan penerima manfaat. Selain memberikan bantuan berupa modal, UPZ juga mendorong penerima manfaat agar dapat mengelola usaha secara mandiri dan berkelanjutan sehingga mampu meningkatkan pendapatan keluarga.
@@ -69,7 +76,7 @@ Program pemberdayaan ekonomi ini diharapkan dapat menjadi langkah awal bagi must
     category: "Penyaluran",
     title: "UPZ Unsil Bantu Renovasi Rumah Tidak Layak Huni",
     date: "12 Juli 2026",
-    image: null,
+    image: berita6,
     content: `UPZ Zakat Universitas Siliwangi turut membantu renovasi rumah tidak layak huni melalui program Rutilahu. Program ini ditujukan bagi keluarga yang memiliki keterbatasan ekonomi dan tinggal di rumah dengan kondisi yang kurang layak.
 
 Proses renovasi dilakukan pada beberapa bagian rumah yang membutuhkan perbaikan, seperti atap, dinding, lantai, dan fasilitas dasar lainnya. Bantuan diberikan agar penerima manfaat dapat memiliki tempat tinggal yang lebih aman, nyaman, dan layak untuk ditempati bersama keluarga.
@@ -103,7 +110,7 @@ export default function BeritaDetailPage() {
                   year: "numeric",
                 })
               : "Terbaru",
-            image: d.gambar || null,
+            image: formatImageUrl(d.gambar) || null,
             content: d.konten,
             author: d.author?.name || null,
           });
@@ -133,7 +140,7 @@ export default function BeritaDetailPage() {
                     year: "numeric",
                   })
                 : "Terbaru",
-              image: item.gambar || null,
+              image: formatImageUrl(item.gambar) || null,
             }));
           setOtherNews(others);
         } else {
@@ -252,11 +259,15 @@ export default function BeritaDetailPage() {
           ================================================== */}
 
           {news.image && (
-            <div className="mt-7 overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-xs max-h-[420px] flex items-center justify-center">
+            <div className="mt-7 overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-xs max-h-[420px] flex items-center justify-center relative">
               <img
-                src={news.image}
+                src={formatImageUrl(news.image)}
                 alt={news.title}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.parentElement?.classList.add("hidden");
+                }}
               />
             </div>
           )}
@@ -306,13 +317,23 @@ export default function BeritaDetailPage() {
                   to={`/berita/${item.id}`}
                   className="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md hover:-translate-y-0.5 transition duration-200"
                 >
-                  <div className="w-full h-36 bg-gray-100 overflow-hidden">
+                  <div className="w-full h-36 bg-gray-100 overflow-hidden relative flex items-center justify-center">
                     {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      />
+                      <>
+                        <img
+                          src={formatImageUrl(item.image)}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            const fallback = e.currentTarget.parentElement?.querySelector(".other-fallback");
+                            if (fallback) fallback.classList.remove("hidden");
+                          }}
+                        />
+                        <div className="other-fallback hidden w-full h-full bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 flex items-center justify-center text-brand-600">
+                          <Newspaper size={28} className="opacity-60" />
+                        </div>
+                      </>
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-emerald-50 via-brand-50 to-brand-100 flex items-center justify-center text-brand-600">
                         <Newspaper size={28} className="opacity-60" />
