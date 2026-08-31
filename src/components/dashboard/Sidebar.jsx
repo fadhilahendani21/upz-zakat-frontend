@@ -20,16 +20,20 @@ import {
   UserCog,
   Settings,
   X,
+  FilePen,
+  CalendarCheck,
 } from "lucide-react";
 
 const pengelolaan = [
   { label: "Pengumpulan", icon: ArrowDownToLine, to: "/dashboard/pengumpulan" },
+  { label: "Tagihan Zakat", icon: CalendarCheck, to: "/dashboard/tagihan" },
   { label: "Penyaluran", icon: ArrowUpFromLine, to: "/dashboard/penyaluran" },
   { label: "Muzakki", icon: Users, to: "/dashboard/muzakki" },
   { label: "Mustahik", icon: Heart, to: "/dashboard/mustahik" },
   { label: "Program", icon: FolderKanban, to: "/dashboard/program" },
   { label: "Berita & Artikel", icon: BookOpen, to: "/dashboard/berita" },
   { label: "Donasi Online", icon: Globe, to: "/dashboard/donasi-online" },
+  { label: "Revisi Kesepakatan", icon: FilePen, to: "/dashboard/zakat-requests" },
 ];
 
 const keuangan = [

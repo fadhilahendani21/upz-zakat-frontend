@@ -124,6 +124,10 @@ function ModalForm({ initial, onClose, onSaved }) {
     alamat_lengkap: initial?.alamat_lengkap ?? "",
     email: initial?.email ?? "",
     no_hp: initial?.no_hp ?? "",
+    jenis_zakat: initial?.jenis_zakat ?? "Zakat Penghasilan",
+    frekuensi: initial?.frekuensi ?? "bulanan",
+    nominal: initial?.nominal ?? "",
+    metode_pembayaran: initial?.metode_pembayaran ?? "potong-gaji",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors]   = useState({});
@@ -176,6 +180,10 @@ function ModalForm({ initial, onClose, onSaved }) {
         no_hp: form.no_hp || null,
         kategori: kategoriType === "umum" ? "Muzakki Umum" : "Dosen & Staf UNSIL",
         unit_kerja: finalUnitKerja,
+        jenis_zakat: form.jenis_zakat || null,
+        frekuensi: form.frekuensi || null,
+        nominal: form.nominal ? Number(String(form.nominal).replace(/\D/g, "")) : null,
+        metode_pembayaran: form.metode_pembayaran || null,
       };
 
       if (isEdit) {
@@ -336,6 +344,65 @@ function ModalForm({ initial, onClose, onSaved }) {
                 </div>
               </div>
             )}
+
+            {/* Kesepakatan Zakat (Opsional/Komitmen) */}
+            <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/60 space-y-3">
+              <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                Kesepakatan / Komitmen Zakat
+              </h4>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Jenis Zakat</label>
+                  <select
+                    value={form.jenis_zakat}
+                    onChange={(e) => set("jenis_zakat", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                  >
+                    <option value="Zakat Penghasilan">Zakat Penghasilan</option>
+                    <option value="Zakat Maal">Zakat Maal</option>
+                    <option value="Zakat Fitrah">Zakat Fitrah</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Frekuensi</label>
+                  <select
+                    value={form.frekuensi}
+                    onChange={(e) => set("frekuensi", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                  >
+                    <option value="bulanan">Bulanan</option>
+                    <option value="tahunan">Tahunan</option>
+                    <option value="ramadan">Setiap Ramadan</option>
+                    <option value="kesepakatan">Sesuai Kesepakatan</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field
+                  label="Nominal Komitmen (Rp)"
+                  field="nominal"
+                  value={form.nominal ? new Intl.NumberFormat("id-ID").format(Number(String(form.nominal).replace(/\D/g, ""))) : ""}
+                  onChange={(field, val) => set("nominal", val.replace(/\D/g, ""))}
+                  placeholder="Contoh: 500.000"
+                />
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Preferensi Pembayaran</label>
+                  <select
+                    value={form.metode_pembayaran}
+                    onChange={(e) => set("metode_pembayaran", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                  >
+                    <option value="potong-gaji">Potong Gaji / Payroll</option>
+                    <option value="transfer-bank">Transfer Bank</option>
+                    <option value="qris">QRIS / E-Wallet</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
 
 

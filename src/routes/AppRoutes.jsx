@@ -44,6 +44,8 @@ import LaporanKeuangan from "../pages/dashboard/LaporanKeuangan";
 import Jurnal from "../pages/dashboard/Jurnal";
 import Pengguna from "../pages/dashboard/Pengguna";
 import Pengaturan from "../pages/dashboard/Pengaturan";
+import ZakatRequests from "../pages/dashboard/ZakatRequests";
+import Tagihan from "../pages/dashboard/Tagihan";
 
 /**
  * Guard route: hanya Administrator yang boleh masuk.
@@ -200,6 +202,16 @@ export default function AppRoutes() {
           <Route
             path="muzakki-mustahik"
             element={<MuzakkiMustahik />}
+          />
+
+          <Route
+            path="zakat-requests"
+            element={<ZakatRequests />}
+          />
+
+          <Route
+            path="tagihan"
+            element={<Tagihan />}
           />
 
           <Route

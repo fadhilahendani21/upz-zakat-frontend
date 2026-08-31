@@ -33,6 +33,10 @@ export default function DashboardLayout() {
       topbarTitle = "Muzakki";
       topbarSubtitle = `Data induk muzakki (pemberi zakat) ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
       break;
+    case "/dashboard/tagihan":
+      topbarTitle = "Tagihan & Kepatuhan Zakat";
+      topbarSubtitle = "Kontrol status pembayaran zakat, tunggakan, dan pelunasan komitmen muzakki.";
+      break;
     case "/dashboard/mustahik":
       topbarTitle = "Mustahik";
       topbarSubtitle = `Data induk mustahik (penerima zakat) ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
@@ -72,6 +76,10 @@ export default function DashboardLayout() {
     case "/dashboard/pengaturan":
       topbarTitle = "Pengaturan Sistem";
       topbarSubtitle = "Konfigurasi sistem dan preferensi aplikasi.";
+      break;
+    case "/dashboard/zakat-requests":
+      topbarTitle = "Revisi Kesepakatan";
+      topbarSubtitle = "Tinjau dan kelola usulan perubahan nominal atau frekuensi zakat dari muzakki.";
       break;
     default:
       topbarTitle = "Dashboard";

@@ -20,7 +20,9 @@ import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  addNotification,
 } from "../../services/notificationService";
+import { getPendingRequestCount } from "../../services/agreementService";
 import { getProfile } from "../../services/penggunaService";
 import HelpModal from "./HelpModal";
 import NotificationModal from "./NotificationModal";
@@ -58,6 +60,7 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
   // Modals state
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showNotifModal, setShowNotifModal] = useState(false);
+  const [pendingAgreementCount, setPendingAgreementCount] = useState(0);
 
   // Refs for click-outside detection
   const notifRef   = useRef(null);
@@ -84,6 +87,33 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
       window.removeEventListener("upz_notifs_updated", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };
+  }, []);
+
+  // Polling pending agreement count setiap 60 detik
+  useEffect(() => {
+    async function fetchAgreementCount() {
+      try {
+        const res = await getPendingRequestCount();
+        const count = res?.count ?? 0;
+        setPendingAgreementCount(count);
+        // Inject notifikasi ke panel jika ada pending baru
+        if (count > 0) {
+          addNotification({
+            id: "notif-agreement-pending",
+            type: "agreement",
+            icon: "📋",
+            title: `${count} Permintaan Perubahan Kesepakatan`,
+            desc: `Terdapat ${count} permohonan perubahan kesepakatan zakat yang menunggu persetujuan.`,
+            targetUrl: "/dashboard/zakat-requests",
+            actionLabel: "Tinjau Permohonan",
+            timestamp: Date.now(),
+          });
+        }
+      } catch { /* abaikan */ }
+    }
+    fetchAgreementCount();
+    const interval = setInterval(fetchAgreementCount, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   // Update tanggal tiap 30 detik
@@ -181,9 +211,9 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
               aria-label="Notifikasi"
             >
               <Bell size={20} />
-              {unreadCount > 0 && (
+              {(unreadCount + pendingAgreementCount) > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 text-[10px] font-bold flex items-center justify-center bg-brand-600 text-white rounded-full ring-2 ring-white">
-                  {unreadCount}
+                  {unreadCount + pendingAgreementCount}
                 </span>
               )}
             </button>
