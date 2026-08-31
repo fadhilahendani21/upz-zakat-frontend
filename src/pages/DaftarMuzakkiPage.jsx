@@ -10,6 +10,7 @@ import {
   RefreshCw,
   AlertCircle,
   Building2,
+  Calendar,
 } from "lucide-react";
 import { getPublicMuzakki } from "../services/muzakkiService";
 
@@ -357,13 +358,13 @@ export default function DaftarMuzakkiPage() {
                         Nama Muzakki
                       </th>
                       <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
-                        Fakultas / Kategori
+                        Kategori &amp; Unit Kerja
                       </th>
                       <th className="px-4 py-3 text-[10px] font-semibold text-gray-500">
-                        Jenis Zakat
+                        Pekerjaan
                       </th>
                       <th className="px-4 py-3 text-[10px] font-semibold text-gray-500 text-center">
-                        Status
+                        Tanggal Terdaftar
                       </th>
                     </tr>
                   </thead>
@@ -388,7 +389,7 @@ export default function DaftarMuzakkiPage() {
                     ) : (
                       paginatedList.map((item, index) => {
                         const rowNum = (page - 1) * perPage + index + 1;
-                        const isUnsil = item.kategori === "Dosen & Staf UNSIL";
+                        const isUnsil = item.kategori === "Dosen & Staf UNSIL" || (item.unit_kerja && item.unit_kerja !== "Masyarakat Umum" && item.unit_kerja !== "Umum");
 
                         return (
                           <tr
@@ -428,14 +429,14 @@ export default function DaftarMuzakkiPage() {
                               </span>
                             </td>
 
-                            <td className="px-4 py-3 text-xs text-gray-600 font-medium">
-                              {item.jenisZakat}
+                            <td className="px-4 py-3 text-xs text-slate-600">
+                              {item.pekerjaan || "-"}
                             </td>
 
                             <td className="px-4 py-3 text-center">
-                              <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                                <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                                {item.status}
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200/60">
+                                <Calendar size={11} className="text-slate-400" />
+                                {item.tanggal_daftar || (item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-")}
                               </span>
                             </td>
                           </tr>
@@ -444,6 +445,7 @@ export default function DaftarMuzakkiPage() {
                     )}
 
                   </tbody>
+
 
                 </table>
 

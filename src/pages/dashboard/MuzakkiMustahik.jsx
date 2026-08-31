@@ -117,6 +117,11 @@ function ModalForm({ initial, onClose, onSaved }) {
     nama: initial?.nama ?? "",
     nik: initial?.nik ?? "",
     nip: initial?.nip ?? "",
+    jenis_kelamin: initial?.jenis_kelamin ?? "Laki-laki",
+    tempat_lahir: initial?.tempat_lahir ?? "",
+    tanggal_lahir: initial?.tanggal_lahir ?? "",
+    pekerjaan: initial?.pekerjaan ?? "",
+    alamat_lengkap: initial?.alamat_lengkap ?? "",
     email: initial?.email ?? "",
     no_hp: initial?.no_hp ?? "",
   });
@@ -160,10 +165,16 @@ function ModalForm({ initial, onClose, onSaved }) {
 
       const payload = {
         nama: form.nama,
-        nik: kategoriType === "umum" ? (form.nik || null) : null,
-        nip: kategoriType === "dosen_staf" ? (form.nip || null) : null,
+        nik: form.nik || null,
+        nip: form.nip || null,
+        jenis_kelamin: form.jenis_kelamin || null,
+        tempat_lahir: form.tempat_lahir || null,
+        tanggal_lahir: form.tanggal_lahir || null,
+        pekerjaan: form.pekerjaan || null,
+        alamat_lengkap: form.alamat_lengkap || null,
         email: form.email || null,
         no_hp: form.no_hp || null,
+        kategori: kategoriType === "umum" ? "Muzakki Umum" : "Dosen & Staf UNSIL",
         unit_kerja: finalUnitKerja,
       };
 
@@ -204,9 +215,51 @@ function ModalForm({ initial, onClose, onSaved }) {
 
             <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama lengkap muzakki" />
 
+            {/* Jenis Kelamin */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Jenis Kelamin</label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {["Laki-laki", "Perempuan"].map((jk) => (
+                  <button
+                    key={jk}
+                    type="button"
+                    onClick={() => set("jenis_kelamin", jk)}
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold transition ${
+                      form.jenis_kelamin === jk
+                        ? "bg-brand-50 border-brand-500 text-brand-700"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {jk}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tempat & Tanggal Lahir */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Tempat Lahir" field="tempat_lahir" value={form.tempat_lahir} onChange={set} placeholder="Contoh: Tasikmalaya" />
+              <Field label="Tanggal Lahir" field="tanggal_lahir" type="date" value={form.tanggal_lahir} onChange={set} />
+            </div>
+
+            {/* Pekerjaan */}
+            <Field label="Pekerjaan" field="pekerjaan" value={form.pekerjaan} onChange={set} placeholder="Contoh: Dosen / Wiraswasta / Karyawan" />
+
             <div className="grid grid-cols-2 gap-3">
               <Field label="Email" field="email" type="email" value={form.email} onChange={set} error={errors.email} placeholder="email@unsil.ac.id" />
               <Field label="No. HP / WA" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
+            </div>
+
+            {/* Alamat Lengkap */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Alamat Lengkap</label>
+              <textarea
+                value={form.alamat_lengkap}
+                onChange={(e) => set("alamat_lengkap", e.target.value)}
+                rows={2}
+                placeholder="Alamat domisili lengkap"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-none"
+              />
             </div>
 
             {/* Pilihan Kategori Muzakki */}
@@ -284,6 +337,7 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             )}
           </div>
+
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white rounded-b-2xl">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Batal</Button>
