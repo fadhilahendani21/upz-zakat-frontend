@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   UserRound,
@@ -30,9 +30,30 @@ import {
   hitungZakatFitrah,
   getZakatConfig,
 } from "../services/zakatService";
-import { registerPublicMuzakki } from "../services/muzakkiService";
+import { registerPublicMuzakki, getPublicMuzakki } from "../services/muzakkiService";
 
 export default function DaftarMuzakkiUmumPage() {
+  // =========================================================
+  // STATE MUZAKKI TERDAFTAR (UNTUK VALIDASI NIK DUPLIKAT)
+  // =========================================================
+  const [registeredMuzakkiList, setRegisteredMuzakkiList] = useState([]);
+
+  useEffect(() => {
+    fetchExistingMuzakki();
+  }, []);
+
+  // Fungsi untuk fetch data muzakki terdaftar
+  const fetchExistingMuzakki = async () => {
+    try {
+      const res = await getPublicMuzakki();
+      if (res && res.data) {
+        setRegisteredMuzakkiList(res.data);
+      }
+    } catch (err) {
+      console.error("Gagal memuat data muzakki:", err);
+    }
+  };
+
   // =========================================================
   // STATE DATA DIRI
   // =========================================================
@@ -122,6 +143,7 @@ export default function DaftarMuzakkiUmumPage() {
 
   const [setuju, setSetuju] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showAgreementAlert, setShowAgreementAlert] = useState(false);
   const [registeredSummary, setRegisteredSummary] = useState(null);
 
   // =========================================================
@@ -217,17 +239,11 @@ export default function DaftarMuzakkiUmumPage() {
         return;
       }
       const hasil = hitungZakatPenghasilan(penghasilan);
-      const voluntaryInfak = Math.round(penghasilan * (hasil.kadarZakatPersen / 100));
       setHasilKalkulator({
         label: "Estimasi Zakat Penghasilan",
         value: hasil.jumlahZakat,
         wajib: hasil.wajibZakat,
-        voluntary: voluntaryInfak,
-        nisabBulan: hasil.nisabBulan,
-        nisabTahun: hasil.nisab,
-        detail: hasil.wajibZakat
-          ? `Wajib zakat ${hasil.kadarZakatPersen}% per bulan karena penghasilan telah mencapai batas nisab (Nisab: Rp ${formatNominal(hasil.nisabBulan)}/bln).`
-          : `Penghasilan Anda (Rp ${formatNominal(penghasilan)}/bln) belum mencapai batas nisab zakat (Rp ${formatNominal(hasil.nisabBulan)}/bln).`,
+        detail: `Zakat penghasilan ${hasil.kadarZakatPersen}% per bulan dari Rp ${formatNominal(penghasilan)}.`,
       });
       return;
     }
@@ -271,7 +287,8 @@ export default function DaftarMuzakkiUmumPage() {
 
   const terapkanHasilKalkulator = () => {
     if (hasilKalkulator) {
-      const nominalPakai = hasilKalkulator.value > 0 ? hasilKalkulator.value : (hasilKalkulator.voluntary || 0);
+      // Hanya terapkan jika wajib zakat, atau jika ada value yang valid
+      const nominalPakai = hasilKalkulator.value;
       if (nominalPakai > 0) {
         if (jenisKalkulator === "penghasilan") {
           setZakatSelections((prev) => ({
@@ -321,8 +338,25 @@ export default function DaftarMuzakkiUmumPage() {
     if (formData.nik && formData.nik.replace(/\D/g, "").length !== 16) {
       err.nik = "NIK harus berjumlah 16 digit angka.";
     }
+
+    // Cek apakah NIK sudah terdaftar
+    if (formData.nik) {
+      const nikExists = registeredMuzakkiList.some(
+        (m) => m.nik && m.nik.replace(/\D/g, "") === formData.nik.replace(/\D/g, "")
+      );
+      if (nikExists) {
+        err.nik = `NIK ${formData.nik} sudah terdaftar sebagai Muzakki. Silakan gunakan NIK lain.`;
+      }
+    }
+
     if (!formData.no_hp.trim()) err.no_hp = "Nomor HP / WhatsApp wajib diisi.";
     if (!formData.alamat_lengkap.trim()) err.alamat_lengkap = "Alamat lengkap wajib diisi.";
+
+    // Jika ada error data diri, langsung return tanpa cek yang lain
+    if (Object.keys(err).length > 0) {
+      setErrors(err);
+      return false;
+    }
 
     const activeZakat = getActiveZakatList();
     if (activeZakat.length === 0) {
@@ -335,12 +369,20 @@ export default function DaftarMuzakkiUmumPage() {
       }
     }
 
+    // Jika ada error zakat, return tanpa cek persetujuan
+    if (Object.keys(err).length > 0) {
+      setErrors(err);
+      return false;
+    }
+
+    // Validasi persetujuan terakhir (tidak masuk ke err object)
     if (!setuju) {
-      err.setuju = "Silakan menyetujui pernyataan kesepakatan.";
+      setShowAgreementAlert(true);
+      return false;
     }
 
     setErrors(err);
-    return Object.keys(err).length === 0;
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -349,6 +391,8 @@ export default function DaftarMuzakkiUmumPage() {
 
     if (!validateForm()) {
       setFormError("Mohon lengkapi seluruh isian wajib pada formulir.");
+      // Scroll ke atas untuk melihat error
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -395,11 +439,57 @@ export default function DaftarMuzakkiUmumPage() {
       });
 
       setShowSuccessModal(true);
+
+      // Reset form setelah sukses
+      resetForm();
+
+      // Refresh data muzakki list untuk validasi duplikasi
+      await fetchExistingMuzakki();
     } catch (err) {
       setFormError(err.message || "Gagal mengirim pendaftaran. Silakan coba lagi.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Fungsi reset form
+  const resetForm = () => {
+    setFormData({
+      nama: "",
+      nik: "",
+      jenis_kelamin: "Laki-laki",
+      tempat_lahir: "",
+      tanggal_lahir: "",
+      pekerjaan: "",
+      alamat_lengkap: "",
+      email: "",
+      no_hp: "",
+    });
+    setZakatSelections({
+      penghasilan: {
+        selected: true,
+        frekuensi: "bulanan",
+        nominal: "250000",
+      },
+      maal: {
+        selected: false,
+        frekuensi: "tahunan",
+        nominal: "1500000",
+      },
+      fitrah: {
+        selected: false,
+        frekuensi: "ramadan",
+        jumlahJiwa: "3",
+        nominalPerJiwa: "45000",
+        nominal: "135000",
+      },
+    });
+    setMetodePenyaluran("transfer-bank");
+    setPilihanBank("");
+    setPilihanEwallet("");
+    setSetuju(false);
+    setErrors({});
+    setFormError("");
   };
 
   return (
@@ -910,10 +1000,9 @@ export default function DaftarMuzakkiUmumPage() {
                           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                             Frekuensi Penunaian
                           </label>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 gap-2">
                             {[
                               { id: "tahunan", label: "Tahunan (Haul)" },
-                              { id: "kesepakatan", label: "Sesuai Kesepakatan" },
                             ].map((f) => (
                               <button
                                 key={f.id}
@@ -1233,6 +1322,37 @@ export default function DaftarMuzakkiUmumPage() {
       </main>
 
       {/* =====================================================
+          MODAL ALERT PERSETUJUAN
+      ====================================================== */}
+      {showAgreementAlert && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm animate-fade-in">
+          <div
+            className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600 mb-4">
+                <AlertCircle size={36} className="stroke-[2.5]" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Persetujuan Diperlukan
+              </h3>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                Anda belum menyetujui pernyataan akad kesepakatan zakat. Silakan centang kotak persetujuan di bagian bawah formulir sebelum melanjutkan pendaftaran.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAgreementAlert(false)}
+              className="mt-6 w-full rounded-xl bg-[#08734f] py-3 text-sm font-semibold text-white hover:bg-[#065d40] transition"
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
           MODAL SUKSES PENDAFTARAN MUZAKKI UMUM
       ====================================================== */}
       {showSuccessModal && registeredSummary && (
@@ -1241,6 +1361,15 @@ export default function DaftarMuzakkiUmumPage() {
             className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* CLOSE BUTTON */}
+            <button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition"
+            >
+              <X size={18} />
+            </button>
+
             {/* ICON & TITLE */}
             <div className="text-center">
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-[#08734f] shadow-inner mb-4">
@@ -1506,10 +1635,15 @@ export default function DaftarMuzakkiUmumPage() {
                 <button
                   type="button"
                   onClick={terapkanHasilKalkulator}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#08734f] py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#065d40] transition"
+                  disabled={hasilKalkulator.value === 0}
+                  className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold shadow-xs transition ${
+                    hasilKalkulator.value === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#08734f] text-white hover:bg-[#065d40]"
+                  }`}
                 >
                   <Check size={14} />
-                  Terapkan ke Formulir (Rp {formatNominal(hasilKalkulator.value > 0 ? hasilKalkulator.value : (hasilKalkulator.voluntary || 0))})
+                  Terapkan ke Formulir (Rp {formatNominal(hasilKalkulator.value)})
                 </button>
               </div>
             )}

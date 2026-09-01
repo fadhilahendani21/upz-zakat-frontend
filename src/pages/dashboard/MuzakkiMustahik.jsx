@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import StatCard from "../../components/dashboard/StatCard";
 import { Pagination, SearchInput } from "../../components/dashboard/ui";
 import {
@@ -86,13 +87,14 @@ function parseUnitKerja(unitKerjaStr) {
   return { isDosenStaf: true, fakultas: FAKULTAS_LIST[0], jurusan: unitKerjaStr };
 }
 
-function Field({ label, field, type = "text", placeholder, value, onChange, error }) {
+function Field({ label, field, type = "text", placeholder, value, onChange, error, pattern, maxLength }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
       <input
         type={type} value={value} placeholder={placeholder}
         onChange={(e) => onChange(field, e.target.value)}
+        pattern={pattern} maxLength={maxLength}
         className={`w-full px-3 py-2.5 rounded-lg border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500
           ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
       />
@@ -122,6 +124,7 @@ function ModalForm({ initial, onClose, onSaved }) {
     tanggal_lahir: initial?.tanggal_lahir ?? "",
     pekerjaan: initial?.pekerjaan ?? "",
     alamat_lengkap: initial?.alamat_lengkap ?? "",
+    jabatan: initial?.jabatan ?? "",
     email: initial?.email ?? "",
     no_hp: initial?.no_hp ?? "",
     jenis_zakat: initial?.jenis_zakat ?? "Zakat Penghasilan",
@@ -147,11 +150,19 @@ function ModalForm({ initial, onClose, onSaved }) {
   function validate() {
     const errs = {};
     if (!form.nama.trim()) errs.nama = "Nama wajib diisi.";
+    if (!form.no_hp.trim()) errs.no_hp = "No. HP/WA wajib diisi.";
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       errs.email = "Format email tidak valid.";
+    if (!form.nik.trim()) errs.nik = "NIK wajib diisi.";
+    if (!form.jenis_kelamin) errs.jenis_kelamin = "Jenis Kelamin wajib dipilih.";
+    if (!form.alamat_lengkap.trim()) errs.alamat_lengkap = "Alamat Lengkap wajib diisi.";
+    if (form.no_hp.trim() && !/^\d{10,15}$/.test(form.no_hp.trim())) errs.no_hp = "No. HP/WA tidak valid.";
+    if (form.nik.trim() && !/^\d{16}$/.test(form.nik.trim())) errs.nik = "NIK harus 16 angka.";
     if (kategoriType === "dosen_staf") {
+      if (!form.nip.trim()) errs.nip = "NIP wajib diisi.";
+      if (form.nip.trim() && !/^\d{18}$/.test(form.nip.trim())) errs.nip = "NIP harus 18 angka.";
       if (!selectedFakultas) errs.fakultas = "Fakultas wajib dipilih.";
-      if (!selectedJurusan)  errs.jurusan = "Jurusan wajib dipilih.";
+      if (!selectedJurusan) errs.jurusan = "Jurusan wajib dipilih.";
     }
     return errs;
   }
@@ -176,6 +187,7 @@ function ModalForm({ initial, onClose, onSaved }) {
         tanggal_lahir: form.tanggal_lahir || null,
         pekerjaan: form.pekerjaan || null,
         alamat_lengkap: form.alamat_lengkap || null,
+        jabatan: form.jabatan || null,
         email: form.email || null,
         no_hp: form.no_hp || null,
         kategori: kategoriType === "umum" ? "Muzakki Umum" : "Dosen & Staf UNSIL",
@@ -221,56 +233,64 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             )}
 
-            <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama lengkap muzakki" />
-
-            {/* Jenis Kelamin */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Jenis Kelamin</label>
-              <div className="grid grid-cols-2 gap-2.5">
-                {["Laki-laki", "Perempuan"].map((jk) => (
-                  <button
-                    key={jk}
-                    type="button"
-                    onClick={() => set("jenis_kelamin", jk)}
-                    className={`px-3 py-2 rounded-xl border text-xs font-semibold transition ${
-                      form.jenis_kelamin === jk
-                        ? "bg-brand-50 border-brand-500 text-brand-700"
-                        : "border-gray-200 text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {jk}
-                  </button>
-                ))}
+            {/* ── Data Diri Muzakki ── */}
+            <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                Data Diri Muzakki
+              </h4>
+              <Field label="Nama Lengkap *" field="nama" value={form.nama} onChange={set} error={errors.nama} placeholder="Nama lengkap muzakki" />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Email" field="email" type="email" value={form.email} onChange={set} error={errors.email} placeholder="email@unsil.ac.id" />
+                <Field label="No. HP / WA *" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" pattern="[0-9]*" maxLength={15} />
               </div>
             </div>
 
-            {/* Tempat & Tanggal Lahir */}
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Tempat Lahir" field="tempat_lahir" value={form.tempat_lahir} onChange={set} placeholder="Contoh: Tasikmalaya" />
-              <Field label="Tanggal Lahir" field="tanggal_lahir" type="date" value={form.tanggal_lahir} onChange={set} />
+            {/* ── Data Diri Kepegawaian ── */}
+            <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                Data Diri Kepegawaian
+              </h4>
+              <Field label="NIK *" field="nik" value={form.nik} onChange={set} error={errors.nik} placeholder="3278011204850001" pattern="\d{16}" maxLength={16} />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Jenis Kelamin <span className="text-red-400">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {["Laki-laki", "Perempuan"].map((jk) => (
+                    <button
+                      key={jk}
+                      type="button"
+                      onClick={() => set("jenis_kelamin", jk)}
+                      className={`px-3 py-2 rounded-xl border text-xs font-semibold transition ${
+                        form.jenis_kelamin === jk
+                          ? "bg-brand-50 border-brand-500 text-brand-700"
+                          : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {jk}
+                    </button>
+                  ))}
+                </div>
+                {errors.jenis_kelamin && <p className="text-xs text-red-500 mt-1">{errors.jenis_kelamin}</p>}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Tempat Lahir" field="tempat_lahir" value={form.tempat_lahir} onChange={set} placeholder="Contoh: Tasikmalaya" />
+                <Field label="Tanggal Lahir" field="tanggal_lahir" type="date" value={form.tanggal_lahir} onChange={set} />
+              </div>
+              <Field label="Alamat Lengkap Domisili *" field="alamat_lengkap" value={form.alamat_lengkap} onChange={set} error={errors.alamat_lengkap} placeholder="Alamat domisili lengkap" />
+
+              {kategoriType === "dosen_staf" && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="NIP *" field="nip" value={form.nip} onChange={set} error={errors.nip} placeholder="198501302012121009" pattern="\d{18}" maxLength={18} />
+                    <Field label="Jabatan" field="jabatan" value={form.jabatan} onChange={set} placeholder="Contoh: Profesor / Dokter" />
+                  </div>
+                  <Field label="Pekerjaan" field="pekerjaan" value={form.pekerjaan} onChange={set} placeholder="Contoh: Dosen / Wiraswasta / Karyawan" />
+                </>
+              )}
             </div>
 
-            {/* Pekerjaan */}
-            <Field label="Pekerjaan" field="pekerjaan" value={form.pekerjaan} onChange={set} placeholder="Contoh: Dosen / Wiraswasta / Karyawan" />
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Email" field="email" type="email" value={form.email} onChange={set} error={errors.email} placeholder="email@unsil.ac.id" />
-              <Field label="No. HP / WA" field="no_hp" value={form.no_hp} onChange={set} error={errors.no_hp} placeholder="08xxxxxxxxxx" />
-            </div>
-
-            {/* Alamat Lengkap */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Alamat Lengkap</label>
-              <textarea
-                value={form.alamat_lengkap}
-                onChange={(e) => set("alamat_lengkap", e.target.value)}
-                rows={2}
-                placeholder="Alamat domisili lengkap"
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-none"
-              />
-            </div>
-
-            {/* Pilihan Kategori Muzakki */}
+            {/* ── Pilihan Kategori Muzakki ── */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori Muzakki *</label>
               <div className="grid grid-cols-2 gap-2.5">
@@ -295,19 +315,12 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             </div>
 
-            {/* Field NIP / NIK sesuai Kategori */}
-            {kategoriType === "dosen_staf" ? (
-              <Field label="NIP (Nomor Induk Pegawai)" field="nip" value={form.nip} onChange={set} error={errors.nip} placeholder="Contoh: 198501302012121009" />
-            ) : (
-              <Field label="NIK (Nomor Induk Kependudukan)" field="nik" value={form.nik} onChange={set} error={errors.nik} placeholder="Contoh: 3278011204850001" />
-            )}
-
-            {/* Fakultas & Jurusan Bertingkat (Jika Dosen / Staf) */}
+            {/* ── Fakultas & Jurusan (Dosen / Staf) ── */}
             {kategoriType === "dosen_staf" && (
               <div className="space-y-3 p-4 bg-gray-50/80 rounded-xl border border-gray-200">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    1. Pilih Fakultas *
+                    Fakultas / Unit Kerja <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
                     <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -326,7 +339,7 @@ function ModalForm({ initial, onClose, onSaved }) {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    2. Pilih Jurusan / Program Studi *
+                    Jurusan / Program Studi
                   </label>
                   <div className="relative">
                     <BookOpen size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -402,19 +415,19 @@ function ModalForm({ initial, onClose, onSaved }) {
                   </select>
                 </div>
               </div>
-            </div>
-          </div>
 
 
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white rounded-b-2xl">
+           <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white rounded-b-2xl">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Batal</Button>
             <Button type="submit" disabled={loading}>
               {loading ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah"}
             </Button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </form>
+  </div>
+</div>
   );
 }
 
@@ -589,7 +602,7 @@ export default function MuzakkiMustahik() {
                             {row.nama.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-800">{row.nama}</p>
+                            <p className="font-medium text-gray-800"><HighlightText text={row.nama} query={search} /></p>
                             <p className="text-xs text-gray-400">
                               {parsedInfo.isDosenStaf ? `NIP: ${row.nip || "-"}` : `NIK: ${row.nik || "-"}`}
                             </p>

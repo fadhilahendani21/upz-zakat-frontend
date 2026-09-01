@@ -9,6 +9,7 @@ import {
   Droplets,
   FolderHeart,
   Heart,
+  Users,
 } from "lucide-react";
 import Card from "../components/common/Card";
 import { getPublicPrograms } from "../services/programService";
@@ -96,6 +97,7 @@ export default function ProgramPage() {
             description: item.deskripsi || "Program penyaluran bantuan UPZ Unsil.",
             target: item.target_nominal || 10000000,
             collected: item.nominal_terkumpul || item.nominal_disalurkan || 0,
+            jumlah_donatur: item.jumlah_donatur || 0,
             icon: FolderHeart,
           }));
           setPrograms(mapped);
@@ -178,6 +180,15 @@ export default function ProgramPage() {
                         <span className="text-gray-500">
                           dari {formatRupiah(program.target)}
                         </span>
+                      </div>
+
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                        <Users size={12} />
+                        <span>{(program.jumlah_donatur || 0).toLocaleString("id-ID")} Donatur</span>
+                                            </div>
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                        <Heart size={12} />
+                        <span>{formatRupiah(program.nominal_terkumpul || 0) + ' Tersalurkan'}</span>
                       </div>
                     </div>
 

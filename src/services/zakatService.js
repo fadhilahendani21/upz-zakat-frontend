@@ -15,29 +15,21 @@ export function getZakatConfig() {
 }
 
 /**
- * Hitung zakat penghasilan berdasarkan harga emas acuan di pengaturan sistem
- * (Nisab setara 85 gram emas per tahun, dihitung per bulan)
+ * Hitung zakat penghasilan berdasarkan kadar zakat di pengaturan sistem
+ * Zakat penghasilan SELALU dikenakan tanpa batasan nisab
  * @param {number} penghasilanBulanan
  * @param {object} [customConfig]
- * @returns {{nisab: number, nisabBulan: number, wajibZakat: boolean, jumlahZakat: number, hargaEmas: number, kadarZakatPersen: number, nisabGramEmas: number}}
+ * @returns {{wajibZakat: boolean, jumlahZakat: number, kadarZakatPersen: number}}
  */
 export function hitungZakatPenghasilan(penghasilanBulanan, customConfig = null) {
-  const { hargaEmasPerGram, nisabGramEmas, kadarZakatPersen } = customConfig || getZakatConfig();
-  const nisab = nisabGramEmas * hargaEmasPerGram;
-  const nisabBulan = Math.round(nisab / 12);
+  const { kadarZakatPersen } = customConfig || getZakatConfig();
   const penghasilan = Number(penghasilanBulanan) || 0;
-  const penghasilanSetahun = penghasilan * 12;
-  const wajibZakat = penghasilanSetahun >= nisab;
-  const jumlahZakat = wajibZakat ? Math.round(penghasilan * (kadarZakatPersen / 100)) : 0;
+  const jumlahZakat = Math.round(penghasilan * (kadarZakatPersen / 100));
 
   return {
-    nisab,
-    nisabBulan,
-    wajibZakat,
+    wajibZakat: true,
     jumlahZakat,
-    hargaEmas: hargaEmasPerGram,
     kadarZakatPersen,
-    nisabGramEmas,
   };
 }
 

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import StatCard from "../../components/dashboard/StatCard";
 import { Pagination, SearchInput } from "../../components/dashboard/ui";
 import { formatRupiah } from "../../utils/formatRupiah";
@@ -361,7 +362,7 @@ export default function Program() {
                           <Icon size={18} />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900 text-sm leading-tight">{prog.nama}</p>
+                          <p className="font-semibold text-gray-900 text-sm leading-tight"><HighlightText text={prog.nama} query={search} /></p>
                           <p className="text-xs text-gray-400 mt-0.5">{prog.kode} · {prog.tahun}</p>
                         </div>
                       </div>
@@ -380,18 +381,27 @@ export default function Program() {
                     <div className="mb-3">
                       <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-gray-500">
-                          {formatRupiah(prog.nominal_disalurkan)} disalurkan
+                          {formatRupiah(prog.nominal_terkumpul || 0)} terkumpul
                         </span>
                         <span className="font-semibold text-brand-700">{progressPct}%</span>
                       </div>
                       <ProgressBar value={progressPct} />
-                      <p className="text-xs text-gray-400 mt-1">Target: {formatRupiah(prog.target_nominal)}</p>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500">Terakhir disalurkan: {formatRupiah(prog.nominal_disalurkan || 0)}</span>
+                        <span className="text-gray-400">Target: {formatRupiah(prog.target_nominal)}</span>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <Users size={12} />
-                        <span>{prog.jumlah_penerima.toLocaleString("id-ID")} Penerima</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5">
+                          <Users size={12} />
+                          <span>{prog.jumlah_penerima.toLocaleString("id-ID")} Penerima</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <HeartHandshake size={12} />
+                          <span>{(prog.jumlah_donatur || 0).toLocaleString("id-ID")} Donatur</span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setModalForm({ mode: "edit", data: prog })}

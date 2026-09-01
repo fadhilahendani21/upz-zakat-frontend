@@ -5,7 +5,6 @@ import {
   Search,
   ShieldCheck,
   Clock3,
-  LockKeyhole,
   Building2,
   Calculator,
   X,
@@ -46,20 +45,22 @@ export default function DaftarMuzakkiUnsilPage() {
   const [loadingRegistered, setLoadingRegistered] = useState(true);
 
   useEffect(() => {
-    async function fetchExistingMuzakki() {
-      try {
-        const res = await getPublicMuzakki();
-        if (res && res.data) {
-          setRegisteredMuzakkiList(res.data);
-        }
-      } catch (err) {
-        console.error("Gagal memuat data muzakki:", err);
-      } finally {
-        setLoadingRegistered(false);
-      }
-    }
     fetchExistingMuzakki();
   }, []);
+
+  // Fungsi untuk fetch data muzakki terdaftar
+  const fetchExistingMuzakki = async () => {
+    try {
+      const res = await getPublicMuzakki();
+      if (res && res.data) {
+        setRegisteredMuzakkiList(res.data);
+      }
+    } catch (err) {
+      console.error("Gagal memuat data muzakki:", err);
+    } finally {
+      setLoadingRegistered(false);
+    }
+  };
 
   // Set NIP & Nama yang SUDAH menjadi Muzakki
   const existingNips = new Set(
@@ -90,12 +91,17 @@ export default function DaftarMuzakkiUnsilPage() {
   const [dataPegawai, setDataPegawai] = useState({
     nama: "",
     nip: "",
+    nik: "",
     unit: "",
     jurusan: "",
     jabatan: "",
     email: "",
     noHp: "",
     golongan: "",
+    jenisKelamin: "",
+    tempatLahir: "",
+    tanggalLahir: "",
+    alamatLengkap: "",
   });
 
   // Filter daftar pegawai (HANYA YANG BELUM MENJADI MUZAKKI)
@@ -122,7 +128,14 @@ export default function DaftarMuzakkiUnsilPage() {
   });
 
   const handleSelectPegawai = (pegawai) => {
-    setDataPegawai(pegawai);
+    setDataPegawai({
+      ...pegawai,
+      nik: "",
+      jenisKelamin: "",
+      tempatLahir: "",
+      tanggalLahir: "",
+      alamatLengkap: "",
+    });
     setDataDitemukan(true);
     setSearchQuery(`${pegawai.nama} (${pegawai.nip})`);
     setIsOpenDropdown(false);
@@ -133,12 +146,17 @@ export default function DaftarMuzakkiUnsilPage() {
     setDataPegawai({
       nama: "",
       nip: "",
+      nik: "",
       unit: "",
       jurusan: "",
       jabatan: "",
       email: "",
       noHp: "",
       golongan: "",
+      jenisKelamin: "",
+      tempatLahir: "",
+      tanggalLahir: "",
+      alamatLengkap: "",
     });
     setDataDitemukan(false);
     setSearchQuery("");
@@ -221,6 +239,7 @@ export default function DaftarMuzakkiUnsilPage() {
 
   const [setuju, setSetuju] = useState(false);
   const [formError, setFormError] = useState("");
+  const [showAgreementAlert, setShowAgreementAlert] = useState(false);
 
   // =========================================================
   // STATE SUCCESS MODAL
@@ -322,17 +341,11 @@ export default function DaftarMuzakkiUnsilPage() {
         return;
       }
       const hasil = hitungZakatPenghasilan(penghasilan);
-      const voluntaryInfak = Math.round(penghasilan * (hasil.kadarZakatPersen / 100));
       setHasilKalkulator({
         label: "Estimasi Zakat Penghasilan",
         value: hasil.jumlahZakat,
         wajib: hasil.wajibZakat,
-        voluntary: voluntaryInfak,
-        nisabBulan: hasil.nisabBulan,
-        nisabTahun: hasil.nisab,
-        detail: hasil.wajibZakat
-          ? `Wajib zakat ${hasil.kadarZakatPersen}% per bulan karena penghasilan telah mencapai batas nisab (Nisab: Rp ${formatNominal(hasil.nisabBulan)}/bln).`
-          : `Penghasilan Anda (Rp ${formatNominal(penghasilan)}/bln) belum mencapai batas nisab zakat (Rp ${formatNominal(hasil.nisabBulan)}/bln).`,
+        detail: `Zakat penghasilan ${hasil.kadarZakatPersen}% per bulan dari Rp ${formatNominal(penghasilan)}.`,
       });
       return;
     }
@@ -376,7 +389,8 @@ export default function DaftarMuzakkiUnsilPage() {
 
   const terapkanHasilKalkulator = () => {
     if (hasilKalkulator) {
-      const nominalPakai = hasilKalkulator.value > 0 ? hasilKalkulator.value : (hasilKalkulator.voluntary || 0);
+      // Hanya terapkan jika wajib zakat, atau jika ada value yang valid
+      const nominalPakai = hasilKalkulator.value;
       if (nominalPakai > 0) {
         if (jenisKalkulator === "penghasilan") {
           setZakatSelections((prev) => ({
@@ -423,27 +437,83 @@ export default function DaftarMuzakkiUnsilPage() {
     e.preventDefault();
     setFormError("");
 
-    if (!dataDitemukan) {
-      setFormError("Silakan cari dan pilih data pegawai kepegawaian terlebih dahulu.");
+    // Prioritas 1: Validasi data pegawai wajib
+    if (!dataPegawai.nama.trim()) {
+      setFormError("Nama lengkap wajib diisi.");
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+    if (!dataPegawai.nik.trim()) {
+      setFormError("NIK wajib diisi.");
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+    if (!dataPegawai.nip.trim()) {
+      setFormError("NIP wajib diisi.");
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+    if (!dataPegawai.jenisKelamin) {
+      setFormError("Jenis Kelamin wajib dipilih.");
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+    if (!dataPegawai.alamatLengkap.trim()) {
+      setFormError("Alamat Lengkap Domisili wajib diisi.");
       window.scrollTo({ top: 200, behavior: "smooth" });
       return;
     }
 
+    // Cek apakah NIP sudah terdaftar
+    const nipExists = registeredMuzakkiList.some(
+      (m) => m.nip && m.nip.replace(/\D/g, "") === dataPegawai.nip.replace(/\D/g, "")
+    );
+    if (nipExists) {
+      setFormError(`NIP ${dataPegawai.nip} sudah terdaftar sebagai Muzakki. Silakan gunakan NIP lain.`);
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+
+    // Cek apakah sudah pernah daftar dengan NIK (sebagai Muzakki Umum)
+    const namaExists = registeredMuzakkiList.some(
+      (m) => m.nama && m.nama.toLowerCase().trim() === dataPegawai.nama.toLowerCase().trim()
+    );
+    if (namaExists) {
+      setFormError(`Nama "${dataPegawai.nama}" sudah terdaftar sebagai Muzakki. Jika Anda sudah terdaftar sebelumnya, tidak perlu mendaftar ulang.`);
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+
+    if (!dataPegawai.unit.trim()) {
+      setFormError("Fakultas / Unit Kerja wajib diisi.");
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+    if (!dataPegawai.jabatan.trim()) {
+      setFormError("Jabatan wajib diisi.");
+      window.scrollTo({ top: 200, behavior: "smooth" });
+      return;
+    }
+
+    // Prioritas 2: Validasi kesepakatan zakat
     const activeZakat = getActiveZakatList();
     if (activeZakat.length === 0) {
       setFormError("Silakan pilih minimal 1 jenis zakat yang ingin disepakati.");
+      window.scrollTo({ top: 400, behavior: "smooth" });
       return;
     }
 
     for (const z of activeZakat) {
       if (!z.nominal || z.nominal < 10000) {
         setFormError(`Nominal untuk ${z.jenis} minimal Rp10.000.`);
+        window.scrollTo({ top: 400, behavior: "smooth" });
         return;
       }
     }
 
+    // Prioritas 3: Validasi persetujuan (terakhir)
     if (!setuju) {
-      setFormError("Silakan centang persetujuan akad kesepakatan terlebih dahulu.");
+      setShowAgreementAlert(true);
       return;
     }
 
@@ -454,10 +524,15 @@ export default function DaftarMuzakkiUnsilPage() {
 
       const payload = {
         nama: dataPegawai.nama,
+        nik: dataPegawai.nik,
         nip: dataPegawai.nip,
         kategori: "Dosen & Staf UNSIL",
         pekerjaan: dataPegawai.jabatan || "Dosen / Tenaga Kependidikan",
         unit_kerja: `${dataPegawai.unit}${dataPegawai.jurusan ? ` · ${dataPegawai.jurusan}` : ""}`,
+        jenis_kelamin: dataPegawai.jenisKelamin,
+        tempat_lahir: dataPegawai.tempatLahir,
+        tanggal_lahir: dataPegawai.tanggalLahir,
+        alamat_lengkap: dataPegawai.alamatLengkap,
         email: dataPegawai.email || null,
         no_hp: dataPegawai.noHp || null,
         jenis_zakat: jenisJoined,
@@ -484,11 +559,62 @@ export default function DaftarMuzakkiUnsilPage() {
       });
 
       setShowSuccessModal(true);
+
+      // Reset form setelah sukses
+      resetForm();
+
+      // Refresh data muzakki list untuk update dropdown pencarian
+      await fetchExistingMuzakki();
     } catch (err) {
       setFormError(err.message || "Gagal mengirim pendaftaran. Silakan coba lagi.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Fungsi reset form
+  const resetForm = () => {
+    setSearchQuery("");
+    setDataDitemukan(false);
+    setDataPegawai({
+      nama: "",
+      nip: "",
+      nik: "",
+      unit: "",
+      jurusan: "",
+      jabatan: "",
+      email: "",
+      noHp: "",
+      golongan: "",
+      jenisKelamin: "",
+      tempatLahir: "",
+      tanggalLahir: "",
+      alamatLengkap: "",
+    });
+    setZakatSelections({
+      penghasilan: {
+        selected: true,
+        frekuensi: "bulanan",
+        nominal: "250000",
+      },
+      maal: {
+        selected: false,
+        frekuensi: "tahunan",
+        nominal: "1500000",
+      },
+      fitrah: {
+        selected: false,
+        frekuensi: "ramadan",
+        jumlahJiwa: "3",
+        nominalPerJiwa: "45000",
+        nominal: "135000",
+      },
+    });
+    setMetodePenyaluran("potong-gaji");
+    setPilihanBank("");
+    setPilihanEwallet("");
+    setSetuju(false);
+    setFormError("");
   };
 
   return (
@@ -539,7 +665,7 @@ export default function DaftarMuzakkiUnsilPage() {
                 Pendaftaran Khusus Dosen &amp; Staff UNSIL
               </h2>
               <p className="mt-3 text-xs sm:text-sm leading-relaxed text-slate-600 text-left">
-                Formulir ini khusus untuk Dosen dan Staff Universitas Siliwangi. Data Anda akan diambil otomatis dari sistem kepegawaian universitas.
+                Formulir ini khusus untuk Dosen dan Staff Universitas Siliwangi. Anda dapat mencari data dari sistem kepegawaian atau mengisi data secara manual.
               </p>
 
               {/* 3 BULLET POINTS */}
@@ -550,10 +676,10 @@ export default function DaftarMuzakkiUnsilPage() {
                   </div>
                   <div>
                     <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
-                      Data Terverifikasi
+                      Data Fleksibel
                     </h3>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
-                      Data diambil langsung dari sistem kepegawaian UNSIL.
+                      Cari dari sistem atau isi manual - semua data bisa diedit.
                     </p>
                   </div>
                 </div>
@@ -574,7 +700,7 @@ export default function DaftarMuzakkiUnsilPage() {
 
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-50 text-[#08734f]">
-                    <LockKeyhole size={18} />
+                    <ShieldCheck size={18} />
                   </div>
                   <div>
                     <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
@@ -760,22 +886,186 @@ export default function DaftarMuzakkiUnsilPage() {
               <div className="border-t border-slate-100" />
 
               {/* =================================================
-                  2. DATA DIRI OTOMATIS
+                  2. DATA DIRI KEPGAWAIAN
               ================================================== */}
               <div>
                 <SectionTitle
                   number="2."
-                  icon={<Building2 size={21} />}
-                  title="Data Diri Kepegawaian (Otomatis dari Sistem)"
+                  icon={<UserRound size={21} />}
+                  title="Data Diri Kepegawaian"
                 />
+                <p className="mt-1 text-xs text-slate-500">
+                  Isi data kepegawaian Anda. Data akan terisi otomatis jika memilih dari pencarian NIP/Nama di atas.
+                </p>
 
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  <ReadOnlyInput label="Nama Lengkap" value={dataDitemukan ? dataPegawai.nama : "-"} />
-                  <ReadOnlyInput label="NIP" value={dataDitemukan ? dataPegawai.nip : "-"} />
-                  <ReadOnlyInput label="Fakultas / Unit Kerja" value={dataDitemukan ? dataPegawai.unit : "-"} />
-                  <ReadOnlyInput label="Jurusan / Program Studi" value={dataDitemukan ? dataPegawai.jurusan || "-" : "-"} />
-                  <ReadOnlyInput label="Jabatan & Golongan" value={dataDitemukan ? `${dataPegawai.jabatan} ${dataPegawai.golongan ? `(${dataPegawai.golongan})` : ""}` : "-"} />
-                  <ReadOnlyInput label="Email Universitas Siliwangi" value={dataDitemukan ? dataPegawai.email || "-" : "-"} />
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {/* NAMA LENGKAP */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Nama Lengkap <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={dataPegawai.nama}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, nama: e.target.value })}
+                      placeholder="Contoh: Dr. Budi Santoso, M.Kom."
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* NIP */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      NIP <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={dataPegawai.nip}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, nip: e.target.value })}
+                      placeholder="Contoh: 197503122001121001"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* NIK */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      NIK (Nomor Induk Kependudukan - 16 Digit) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={16}
+                      value={dataPegawai.nik}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, nik: e.target.value.replace(/\D/g, "") })}
+                      placeholder="3278xxxxxxxxxxxx"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* FAKULTAS / UNIT KERJA */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Fakultas / Unit Kerja <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={dataPegawai.unit}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, unit: e.target.value })}
+                      placeholder="Contoh: Fakultas Teknik"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* JURUSAN / PROGRAM STUDI */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Jurusan / Program Studi</label>
+                    <input
+                      type="text"
+                      value={dataPegawai.jurusan || ""}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, jurusan: e.target.value })}
+                      placeholder="Contoh: Teknik Informatika (opsional)"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* JABATAN */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Jabatan <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={dataPegawai.jabatan}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, jabatan: e.target.value })}
+                      placeholder="Contoh: Dosen / Lektor Kepala"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* JENIS KELAMIN */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Jenis Kelamin <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["Laki-laki", "Perempuan"].map((jk) => (
+                        <button
+                          key={jk}
+                          type="button"
+                          onClick={() => setDataPegawai({ ...dataPegawai, jenisKelamin: jk })}
+                          className={`h-11 rounded-xl border text-xs font-semibold transition ${
+                            dataPegawai.jenisKelamin === jk
+                              ? "bg-[#08734f] text-white border-[#08734f]"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                          }`}
+                        >
+                          {jk}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* TEMPAT & TANGGAL LAHIR */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Tempat Lahir</label>
+                    <input
+                      type="text"
+                      value={dataPegawai.tempatLahir}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, tempatLahir: e.target.value })}
+                      placeholder="Contoh: Tasikmalaya"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Tanggal Lahir</label>
+                    <input
+                      type="date"
+                      value={dataPegawai.tanggalLahir}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, tanggalLahir: e.target.value })}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* ALAMAT LENGKAP */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Alamat Lengkap Domisili <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={dataPegawai.alamatLengkap}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, alamatLengkap: e.target.value })}
+                      placeholder="Contoh: Jl. Siliwangi No. 24, Kec. Tawang, Kota Tasikmalaya"
+                      className="w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm outline-none focus:border-[#08734f] resize-none"
+                    />
+                  </div>
+
+                  {/* EMAIL */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email <span className="text-red-500">*</span></label>
+                    <input
+                      type="email"
+                      value={dataPegawai.email || ""}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, email: e.target.value })}
+                      placeholder="email@domain.com"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* NO HP */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Nomor WhatsApp / HP <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={dataPegawai.noHp || ""}
+                      onChange={(e) => setDataPegawai({ ...dataPegawai, noHp: e.target.value })}
+                      placeholder="08xxxxxxxxxx"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -984,10 +1274,9 @@ export default function DaftarMuzakkiUnsilPage() {
                           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                             Frekuensi Penunaian
                           </label>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 gap-2">
                             {[
                               { id: "tahunan", label: "Tahunan (Haul)" },
-                              { id: "kesepakatan", label: "Sesuai Kesepakatan" },
                             ].map((f) => (
                               <button
                                 key={f.id}
@@ -1295,7 +1584,7 @@ export default function DaftarMuzakkiUnsilPage() {
                 </button>
 
                 <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
-                  <LockKeyhole size={13} />
+                  <ShieldCheck size={13} />
                   <span>Data Anda aman dan akan digunakan sesuai kebijakan UPZ Zakat UNSIL.</span>
                 </div>
               </div>
@@ -1303,6 +1592,37 @@ export default function DaftarMuzakkiUnsilPage() {
           </div>
         </div>
       </main>
+
+      {/* =====================================================
+          MODAL ALERT PERSETUJUAN
+      ====================================================== */}
+      {showAgreementAlert && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm animate-fade-in">
+          <div
+            className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600 mb-4">
+                <AlertCircle size={36} className="stroke-[2.5]" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Persetujuan Diperlukan
+              </h3>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                Anda belum menyetujui pernyataan akad kesepakatan zakat. Silakan centang kotak persetujuan di bagian bawah formulir sebelum melanjutkan pendaftaran.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAgreementAlert(false)}
+              className="mt-6 w-full rounded-xl bg-[#08734f] py-3 text-sm font-semibold text-white hover:bg-[#065d40] transition"
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* =====================================================
           MODAL SUKSES PENDAFTARAN MUZAKKI
@@ -1313,6 +1633,15 @@ export default function DaftarMuzakkiUnsilPage() {
             className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* CLOSE BUTTON */}
+            <button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition"
+            >
+              <X size={18} />
+            </button>
+
             {/* ICON & TITLE */}
             <div className="text-center">
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-[#08734f] shadow-inner mb-4">
@@ -1576,10 +1905,15 @@ export default function DaftarMuzakkiUnsilPage() {
                 <button
                   type="button"
                   onClick={terapkanHasilKalkulator}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#08734f] py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#065d40] transition"
+                  disabled={hasilKalkulator.value === 0}
+                  className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold shadow-xs transition ${
+                    hasilKalkulator.value === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#08734f] text-white hover:bg-[#065d40]"
+                  }`}
                 >
                   <Check size={14} />
-                  Terapkan ke Formulir (Rp {formatNominal(hasilKalkulator.value > 0 ? hasilKalkulator.value : (hasilKalkulator.voluntary || 0))})
+                  Terapkan ke Formulir (Rp {formatNominal(hasilKalkulator.value)})
                 </button>
               </div>
             )}
@@ -1609,23 +1943,6 @@ function SectionTitle({ number, icon, title }) {
       <h2 className="text-sm sm:text-base font-bold text-[#08734f]">
         {number} {title}
       </h2>
-    </div>
-  );
-}
-
-function ReadOnlyInput({ label, value }) {
-  return (
-    <div>
-      <label className="mb-1 block text-xs font-medium text-gray-500">{label}</label>
-      <div className="relative">
-        <input
-          type="text"
-          value={value}
-          readOnly
-          className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pr-8 text-xs font-medium text-slate-700 outline-none"
-        />
-        <LockKeyhole size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-      </div>
     </div>
   );
 }

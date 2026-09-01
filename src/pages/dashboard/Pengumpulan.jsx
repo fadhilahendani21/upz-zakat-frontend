@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import Combobox from "../../components/common/Combobox";
 import StatCard from "../../components/dashboard/StatCard";
 import ConfirmModal from "../../components/common/ConfirmModal";
@@ -383,7 +384,7 @@ export default function Pengumpulan() {
                 data.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-5 py-3.5 font-mono text-xs text-gray-500">{row.kode}</td>
-                    <td className="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">{row.nama}</td>
+                    <td className="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap"><HighlightText text={row.nama} query={search} /></td>
                     <td className="px-5 py-3.5">
                       <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${KATEGORI_BADGE[row.kategori] ?? "bg-gray-100 text-gray-600"}`}>
                         {row.kategori}

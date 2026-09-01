@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import StatCard from "../../components/dashboard/StatCard";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import TipTapEditor from "../../components/common/TipTapEditor";
@@ -712,9 +713,9 @@ export default function BeritaAdmin() {
                       <div className="flex items-center gap-3">
                         <BeritaThumbnail src={item.gambar} alt={item.judul} />
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-gray-800 line-clamp-1">
-                            {item.judul}
-                          </p>
+<p className="font-medium text-gray-800 line-clamp-1">
+                                <HighlightText text={item.judul} query={search} />
+                            </p>
                           <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">
                             {item.ringkasan || "Tidak ada ringkasan"}
                           </p>

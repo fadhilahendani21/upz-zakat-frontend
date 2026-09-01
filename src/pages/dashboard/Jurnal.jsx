@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import StatCard from "../../components/dashboard/StatCard";
 import {
   Pagination,
@@ -658,7 +659,7 @@ export default function Jurnal() {
                     </td>
                     <td className="px-5 py-3.5">
                       <div>
-                        <p className="font-semibold text-gray-900 text-sm">{row.nama_akun}</p>
+                        <p className="font-semibold text-gray-900 text-sm"><HighlightText text={row.nama_akun} query={search} /></p>
                         <div className="flex items-center gap-2 mt-0.5">
                           {row.kode_akun && (
                             <span className="font-mono text-[11px] text-gray-400">

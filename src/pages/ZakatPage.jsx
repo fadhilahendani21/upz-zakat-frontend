@@ -298,17 +298,11 @@ export default function ZakatPage() {
         return;
       }
       const hasil = hitungZakatPenghasilan(penghasilan);
-      const voluntaryInfak = Math.round(penghasilan * (hasil.kadarZakatPersen / 100));
       setHasilKalkulator({
         label: "Estimasi Zakat Penghasilan",
         value: hasil.jumlahZakat,
         wajib: hasil.wajibZakat,
-        voluntary: voluntaryInfak,
-        nisabBulan: hasil.nisabBulan,
-        nisabTahun: hasil.nisab,
-        detail: hasil.wajibZakat
-          ? `Wajib zakat ${hasil.kadarZakatPersen}% per bulan karena penghasilan telah mencapai batas nisab (Nisab: Rp ${new Intl.NumberFormat("id-ID").format(hasil.nisabBulan)}/bln).`
-          : `Penghasilan Anda (Rp ${new Intl.NumberFormat("id-ID").format(penghasilan)}/bln) belum mencapai batas nisab zakat (Rp ${new Intl.NumberFormat("id-ID").format(hasil.nisabBulan)}/bln). Anda tetap dapat berinfaq/sedekah sukarela senilai Rp ${new Intl.NumberFormat("id-ID").format(voluntaryInfak)}.`,
+        detail: `Zakat penghasilan ${hasil.kadarZakatPersen}% per bulan dari Rp ${new Intl.NumberFormat("id-ID").format(penghasilan)}.`,
       });
       return;
     }
@@ -388,7 +382,9 @@ export default function ZakatPage() {
 
   const terapkanHasilKalkulator = () => {
     if (!hasilKalkulator) return;
-    const val = hasilKalkulator.value > 0 ? hasilKalkulator.value : (hasilKalkulator.voluntary || 50000);
+    // Hanya terapkan jika wajib zakat, atau jika ada value yang valid
+    const val = hasilKalkulator.value;
+    if (val === 0) return;
     if (jenisKalkulator === "penghasilan") {
       setManualZakat((prev) => ({
         ...prev,
@@ -1889,10 +1885,15 @@ export default function ZakatPage() {
                 <button
                   type="button"
                   onClick={terapkanHasilKalkulator}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#08734f] py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#065d40] transition"
+                  disabled={hasilKalkulator.value === 0}
+                  className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold shadow-xs transition ${
+                    hasilKalkulator.value === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#08734f] text-white hover:bg-[#065d40]"
+                  }`}
                 >
                   <Check size={14} />
-                  Terapkan ke Formulir (Rp {new Intl.NumberFormat("id-ID").format(hasilKalkulator.value > 0 ? hasilKalkulator.value : (hasilKalkulator.voluntary || 0))})
+                  Terapkan ke Formulir (Rp {new Intl.NumberFormat("id-ID").format(hasilKalkulator.value)})
                 </button>
               </div>
             )}

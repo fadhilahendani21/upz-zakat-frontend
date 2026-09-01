@@ -462,17 +462,17 @@ export default function DaftarMuzakkiPage() {
                       type="button"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                      className="rounded-md border border-slate-200 bg-white px-2.5 py-1 font-medium transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      Sebelumnya
+                      &lt;
                     </button>
                     <button
                       type="button"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                      className="rounded-md border border-slate-200 bg-white px-2.5 py-1 font-medium transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      Selanjutnya
+                      &gt;
                     </button>
                   </div>
                 </div>
@@ -495,4 +495,4 @@ export default function DaftarMuzakkiPage() {
 
     </div>
   );
-}
+}

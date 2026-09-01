@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import StatCard from "../../components/dashboard/StatCard";
 import {
   Pagination,
@@ -469,7 +470,7 @@ export default function Tagihan() {
                           {row.nama.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-800">{row.nama}</p>
+                          <p className="font-medium text-gray-800"><HighlightText text={row.nama} query={search} /></p>
                           <p className="text-xs text-gray-400 font-mono">
                             {row.nip ? `NIP: ${row.nip}` : row.nik ? `NIK: ${row.nik}` : "—"}
                           </p>

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import { inputCls } from "../../components/dashboard/ui";
 import {
   getProfile,
@@ -347,7 +348,7 @@ function TabManajemenPengguna({ currentUserId }) {
                             {u.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{u.name}</p>
+                            <p className="font-medium text-gray-900"><HighlightText text={u.name} query={search} /></p>
                             {isSelf && (
                               <span className="text-[10px] text-brand-600 font-semibold">● Akun Anda</span>
                             )}

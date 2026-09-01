@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import HighlightText from "../../components/common/HighlightText";
 import Combobox from "../../components/common/Combobox";
 import StatCard from "../../components/dashboard/StatCard";
 import ConfirmModal from "../../components/common/ConfirmModal";
@@ -394,7 +395,7 @@ export default function Penyaluran() {
                 data.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-5 py-3.5 font-mono text-xs text-gray-500">{row.kode}</td>
-                    <td className="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">{row.nama}</td>
+                    <td className="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap"><HighlightText text={row.nama} query={search} /></td>
                     <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium">
                         {row.program || "—"}

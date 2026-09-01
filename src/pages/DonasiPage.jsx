@@ -81,10 +81,10 @@ export default function DonasiPage() {
   );
 
   const [nominalCustom, setNominalCustom] = useState(
-    location.state?.nominal
-      ? String(location.state.nominal)
-      : ""
-  );
+      location.state?.nominal
+        ? Number(location.state.nominal).toLocaleString("id-ID")
+        : ""
+    );
 
   const [metodeId, setMetodeId] = useState(
     metodePembayaran[0]?.id || ""
@@ -171,11 +171,15 @@ export default function DonasiPage() {
   }
 
   function handleNominalCustomChange(e) {
-    const raw = e.target.value.replace(/[^0-9]/g, "");
+      // Get only digits from input
+      const raw = e.target.value.replace(/[^0-9]/g, "");
 
-    setNominalCustom(raw);
-    setNominal(raw ? Number(raw) : 0);
-  }
+      // Format with Indonesian thousand separator for display
+      const formatted = raw ? Number(raw).toLocaleString("id-ID") : "";
+
+      setNominalCustom(formatted);
+      setNominal(raw ? Number(raw) : 0);
+    }
 
   // ======================================================
   // DATA DIRI
@@ -620,16 +624,21 @@ export default function DonasiPage() {
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-gray-100 w-full">
+                        <span className="text-[11px] text-gray-500 block mb-1.5 text-left">
+                          Terkumpul:{" "}
+                          <strong className="text-brand-700 font-semibold">
+                            {formatRupiah(collected)}
+                          </strong>
+                        </span>
                         <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden mb-1.5">
                           <div
                             className="h-full bg-brand-500 rounded-full transition-all duration-500"
                             style={{ width: `${percent}%` }}
                           />
                         </div>
-
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-gray-500">
-                            Terkumpul: <strong className="text-brand-700 font-semibold">{formatRupiah(collected)}</strong>
+                            Donatur: {prog.jumlah_donatur || 0}
                           </span>
                           <span className="text-gray-400">
                             Target: {formatRupiah(target)}
