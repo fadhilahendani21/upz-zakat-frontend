@@ -12,6 +12,7 @@ import {
   Loader2,
   WalletCards,
   Landmark,
+  ScanLine,
   Sprout,
   ClipboardCheck,
   Check,
@@ -88,12 +89,12 @@ export default function DaftarMuzakkiUmumPage() {
   const [zakatSelections, setZakatSelections] = useState({
     penghasilan: {
       selected: true,
-      frekuensi: "bulanan", // "bulanan" | "tahunan" | "kesepakatan"
+      frekuensi: "bulanan", // "bulanan" | "tahunan"
       nominal: "250000",
     },
     maal: {
       selected: false,
-      frekuensi: "tahunan", // "tahunan" | "kesepakatan"
+      frekuensi: "tahunan", // "tahunan"
       nominal: "1500000",
     },
     fitrah: {
@@ -130,10 +131,10 @@ export default function DaftarMuzakkiUmumPage() {
   };
 
   // =========================================================
-  // PREFERENSI PENYALURAN (HANYA TRANSFER BANK & E-WALLET)
+  // PREFERENSI PENYALURAN (TRANSFER BANK, E-WALLET, DAN QRIS)
   // =========================================================
 
-  const [metodePenyaluran, setMetodePenyaluran] = useState("transfer-bank"); // "transfer-bank" | "e-wallet"
+  const [metodePenyaluran, setMetodePenyaluran] = useState("transfer-bank"); // "transfer-bank" | "e-wallet" | "qris"
   const [pilihanBank, setPilihanBank] = useState("BSI");
   const [pilihanEwallet, setPilihanEwallet] = useState("QRIS");
 
@@ -185,7 +186,7 @@ export default function DaftarMuzakkiUmumPage() {
         jenis: "Zakat Penghasilan",
         frekuensi: zakatSelections.penghasilan.frekuensi,
         nominal: Number(String(zakatSelections.penghasilan.nominal || 0).replace(/\D/g, "")),
-        detail: `${zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : zakatSelections.penghasilan.frekuensi === "tahunan" ? "Per tahun" : "Sesuai kesepakatan"}`,
+        detail: `${zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : "Per tahun"}`,
       });
     }
     if (zakatSelections.maal.selected) {
@@ -420,7 +421,8 @@ export default function DaftarMuzakkiUmumPage() {
         nominal: totalNominal,
         metode_pembayaran: metodePenyaluran,
         pilihan_bank: metodePenyaluran === "transfer-bank" ? pilihanBank : null,
-        pilihan_ewallet: metodePenyaluran === "e-wallet" ? pilihanEwallet : null,
+        pilihan_ewallet:
+          metodePenyaluran === "e-wallet" || metodePenyaluran === "qris" ? pilihanEwallet : null,
         kesepakatan_zakat: activeZakat,
       };
 
@@ -664,7 +666,20 @@ export default function DaftarMuzakkiUmumPage() {
                     {errors.nama && <p className="mt-1 text-[11px] text-red-500">{errors.nama}</p>}
                   </div>
 
-                  {/* NIK */}
+                  {/* NIP (OPSIONAL) & NIK */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      NIP <span className="text-slate-400 font-normal">(Opsional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nip || ""}
+                      onChange={(e) => handleInputChange("nip", e.target.value.replace(/\D/g, ""))}
+                      placeholder="Contoh: 197503122001112001"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       NIK (Nomor Induk Kependudukan - 16 Digit) <span className="text-red-500">*</span>
@@ -680,29 +695,6 @@ export default function DaftarMuzakkiUmumPage() {
                       }`}
                     />
                     {errors.nik && <p className="mt-1 text-[11px] text-red-500">{errors.nik}</p>}
-                  </div>
-
-                  {/* JENIS KELAMIN */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Jenis Kelamin <span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {["Laki-laki", "Perempuan"].map((jk) => (
-                        <button
-                          key={jk}
-                          type="button"
-                          onClick={() => handleInputChange("jenis_kelamin", jk)}
-                          className={`h-11 rounded-xl border text-xs font-semibold transition ${
-                            formData.jenis_kelamin === jk
-                              ? "bg-[#08734f] text-white border-[#08734f]"
-                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
-                          }`}
-                        >
-                          {jk}
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   {/* TEMPAT & TANGGAL LAHIR */}
@@ -727,7 +719,7 @@ export default function DaftarMuzakkiUmumPage() {
                     />
                   </div>
 
-                  {/* PEKERJAAN */}
+                  {/* PEKERJAAN & JENIS KELAMIN */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">Pekerjaan / Profesi</label>
                     <input
@@ -739,33 +731,26 @@ export default function DaftarMuzakkiUmumPage() {
                     />
                   </div>
 
-                  {/* NO HP */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Nomor WhatsApp / HP <span className="text-red-500">*</span>
+                      Jenis Kelamin <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={formData.no_hp}
-                      onChange={(e) => handleInputChange("no_hp", e.target.value)}
-                      placeholder="08xxxxxxxxxx"
-                      className={`h-11 w-full rounded-xl border px-3.5 text-xs sm:text-sm outline-none transition ${
-                        errors.no_hp ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#08734f]"
-                      }`}
-                    />
-                    {errors.no_hp && <p className="mt-1 text-[11px] text-red-500">{errors.no_hp}</p>}
-                  </div>
-
-                  {/* EMAIL */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email (Opsional)</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      placeholder="email@domain.com"
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      {["Laki-laki", "Perempuan"].map((jk) => (
+                        <button
+                          key={jk}
+                          type="button"
+                          onClick={() => handleInputChange("jenis_kelamin", jk)}
+                          className={`h-11 rounded-xl border text-xs font-semibold transition ${
+                            formData.jenis_kelamin === jk
+                              ? "bg-[#08734f] text-white border-[#08734f]"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                          }`}
+                        >
+                          {jk}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* ALAMAT LENGKAP */}
@@ -785,6 +770,35 @@ export default function DaftarMuzakkiUmumPage() {
                     {errors.alamat_lengkap && (
                       <p className="mt-1 text-[11px] text-red-500">{errors.alamat_lengkap}</p>
                     )}
+                  </div>
+
+                  {/* EMAIL */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email (Opsional)</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder="email@domain.com"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                    />
+                  </div>
+
+                  {/* NO HP */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Nomor WhatsApp / HP <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.no_hp}
+                      onChange={(e) => handleInputChange("no_hp", e.target.value)}
+                      placeholder="08xxxxxxxxxx"
+                      className={`h-11 w-full rounded-xl border px-3.5 text-xs sm:text-sm outline-none transition ${
+                        errors.no_hp ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#08734f]"
+                      }`}
+                    />
+                    {errors.no_hp && <p className="mt-1 text-[11px] text-red-500">{errors.no_hp}</p>}
                   </div>
                 </div>
               </div>
@@ -927,11 +941,10 @@ export default function DaftarMuzakkiUmumPage() {
                           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                             Frekuensi Penunaian
                           </label>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             {[
                               { id: "bulanan", label: "Bulanan" },
                               { id: "tahunan", label: "Tahunan" },
-                              { id: "kesepakatan", label: "Sesuai Akad" },
                             ].map((f) => (
                               <button
                                 key={f.id}
@@ -1142,7 +1155,7 @@ export default function DaftarMuzakkiUmumPage() {
               <div className="border-t border-slate-100" />
 
               {/* =================================================
-                  3. PREFERENSI PENYALURAN (TRANSFER BANK & E-WALLET)
+                  3. PREFERENSI PENYALURAN (TRANSFER BANK, E-WALLET, DAN QRIS)
               ================================================== */}
               <div>
                 <SectionTitle
@@ -1154,8 +1167,8 @@ export default function DaftarMuzakkiUmumPage() {
                   Pilih metode pembayaran yang paling nyaman untuk Anda.
                 </p>
 
-                {/* DUA PILIHAN: TRANSFER BANK & E-WALLET */}
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {/* TIGA PILIHAN: TRANSFER BANK, E-WALLET, DAN QRIS */}
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
                     {
                       id: "transfer-bank",
@@ -1165,9 +1178,15 @@ export default function DaftarMuzakkiUmumPage() {
                     },
                     {
                       id: "e-wallet",
-                      nama: "E-Wallet / QRIS",
-                      desc: "Scan QRIS atau bayar via dompet digital (GoPay/OVO/DANA/ShopeePay).",
+                      nama: "E-Wallet",
+                      desc: "Bayar via dompet digital (GoPay/OVO/DANA/ShopeePay).",
                       icon: WalletCards,
+                    },
+                    {
+                      id: "qris",
+                      nama: "QRIS",
+                      desc: "Scan QRIS resmi UPZ UNSIL melalui e-wallet apa pun.",
+                      icon: ScanLine,
                     },
                   ].map((m) => {
                     const Icon = m.icon;
@@ -1238,7 +1257,6 @@ export default function DaftarMuzakkiUmumPage() {
                     </label>
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
                       {[
-                        { id: "QRIS", name: "QRIS (Semua)" },
                         { id: "GoPay", name: "GoPay" },
                         { id: "OVO", name: "OVO" },
                         { id: "Dana", name: "DANA" },
@@ -1426,7 +1444,9 @@ export default function DaftarMuzakkiUmumPage() {
                   <span className="font-semibold text-gray-800 capitalize">
                     {registeredSummary.metodePenyaluran === "transfer-bank"
                       ? `Transfer Bank (${registeredSummary.pilihanBank})`
-                      : `E-Wallet (${registeredSummary.pilihanEwallet})`}
+                      : registeredSummary.metodePenyaluran === "qris"
+                        ? `QRIS (${registeredSummary.pilihanEwallet})`
+                        : `E-Wallet (${registeredSummary.pilihanEwallet})`}
                   </span>
                 </div>
               </div>

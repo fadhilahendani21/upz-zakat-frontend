@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   UserRound,
@@ -15,6 +15,7 @@ import {
   Loader2,
   WalletCards,
   Landmark,
+  ScanLine,
   Sprout,
   ClipboardCheck,
   Check,
@@ -23,12 +24,12 @@ import {
   QrCode,
   GraduationCap,
   AlertCircle,
-  ArrowRight,
   Heart,
   Calendar,
 } from "lucide-react";
 
 import { DOSEN_STAF_UNSIL } from "../data/dummyDosenStaf";
+import { FAKULTAS_JURUSAN_UNSIL } from "./dashboard/MuzakkiMustahik";
 import {
   hitungZakatPenghasilan,
   hitungZakatMaal,
@@ -36,6 +37,8 @@ import {
   getZakatConfig,
 } from "../services/zakatService";
 import { registerPublicMuzakki, getPublicMuzakki } from "../services/muzakkiService";
+
+const FAKULTAS_LIST = Object.keys(FAKULTAS_JURUSAN_UNSIL);
 
 export default function DaftarMuzakkiUnsilPage() {
   // =========================================================
@@ -62,32 +65,14 @@ export default function DaftarMuzakkiUnsilPage() {
     }
   };
 
-  // Set NIP & Nama yang SUDAH menjadi Muzakki
-  const existingNips = new Set(
-    registeredMuzakkiList
-      .filter((m) => m.nip)
-      .map((m) => m.nip.replace(/\D/g, ""))
-  );
-  const existingNames = new Set(
-    registeredMuzakkiList.map((m) => m.nama.toLowerCase().trim())
-  );
-
-  // Hanya tampilkan dosen/staf yang BELUM menjadi Muzakki
-  const unregisteredPegawai = DOSEN_STAF_UNSIL.filter((p) => {
-    const cleanNip = p.nip.replace(/\D/g, "");
-    const cleanName = p.nama.toLowerCase().trim();
-    return !existingNips.has(cleanNip) && !existingNames.has(cleanName);
-  });
-
   // =========================================================
-  // STATE PENCARIAN SEARCHABLE DROPDOWN
+  // STATE PENCARIAN NIP & NO HP
   // =========================================================
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isOpenDropdown, setIsOpenDropdown] = useState(false);
-  const [dataDitemukan, setDataDitemukan] = useState(false);
-  const searchContainerRef = useRef(null);
-
+  const [nipCari, setNipCari] = useState("");
+  const [noHpCari, setNoHpCari] = useState("");
+  const [pegawaiDitemukan, setPegawaiDitemukan] = useState(null);
+  const [cariError, setCariError] = useState("");
   const [dataPegawai, setDataPegawai] = useState({
     nama: "",
     nip: "",
@@ -104,45 +89,90 @@ export default function DaftarMuzakkiUnsilPage() {
     alamatLengkap: "",
   });
 
-  // Filter daftar pegawai (HANYA YANG BELUM MENJADI MUZAKKI)
-  const filteredPegawai = unregisteredPegawai.filter((p) => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return true;
-    return (
-      p.nama.toLowerCase().includes(q) ||
-      p.nip.replace(/\D/g, "").includes(q.replace(/\D/g, "")) ||
-      p.unit.toLowerCase().includes(q) ||
-      (p.jurusan && p.jurusan.toLowerCase().includes(q)) ||
-      p.jabatan.toLowerCase().includes(q)
-    );
-  });
+  // State untuk dropdown Fakultas dan Jurusan
+  const [selectedFakultas, setSelectedFakultas] = useState(FAKULTAS_LIST[0]);
+  const [selectedJurusan, setSelectedJurusan] = useState(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
 
-  // Cek apakah ada pegawai terdaftar di database yang cocok dengan keyword pencarian
-  const matchedAlreadyRegistered = registeredMuzakkiList.filter((m) => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q || q.length < 3) return false;
-    return (
-      m.nama.toLowerCase().includes(q) ||
-      (m.nip && m.nip.replace(/\D/g, "").includes(q.replace(/\D/g, "")))
-    );
-  });
-
-  const handleSelectPegawai = (pegawai) => {
+  // Handler untuk perubahan fakultas
+  const handleFakultasChange = (e) => {
+    const newFakultas = e.target.value;
+    setSelectedFakultas(newFakultas);
+    const jurusanList = FAKULTAS_JURUSAN_UNSIL[newFakultas] || [];
+    setSelectedJurusan(jurusanList[0] || "");
     setDataPegawai({
-      ...pegawai,
-      nik: "",
-      jenisKelamin: "",
-      tempatLahir: "",
-      tanggalLahir: "",
-      alamatLengkap: "",
+      ...dataPegawai,
+      unit: newFakultas,
+      jurusan: jurusanList[0] || "",
     });
-    setDataDitemukan(true);
-    setSearchQuery(`${pegawai.nama} (${pegawai.nip})`);
-    setIsOpenDropdown(false);
-    setFormError("");
   };
 
-  const handleClearSelection = () => {
+  const handleJurusanChange = (e) => {
+    const newJurusan = e.target.value;
+    setSelectedJurusan(newJurusan);
+    setDataPegawai({
+      ...dataPegawai,
+      jurusan: newJurusan,
+    });
+  };
+
+  // =========================================================
+  // FUNGSI CARI DATA PEGAWAI
+  // =========================================================
+
+  const handleCariData = () => {
+    setCariError("");
+    const cleanNip = nipCari.replace(/\D/g, "").trim();
+    const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
+
+    if (!cleanNip && !cleanNoHp) {
+      setCariError("Minimal masukkan NIP atau Nomor HP untuk pencarian.");
+      return;
+    }
+
+    const found = DOSEN_STAF_UNSIL.find((p) => {
+      const matchNip = cleanNip ? p.nip.replace(/\D/g, "") === cleanNip : true;
+      const matchNoHp = cleanNoHp ? p.noHp.replace(/\D/g, "") === cleanNoHp : true;
+      return matchNip && matchNoHp;
+    });
+
+    if (found) {
+      setDataPegawai({ ...found });
+      setPegawaiDitemukan(found);
+      setCariError("");
+      setFormError("");
+      
+      // Update dropdown fakultas dan jurusan berdasarkan data yang ditemukan
+      if (found.unit) {
+        const foundFakultas = FAKULTAS_LIST.find(f => found.unit.includes(f)) || FAKULTAS_LIST[0];
+        setSelectedFakultas(foundFakultas);
+        setSelectedJurusan(found.jurusan || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
+      }
+    } else {
+      setPegawaiDitemukan(null);
+      setDataPegawai({
+        nama: "",
+        nip: "",
+        nik: "",
+        unit: "",
+        jurusan: "",
+        jabatan: "",
+        email: "",
+        noHp: "",
+        golongan: "",
+        jenisKelamin: "",
+        tempatLahir: "",
+        tanggalLahir: "",
+        alamatLengkap: "",
+      });
+      setCariError(`Data pegawai dengan NIP "${nipCari}" atau No HP "${noHpCari}" tidak ditemukan.`);
+    }
+  };
+
+  const handleResetCari = () => {
+    setNipCari("");
+    setNoHpCari("");
+    setPegawaiDitemukan(null);
+    setCariError("");
     setDataPegawai({
       nama: "",
       nip: "",
@@ -158,24 +188,12 @@ export default function DaftarMuzakkiUnsilPage() {
       tanggalLahir: "",
       alamatLengkap: "",
     });
-    setDataDitemukan(false);
-    setSearchQuery("");
-    setIsOpenDropdown(false);
+    setFormError("");
+    
+    // Reset dropdown ke default
+    setSelectedFakultas(FAKULTAS_LIST[0]);
+    setSelectedJurusan(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
   };
-
-  // Close dropdown saat klik di luar
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(e.target)
-      ) {
-        setIsOpenDropdown(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // =========================================================
   // STATE MULTI-KESEPAKATAN ZAKAT
@@ -184,12 +202,12 @@ export default function DaftarMuzakkiUnsilPage() {
   const [zakatSelections, setZakatSelections] = useState({
     penghasilan: {
       selected: true,
-      frekuensi: "bulanan", // "bulanan" | "tahunan" | "kesepakatan"
+      frekuensi: "bulanan", // "bulanan" | "tahunan"
       nominal: "500000",
     },
     maal: {
       selected: false,
-      frekuensi: "tahunan", // "tahunan" | "kesepakatan"
+      frekuensi: "tahunan", // "tahunan"
       nominal: "2500000",
     },
     fitrah: {
@@ -229,7 +247,7 @@ export default function DaftarMuzakkiUnsilPage() {
   // PREFERENSI PENYALURAN (HANYA TRANSFER BANK & E-WALLET)
   // =========================================================
 
-  const [metodePenyaluran, setMetodePenyaluran] = useState("transfer-bank"); // "transfer-bank" | "e-wallet"
+  const [metodePenyaluran, setMetodePenyaluran] = useState("transfer-bank"); // "transfer-bank" | "e-wallet" | "qris"
   const [pilihanBank, setPilihanBank] = useState("BSI");
   const [pilihanEwallet, setPilihanEwallet] = useState("QRIS");
 
@@ -287,7 +305,7 @@ export default function DaftarMuzakkiUnsilPage() {
         jenis: "Zakat Penghasilan",
         frekuensi: zakatSelections.penghasilan.frekuensi,
         nominal: Number(String(zakatSelections.penghasilan.nominal || 0).replace(/\D/g, "")),
-        detail: `${zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : zakatSelections.penghasilan.frekuensi === "tahunan" ? "Per tahun" : "Sesuai kesepakatan"}`,
+        detail: `${zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : "Per tahun"}`,
       });
     }
     if (zakatSelections.maal.selected) {
@@ -540,7 +558,8 @@ export default function DaftarMuzakkiUnsilPage() {
         nominal: totalNominal,
         metode_pembayaran: metodePenyaluran,
         pilihan_bank: metodePenyaluran === "transfer-bank" ? pilihanBank : null,
-        pilihan_ewallet: metodePenyaluran === "e-wallet" ? pilihanEwallet : null,
+        pilihan_ewallet:
+          metodePenyaluran === "e-wallet" || metodePenyaluran === "qris" ? pilihanEwallet : null,
         kesepakatan_zakat: activeZakat,
       };
 
@@ -574,8 +593,6 @@ export default function DaftarMuzakkiUnsilPage() {
 
   // Fungsi reset form
   const resetForm = () => {
-    setSearchQuery("");
-    setDataDitemukan(false);
     setDataPegawai({
       nama: "",
       nip: "",
@@ -610,7 +627,7 @@ export default function DaftarMuzakkiUnsilPage() {
         nominal: "135000",
       },
     });
-    setMetodePenyaluran("potong-gaji");
+    setMetodePenyaluran("transfer-bank");
     setPilihanBank("");
     setPilihanEwallet("");
     setSetuju(false);
@@ -665,7 +682,7 @@ export default function DaftarMuzakkiUnsilPage() {
                 Pendaftaran Khusus Dosen &amp; Staff UNSIL
               </h2>
               <p className="mt-3 text-xs sm:text-sm leading-relaxed text-slate-600 text-left">
-                Formulir ini khusus untuk Dosen dan Staff Universitas Siliwangi. Anda dapat mencari data dari sistem kepegawaian atau mengisi data secara manual.
+                Formulir ini khusus untuk Dosen dan Staff Universitas Siliwangi. Anda dapat mencari data dengan NIP dan Nomor HP, atau mengisi data secara manual.
               </p>
 
               {/* 3 BULLET POINTS */}
@@ -679,7 +696,7 @@ export default function DaftarMuzakkiUnsilPage() {
                       Data Fleksibel
                     </h3>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
-                      Cari dari sistem atau isi manual - semua data bisa diedit.
+                       Cari dengan NIP & No HP atau isi manual - semua data bisa diedit.
                     </p>
                   </div>
                 </div>
@@ -759,7 +776,7 @@ export default function DaftarMuzakkiUnsilPage() {
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* =================================================
-                  1. PENCARIAN DATA KEPEGAWAIAN (SEARCHABLE DROPDOWN)
+                  1. PENCARIAN DATA KEPEGAWAIAN (NIP + NO HP)
               ================================================== */}
               <div>
                 <SectionTitle
@@ -768,116 +785,77 @@ export default function DaftarMuzakkiUnsilPage() {
                   title="Pencarian Data Kepegawaian"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Masukkan NIP atau nama Anda untuk mengambil data secara otomatis dari sistem kepegawaian UNSIL.
+                  Masukkan NIP dan Nomor HP Anda untuk mengambil data dari sistem kepegawaian UNSIL.
                 </p>
 
-                {/* SEARCHABLE COMBOBOX */}
-                <div className="mt-4 relative" ref={searchContainerRef}>
-                  <label className="mb-1.5 block text-xs font-semibold text-gray-700">
-                    NIP / Nama Pegawai (Dosen / Tendik) <span className="text-red-500">*</span>
-                  </label>
-
-                  <div className="relative">
-                    <Search
-                      size={17}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      NIP <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setIsOpenDropdown(true);
-                        if (dataDitemukan) setDataDitemukan(false);
-                      }}
-                      onFocus={() => setIsOpenDropdown(true)}
-                      placeholder="Masukkan NIP Anda (misal: 197503122001121001) atau Nama..."
-                      className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-10 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                      value={nipCari}
+                      onChange={(e) => setNipCari(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Contoh: 197503122001121001"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
                     />
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        onClick={handleClearSelection}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
                   </div>
 
-                  {/* DROPDOWN POPUP */}
-                  {isOpenDropdown && (
-                    <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
-                      {/* JIKA MATCH PEGAWAI YANG SUDAH MENJADI MUZAKKI */}
-                      {matchedAlreadyRegistered.length > 0 && (
-                        <div className="bg-amber-50/90 border-b border-amber-200 p-3 text-xs text-amber-900">
-                          <p className="font-semibold flex items-center gap-1.5 text-amber-800">
-                            <AlertCircle size={14} className="shrink-0" />
-                            Data berikut sudah terdaftar sebagai Muzakki:
-                          </p>
-                          <div className="mt-1.5 space-y-1">
-                            {matchedAlreadyRegistered.map((m) => (
-                              <div key={m.id} className="flex items-center justify-between text-[11px] bg-white/70 rounded px-2 py-1">
-                                <span>{m.nama} ({m.nip || m.unit_kerja})</span>
-                                <Link to="/zakat" className="font-bold text-[#08734f] hover:underline inline-flex items-center gap-0.5">
-                                  Tunaikan Zakat <ArrowRight size={10} />
-                                </Link>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {filteredPegawai.length === 0 ? (
-                        <div className="p-4 text-center text-xs text-slate-500">
-                          {matchedAlreadyRegistered.length > 0
-                            ? "Pegawai yang Anda cari sudah terdaftar sebagai Muzakki."
-                            : `Data pegawai belum terdaftar dengan kata kunci "${searchQuery}" tidak ditemukan.`}
-                        </div>
-                      ) : (
-                        filteredPegawai.map((p) => (
-                          <button
-                            key={p.nip}
-                            type="button"
-                            onClick={() => handleSelectPegawai(p)}
-                            className="flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-green-50/70 last:border-b-0"
-                          >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-[#08734f] text-xs font-bold mt-0.5">
-                              {p.nama.charAt(0)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
-                                {p.nama}
-                              </p>
-                              <p className="text-[11px] text-slate-500 font-mono">
-                                NIP: {p.nip} • {p.jabatan}
-                              </p>
-                              <p className="text-[11px] text-emerald-700 font-medium truncate">
-                                {p.unit} {p.jurusan ? `· ${p.jurusan}` : ""}
-                              </p>
-                            </div>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Nomor HP <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={noHpCari}
+                      onChange={(e) => setNoHpCari(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Contoh: 081223450001"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                    />
+                  </div>
                 </div>
 
-                {/* STATUS TERPILIH */}
-                {dataDitemukan && dataPegawai && (
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCariData}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#08734f] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[#064f35]"
+                  >
+                    <Search size={17} />
+                    Cari Data
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetCari}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 shadow-xs transition hover:bg-slate-50"
+                  >
+                    <X size={17} />
+                    Reset
+                  </button>
+                </div>
+
+                {cariError && (
+                  <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                    <span>{cariError}</span>
+                  </div>
+                )}
+
+                {pegawaiDitemukan && (
                   <div className="mt-3 flex items-center justify-between gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-xs font-semibold text-emerald-800">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
                       <span>
-                        Pegawai Terpilih: <strong>{dataPegawai.nama}</strong> ({dataPegawai.jabatan})
+                        Data Ditemukan: <strong>{pegawaiDitemukan.nama}</strong> ({pegawaiDitemukan.jabatan})
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={handleClearSelection}
+                      onClick={handleResetCari}
                       className="text-[11px] text-emerald-700 underline hover:text-emerald-900"
                     >
-                      Ganti Pegawai
+                      Ganti Data
                     </button>
                   </div>
                 )}
@@ -895,7 +873,7 @@ export default function DaftarMuzakkiUnsilPage() {
                   title="Data Diri Kepegawaian"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Isi data kepegawaian Anda. Data akan terisi otomatis jika memilih dari pencarian NIP/Nama di atas.
+                  Isi data kepegawaian Anda. Data akan terisi otomatis jika mencari dengan NIP dan Nomor HP di atas.
                 </p>
 
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -947,28 +925,40 @@ export default function DaftarMuzakkiUnsilPage() {
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       Fakultas / Unit Kerja <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={dataPegawai.unit}
-                      onChange={(e) => setDataPegawai({ ...dataPegawai, unit: e.target.value })}
-                      placeholder="Contoh: Fakultas Teknik"
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                    />
+                    <div className="relative">
+                      <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <select
+                        value={selectedFakultas}
+                        onChange={handleFakultasChange}
+                        className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-xs sm:text-sm outline-none focus:border-[#08734f] appearance-none bg-white"
+                      >
+                        {FAKULTAS_LIST.map((f) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
 
                   {/* JURUSAN / PROGRAM STUDI */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">Jurusan / Program Studi</label>
-                    <input
-                      type="text"
-                      value={dataPegawai.jurusan || ""}
-                      onChange={(e) => setDataPegawai({ ...dataPegawai, jurusan: e.target.value })}
-                      placeholder="Contoh: Teknik Informatika (opsional)"
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                    />
+                    <div className="relative">
+                      <GraduationCap size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <select
+                        value={selectedJurusan}
+                        onChange={handleJurusanChange}
+                        className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-xs sm:text-sm outline-none focus:border-[#08734f] appearance-none bg-white"
+                      >
+                        {(FAKULTAS_JURUSAN_UNSIL[selectedFakultas] || []).map((j) => (
+                          <option key={j} value={j}>{j}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
 
-                  {/* JABATAN */}
+                  {/* JABATAN & JENIS KELAMIN */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       Jabatan <span className="text-red-500">*</span>
@@ -982,7 +972,6 @@ export default function DaftarMuzakkiUnsilPage() {
                     />
                   </div>
 
-                  {/* JENIS KELAMIN */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       Jenis Kelamin <span className="text-red-500">*</span>
@@ -1042,7 +1031,7 @@ export default function DaftarMuzakkiUnsilPage() {
                   </div>
 
                   {/* EMAIL */}
-                  <div className="sm:col-span-2">
+                  <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email <span className="text-red-500">*</span></label>
                     <input
                       type="email"
@@ -1201,11 +1190,10 @@ export default function DaftarMuzakkiUnsilPage() {
                           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                             Frekuensi Penunaian
                           </label>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             {[
                               { id: "bulanan", label: "Bulanan" },
                               { id: "tahunan", label: "Tahunan" },
-                              { id: "kesepakatan", label: "Sesuai Akad" },
                             ].map((f) => (
                               <button
                                 key={f.id}
@@ -1416,32 +1404,38 @@ export default function DaftarMuzakkiUnsilPage() {
               <div className="border-t border-slate-100" />
 
               {/* =================================================
-                  4. PREFERENSI PENYALURAN (TRANSFER BANK & E-WALLET)
+                  3. PREFERENSI PENYALURAN (TRANSFER BANK, E-WALLET, DAN QRIS)
               ================================================== */}
               <div>
                 <SectionTitle
-                  number="4."
+                  number="3."
                   icon={<Landmark size={21} />}
                   title="Preferensi Penyaluran / Pembayaran Zakat"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Pilih jalur penunaian zakat yang Anda kehendaki.
+                  Pilih metode pembayaran yang paling nyaman untuk Anda.
                 </p>
 
-                {/* DUA PILIHAN UTAMA: TRANSFER BANK & E-WALLET */}
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {/* TIGA PILIHAN: TRANSFER BANK, E-WALLET, DAN QRIS */}
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
                     {
                       id: "transfer-bank",
                       nama: "Transfer Bank",
-                      desc: "Transfer via Virtual Account / Rekening Bank resmi UPZ UNSIL.",
+                      desc: "Transfer melalui Rekening Bank resmi UPZ UNSIL.",
                       icon: Landmark,
                     },
                     {
                       id: "e-wallet",
-                      nama: "E-Wallet / QRIS",
-                      desc: "Scan QRIS atau bayar via dompet digital (GoPay/OVO/DANA/ShopeePay).",
+                      nama: "E-Wallet",
+                      desc: "Bayar via dompet digital (GoPay/OVO/DANA/ShopeePay).",
                       icon: WalletCards,
+                    },
+                    {
+                      id: "qris",
+                      nama: "QRIS",
+                      desc: "Scan QRIS resmi UPZ UNSIL melalui e-wallet apa pun.",
+                      icon: ScanLine,
                     },
                   ].map((m) => {
                     const Icon = m.icon;
@@ -1512,7 +1506,6 @@ export default function DaftarMuzakkiUnsilPage() {
                     </label>
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
                       {[
-                        { id: "QRIS", name: "QRIS (Semua)" },
                         { id: "GoPay", name: "GoPay" },
                         { id: "OVO", name: "OVO" },
                         { id: "Dana", name: "DANA" },
@@ -1696,7 +1689,9 @@ export default function DaftarMuzakkiUnsilPage() {
                   <span className="font-semibold text-gray-800 capitalize">
                     {registeredSummary.metodePenyaluran === "transfer-bank"
                       ? `Transfer Bank (${registeredSummary.pilihanBank})`
-                      : `E-Wallet (${registeredSummary.pilihanEwallet})`}
+                      : registeredSummary.metodePenyaluran === "qris"
+                        ? `QRIS (${registeredSummary.pilihanEwallet})`
+                        : `E-Wallet (${registeredSummary.pilihanEwallet})`}
                   </span>
                 </div>
               </div>

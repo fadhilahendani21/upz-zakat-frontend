@@ -114,7 +114,7 @@ export default function DonasiPage() {
   // ======================================================
   const [muzakkiList, setMuzakkiList] = useState([]);
   const [selectedMuzakki, setSelectedMuzakki] = useState(null);
-  const [modeDataDiri, setModeDataDiri] = useState("cari"); // "manual" atau "cari"
+  const [showCariMuzakki, setShowCariMuzakki] = useState(false);
   const [nipNikCari, setNipNikCari] = useState("");
   const [noHpCari, setNoHpCari] = useState("");
   const [cariMuzakkiError, setCariMuzakkiError] = useState("");
@@ -250,6 +250,7 @@ export default function DonasiPage() {
         telepon: found.no_hp || "",
       });
       setCariMuzakkiError("");
+      setShowCariMuzakki(false); // Tutup section cari setelah berhasil
     } else {
       setCariMuzakkiError(`Data muzakki dengan NIP/NIK "${nipNikCari}" dan No HP "${noHpCari}" tidak ditemukan.`);
       setSelectedMuzakki(null);
@@ -262,7 +263,7 @@ export default function DonasiPage() {
     setCariMuzakkiError("");
     setSelectedMuzakki(null);
     setData({ nama: "", email: "", telepon: "" });
-    setModeDataDiri("cari");
+    setShowCariMuzakki(false);
   };
 
   // ======================================================
@@ -304,7 +305,7 @@ export default function DonasiPage() {
     setErrorMsg("");
     setShowQris(false);
     setSelectedMuzakki(null);
-    setModeDataDiri("cari");
+    setShowCariMuzakki(false);
     setNipNikCari("");
     setNoHpCari("");
     setCariMuzakkiError("");
@@ -620,49 +621,45 @@ export default function DonasiPage() {
 
         <Card>
 
-          <div className="mb-4">
-            <h2 className="font-semibold text-gray-900 mb-3">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+            <h2 className="font-semibold text-gray-900">
               Data Diri
             </h2>
 
-            {/* Switch/Toggle Mode: Manual vs Cari Data */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 rounded-2xl bg-slate-100/90 p-1.5 border border-slate-200">
-              <button
-                type="button"
-                onClick={() => {
-                  setModeDataDiri("cari");
-                  setData({ nama: "", email: "", telepon: "" });
-                }}
-                className={`flex items-center justify-center gap-2.5 rounded-xl py-3 px-4 text-xs sm:text-sm font-semibold transition ${
-                  modeDataDiri === "cari"
-                    ? "bg-white text-[#08734f] shadow-xs border border-slate-200/80"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Search size={17} className={modeDataDiri === "cari" ? "text-[#08734f]" : "text-slate-400"} />
-                <span>Cari Data Muzakki</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setModeDataDiri("manual");
-                  setSelectedMuzakki(null);
-                  setCariMuzakkiError("");
-                }}
-                className={`flex items-center justify-center gap-2.5 rounded-xl py-3 px-4 text-xs sm:text-sm font-semibold transition ${
-                  modeDataDiri === "manual"
-                    ? "bg-white text-[#08734f] shadow-xs border border-slate-200/80"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <User size={17} className={modeDataDiri === "manual" ? "text-[#08734f]" : "text-slate-400"} />
-                <span>Isi Manual</span>
-              </button>
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              {/* Tombol Cari Data Muzakki */}
+              {!selectedMuzakki && (
+                <button
+                  type="button"
+                  onClick={() => setShowCariMuzakki(!showCariMuzakki)}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-brand-600 bg-white px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50 transition"
+                >
+                  <Search size={14} />
+                  {showCariMuzakki ? "Tutup Pencarian" : "Cari Data Muzakki"}
+                </button>
+              )}
+
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+
+                <input
+                  type="checkbox"
+                  checked={anonim}
+                  onChange={(e) =>
+                    setAnonim(e.target.checked)
+                  }
+                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+
+                Donasi sebagai Hamba Allah (anonim)
+
+              </label>
             </div>
+
           </div>
 
-          {/* MODE: CARI DATA MUZAKKI */}
-          {modeDataDiri === "cari" && !selectedMuzakki && (
+          {/* Section Cari Data Muzakki */}
+          {showCariMuzakki && !selectedMuzakki && (
             <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 mb-2">
                 <Search size={16} />
@@ -751,9 +748,9 @@ export default function DonasiPage() {
             </div>
           )}
 
-          {/* MODE: ISI MANUAL - Form Data Diri */}
-          {modeDataDiri === "manual" && !selectedMuzakki && (
-            <div className="grid gap-4 sm:grid-cols-2 mb-4">
+          {/* Form Data Diri (hanya muncul jika tidak anonim DAN tidak ada muzakki terpilih) */}
+          {!anonim && !selectedMuzakki && (
+            <div className="grid gap-4 sm:grid-cols-2">
 
               {/* NAMA */}
               <div className="sm:col-span-2">
@@ -772,7 +769,7 @@ export default function DonasiPage() {
                   <input
                     type="text"
                     name="nama"
-                    required={!anonim}
+                    required
                     value={data.nama}
                     onChange={handleDataChange}
                     placeholder="Nama Anda"
@@ -839,19 +836,6 @@ export default function DonasiPage() {
 
             </div>
           )}
-
-          {/* CHECKBOX HAMBA ALLAH - PALING BAWAH */}
-          <div className="pt-4 border-t border-gray-100">
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                checked={anonim}
-                onChange={(e) => setAnonim(e.target.checked)}
-                className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-              />
-              Donasi sebagai Hamba Allah (anonim)
-            </label>
-          </div>
 
         </Card>
 
@@ -1057,6 +1041,231 @@ export default function DonasiPage() {
 
         </Card>
 
+        {/* =================================================
+            DATA DIRI
+        ================================================== */}
+
+        <Card>
+
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+            <h2 className="font-semibold text-gray-900">
+              Data Diri
+            </h2>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              {/* Tombol Cari Data Muzakki */}
+              {!selectedMuzakki && (
+                <button
+                  type="button"
+                  onClick={() => setShowCariMuzakki(!showCariMuzakki)}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-brand-600 bg-white px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50 transition"
+                >
+                  <Search size={14} />
+                  {showCariMuzakki ? "Tutup Pencarian" : "Cari Data Muzakki"}
+                </button>
+              )}
+
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+
+                <input
+                  type="checkbox"
+                  checked={anonim}
+                  onChange={(e) =>
+                    setAnonim(e.target.checked)
+                  }
+                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+
+                Donasi sebagai Hamba Allah (anonim)
+
+              </label>
+            </div>
+
+          </div>
+
+          {/* Section Cari Data Muzakki */}
+          {showCariMuzakki && !selectedMuzakki && (
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 mb-2">
+                <Search size={16} />
+                Cari Data Muzakki Terdaftar
+              </div>
+              <p className="text-xs text-slate-600 mb-3">
+                Jika Anda sudah terdaftar sebagai Muzakki, masukkan NIP/NIK dan Nomor HP untuk mengisi data otomatis.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    NIP / NIK <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={nipNikCari}
+                    onChange={(e) => setNipNikCari(e.target.value)}
+                    placeholder="Contoh: 198501302012121009"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Nomor HP / WA <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={noHpCari}
+                    onChange={(e) => setNoHpCari(e.target.value)}
+                    placeholder="Contoh: 08123456789"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+              </div>
+
+              {cariMuzakkiError && (
+                <div className="mb-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600">
+                  {cariMuzakkiError}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleCariMuzakki}
+                  className="flex-1 h-9 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2"
+                >
+                  <Search size={14} />
+                  Cari Data
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetCariMuzakki}
+                  className="h-9 px-4 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Info Muzakki Terpilih */}
+          {selectedMuzakki && (
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <User size={16} className="text-emerald-700" />
+                    <span className="text-xs font-bold text-emerald-900">Muzakki Terdaftar</span>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">{selectedMuzakki.nama}</p>
+                  {selectedMuzakki.email && (
+                    <p className="text-xs text-slate-600 mt-0.5">{selectedMuzakki.email}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetCariMuzakki}
+                  className="text-slate-500 hover:text-slate-700 transition"
+                  title="Hapus data muzakki dan isi manual"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Form Data Diri (hanya muncul jika tidak anonim DAN tidak ada muzakki terpilih) */}
+          {!anonim && !selectedMuzakki && (
+            <div className="grid gap-4 sm:grid-cols-2">
+
+              {/* NAMA */}
+              <div className="sm:col-span-2">
+
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Nama Lengkap
+                </label>
+
+                <div className="relative">
+
+                  <User
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+
+                  <input
+                    type="text"
+                    name="nama"
+                    required
+                    value={data.nama}
+                    onChange={handleDataChange}
+                    placeholder="Nama Anda"
+                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* EMAIL */}
+              <div>
+
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+
+                <div className="relative">
+
+                  <Mail
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={data.email}
+                    onChange={handleDataChange}
+                    placeholder="nama@email.com"
+                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* TELEPON */}
+              <div>
+
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  No. Telepon
+                </label>
+
+                <div className="relative">
+
+                  <Phone
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+
+                  <input
+                    type="tel"
+                    name="telepon"
+                    required
+                    value={data.telepon}
+                    onChange={handleDataChange}
+                    placeholder="08xx-xxxx-xxxx"
+                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        </Card>
 
         {/* =================================================
             METODE PEMBAYARAN

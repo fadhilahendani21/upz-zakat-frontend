@@ -67,14 +67,14 @@ export default function ZakatPage() {
   const settings = useSettings();
 
   // ======================================================
-  // SEARCHABLE DROPDOWN MUZAKKI TERDAFTAR
+  // PENCARIAN MUZAKKI TERDAFTAR (NIP/NIK + NO HP)
   // ======================================================
-  const [searchMuzakkiQuery, setSearchMuzakkiQuery] = useState("");
-  const [isDropdownMuzakkiOpen, setIsDropdownMuzakkiOpen] = useState(false);
+  const [nipNikCari, setNipNikCari] = useState("");
+  const [noHpCari, setNoHpCari] = useState("");
   const [muzakkiList, setMuzakkiList] = useState([]);
   const [selectedMuzakki, setSelectedMuzakki] = useState(null);
   const [isMuzakkiLoading, setIsMuzakkiLoading] = useState(false);
-  const searchContainerRef = useRef(null);
+  const [cariMuzakkiError, setCariMuzakkiError] = useState("");
 
   // State modal ajukan perubahan kesepakatan
   const [showAgreementModal, setShowAgreementModal] = useState(false);
@@ -101,43 +101,52 @@ export default function ZakatPage() {
     loadMuzakki();
   }, []);
 
-  // Filter muzakki list
-  const filteredMuzakki = muzakkiList.filter((m) => {
-    const q = searchMuzakkiQuery.toLowerCase().trim();
-    if (!q) return true;
-    return (
-      m.nama.toLowerCase().includes(q) ||
-      (m.nip && m.nip.replace(/\D/g, "").includes(q.replace(/\D/g, ""))) ||
-      (m.nik && m.nik.replace(/\D/g, "").includes(q.replace(/\D/g, ""))) ||
-      (m.no_hp && m.no_hp.replace(/\D/g, "").includes(q.replace(/\D/g, ""))) ||
-      (m.unit_kerja && m.unit_kerja.toLowerCase().includes(q))
-    );
-  });
+  // Fungsi untuk mencari muzakki berdasarkan NIP/NIK dan No HP
+  const handleCariMuzakki = () => {
+    setCariMuzakkiError("");
+    const cleanNipNik = nipNikCari.replace(/\D/g, "").trim();
+    const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(e.target)
-      ) {
-        setIsDropdownMuzakkiOpen(false);
-      }
+    // Validasi: keduanya harus diisi
+    if (!cleanNipNik || !cleanNoHp) {
+      setCariMuzakkiError("Harap isi NIP/NIK dan Nomor HP untuk mencari data muzakki.");
+      return;
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
+    // Cari muzakki yang cocok
+    const found = muzakkiList.find((m) => {
+      const matchNipNik = (m.nip && m.nip.replace(/\D/g, "") === cleanNipNik) || 
+                          (m.nik && m.nik.replace(/\D/g, "") === cleanNipNik);
+      const matchNoHp = m.no_hp && m.no_hp.replace(/\D/g, "") === cleanNoHp;
+      return matchNipNik && matchNoHp;
+    });
+
+    if (found) {
+      handleSelectMuzakki(found);
+      setCariMuzakkiError("");
+    } else {
+      setCariMuzakkiError(`Data muzakki dengan NIP/NIK "${nipNikCari}" dan No HP "${noHpCari}" tidak ditemukan.`);
+      setSelectedMuzakki(null);
+    }
+  };
+
+  const handleResetCariMuzakki = () => {
+    setNipNikCari("");
+    setNoHpCari("");
+    setCariMuzakkiError("");
+    setSelectedMuzakki(null);
+    setTagihanItems([]);
+    setData({ nama: "", email: "", telepon: "" });
+  };
 
   // ======================================================
   // STATE TAGIHAN KESEPAKATAN ZAKAT (DARI MUZAKKI TERDAFTAR)
   // ======================================================
   const [tagihanItems, setTagihanItems] = useState([]); // [{ key, jenis, nominal, frekuensi, detail, checked: true }]
 
-  // Saat Muzakki dipilih dari Dropdown
+  // Saat Muzakki dipilih dari pencarian
   const handleSelectMuzakki = (muzakki) => {
     setSelectedMuzakki(muzakki);
-    setSearchMuzakkiQuery(`${muzakki.nama} (${muzakki.kategori})`);
-    setIsDropdownMuzakkiOpen(false);
 
     // Auto-isi data diri
     setData({
@@ -196,13 +205,6 @@ export default function ZakatPage() {
         },
       ]);
     }
-  };
-
-  const handleClearMuzakki = () => {
-    setSelectedMuzakki(null);
-    setSearchMuzakkiQuery("");
-    setTagihanItems([]);
-    setData({ nama: "", email: "", telepon: "" });
   };
 
   const toggleTagihanItem = (id) => {
@@ -488,6 +490,62 @@ export default function ZakatPage() {
       ? (tagihanItems.filter((i) => i.checked).map((i) => `${i.jenis}: Rp ${new Intl.NumberFormat("id-ID").format(i.nominal)} (${i.detail})`).join(" + ") || null)
       : (activeManualList.map((i) => `${i.jenis}: Rp ${new Intl.NumberFormat("id-ID").format(i.nominal)} (${i.detail})`).join(" + ") || null);
 
+  // Reset form lengkap setelah transaksi berhasil
+  function handleResetFormComplete() {
+    // Reset state pencarian muzakki
+    setNipNikCari("");
+    setNoHpCari("");
+    setCariMuzakkiError("");
+    setSelectedMuzakki(null);
+    setTagihanItems([]);
+    
+    // Reset data diri
+    setData({
+      nama: "",
+      email: "",
+      telepon: "",
+    });
+    
+    // Reset metode pembayaran
+    setAnonim(false);
+    setMetodeId("transfer-bank");
+    setPilihanBank("BSI");
+    setPilihanEwallet("GoPay");
+    
+    // Reset status dan hasil
+    setErrorMsg("");
+    setStatus("idle");
+    setHasil(null);
+    
+    // Reset manual zakat
+    setManualZakat({
+      penghasilan: {
+        selected: true,
+        jenis: "Zakat Penghasilan",
+        nominal: 100000,
+        nominalCustom: "",
+        detail: "Per bulan",
+      },
+      maal: {
+        selected: false,
+        jenis: "Zakat Maal",
+        nominal: 0,
+        nominalCustom: "",
+        detail: "Zakat atas simpanan & aset kekayaan",
+      },
+      fitrah: {
+        selected: false,
+        jenis: "Zakat Fitrah",
+        nominal: 0,
+        jumlahJiwa: 1,
+        detail: "Per jiwa",
+      },
+    });
+    
+    // Scroll ke atas
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   // Reset form bersih saat berpindah state/mode
   function handleSwitchMode(targetMode) {
     if (targetMode === modeTunaikan) return;
@@ -550,6 +608,9 @@ export default function ZakatPage() {
   // ======================================================
   async function handleSubmit(e) {
     e.preventDefault();
+    
+    // Scroll ke atas saat submit
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (modeTunaikan === "terdaftar") {
       if (!selectedMuzakki) {
@@ -696,8 +757,7 @@ export default function ZakatPage() {
               variant="outline"
               className="w-full"
               onClick={() => {
-                setStatus("idle");
-                setHasil(null);
+                handleResetFormComplete();
               }}
             >
               Tunaikan Zakat Lainnya
@@ -784,99 +844,177 @@ export default function ZakatPage() {
             KONDISI A: MODE MUZAKKI TERDAFTAR
         ==================================================== */}
         {modeTunaikan === "terdaftar" && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-xs mb-6">
+          <>
+            {/* SECTION CARI DATA MUZAKKI */}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-xs mb-6">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#08734f]">
               <Search size={17} />
               Cari Data Muzakki Anda di Sini:
             </div>
             <p className="mt-1 text-xs text-slate-600">
-              Ketik Nama, NIP, NIK, atau Nomor HP untuk memuat komitmen tagihan kesepakatan zakat Anda secara otomatis.
+              Masukkan NIP/NIK dan Nomor HP untuk memuat komitmen tagihan kesepakatan zakat Anda secara otomatis.
             </p>
 
-            <div className="mt-3 relative" ref={searchContainerRef}>
-              <div className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* INPUT NIP/NIK */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  NIP / NIK <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
-                  value={searchMuzakkiQuery}
-                  onChange={(e) => {
-                    setSearchMuzakkiQuery(e.target.value);
-                    setIsDropdownMuzakkiOpen(true);
-                  }}
-                  onFocus={() => setIsDropdownMuzakkiOpen(true)}
-                  placeholder="Ketik Nama / NIP / NIK / No. HP Anda (Contoh: Ahmad Fauzi / 3278...)..."
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-10 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                  value={nipNikCari}
+                  onChange={(e) => setNipNikCari(e.target.value)}
+                  placeholder="Contoh: 198501302012121009 atau 3278..."
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
                 />
-                {searchMuzakkiQuery && (
-                  <button
-                    type="button"
-                    onClick={handleClearMuzakki}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
               </div>
 
-              {/* DROPDOWN POPUP */}
-              {isDropdownMuzakkiOpen && (
-                <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
-                  {isMuzakkiLoading ? (
-                    <div className="p-4 text-center text-xs text-slate-500">Memuat data muzakki...</div>
-                  ) : filteredMuzakki.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-slate-500">
-                      Muzakki tidak ditemukan. Anda dapat menggunakan tab <strong>"Belum Terdaftar"</strong> di atas untuk penunaian bebas.
-                    </div>
-                  ) : (
-                    filteredMuzakki.slice(0, 10).map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => handleSelectMuzakki(m)}
-                        className="flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-green-50/70 last:border-b-0"
-                      >
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-[#08734f] text-xs font-bold mt-0.5">
-                          {m.nama.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{m.nama}</p>
-                          <p className="text-[11px] text-slate-500 font-mono">
-                            {m.nip ? `NIP: ${m.nip}` : `NIK: ${m.nik || "-"}`} • {m.unit_kerja || m.kategori}
-                          </p>
-                          {m.nominal && (
-                            <p className="text-[11px] font-semibold text-emerald-700">
-                              Komitmen: Rp {new Intl.NumberFormat("id-ID").format(m.nominal)} ({m.jenis_zakat || "Zakat"})
-                            </p>
-                          )}
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
+              {/* INPUT NOMOR HP */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Nomor HP / WA <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={noHpCari}
+                  onChange={(e) => setNoHpCari(e.target.value)}
+                  placeholder="Contoh: 08123456789"
+                  pattern="[0-9]*"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                />
+              </div>
             </div>
+
+            {/* TOMBOL CARI & RESET */}
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={handleCariMuzakki}
+                className="flex-1 h-10 rounded-xl bg-[#08734f] text-white text-xs sm:text-sm font-semibold hover:bg-[#065a3d] transition flex items-center justify-center gap-2"
+              >
+                <Search size={16} />
+                Cari Data
+              </button>
+              <button
+                type="button"
+                onClick={handleResetCariMuzakki}
+                className="h-10 px-4 rounded-xl border border-slate-300 bg-white text-slate-600 text-xs sm:text-sm font-semibold hover:bg-slate-50 transition"
+              >
+                Reset
+              </button>
+            </div>
+
+            {/* ERROR MESSAGE */}
+            {cariMuzakkiError && (
+              <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <span>{cariMuzakkiError}</span>
+              </div>
+            )}
 
             {/* STATUS TERPILIH */}
             {selectedMuzakki && (
-              <div className="mt-3 flex items-center justify-between gap-2.5 rounded-xl border border-emerald-300 bg-white px-4 py-2.5 text-xs text-emerald-900 shadow-xs">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-                  <span>
-                    Muzakki Terdaftar: <strong>{selectedMuzakki.nama}</strong> ({selectedMuzakki.kategori})
-                  </span>
+              <>
+                <div className="mt-3 flex items-center justify-between gap-2.5 rounded-xl border border-emerald-300 bg-white px-4 py-2.5 text-xs text-emerald-900 shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+                    <span>
+                      Muzakki Terdaftar: <strong>{selectedMuzakki.nama}</strong> ({selectedMuzakki.kategori})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResetCariMuzakki}
+                    className="text-[11px] font-semibold text-emerald-700 underline hover:text-emerald-900"
+                  >
+                    Ganti Muzakki
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleClearMuzakki}
-                  className="text-[11px] font-semibold text-emerald-700 underline hover:text-emerald-900"
-                >
-                  Ganti Muzakki
-                </button>
-              </div>
+
+                {/* CHECKBOX HAMBA ALLAH - DI BAWAH INFO MUZAKKI */}
+                <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={anonim}
+                      onChange={(e) => setAnonim(e.target.checked)}
+                      className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    Tampilkan sebagai Hamba Allah (anonim)
+                  </label>
+                  <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
+                    Data diri Anda sudah tercatat dari profil muzakki terdaftar. 
+                    Centang opsi di atas jika ingin nama Anda ditampilkan sebagai "Hamba Allah" 
+                    dalam laporan publik (ID tetap tercatat untuk tagihan).
+                  </p>
+                </div>
+              </>
             )}
+          </div>
+          </>
+        )}
+
+        {/* ====================================================
+            KONDISI B: MODE BELUM TERDAFTAR - DATA DIRI (PALING ATAS)
+        ==================================================== */}
+        {modeTunaikan === "manual" && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6">
+            <h2 className="text-xs sm:text-sm font-bold text-slate-800 mb-4">
+              Data Pembayar Zakat
+            </h2>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Nama Lengkap <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="nama"
+                  value={data.nama}
+                  onChange={handleDataChange}
+                  required={!anonim}
+                  placeholder="Nama lengkap muzakki"
+                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={data.email}
+                  onChange={handleDataChange}
+                  placeholder="nama@email.com (untuk kwitansi & laporan)"
+                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">No. WhatsApp / HP</label>
+                <input
+                  type="tel"
+                  name="telepon"
+                  value={data.telepon}
+                  onChange={handleDataChange}
+                  placeholder="08xxxxxxxxxx"
+                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
+                />
+              </div>
+            </div>
+
+            {/* CHECKBOX HAMBA ALLAH - PALING BAWAH */}
+            <div className="pt-4 border-t border-gray-100">
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={anonim}
+                  onChange={(e) => setAnonim(e.target.checked)}
+                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                Tampilkan sebagai Hamba Allah (anonim)
+              </label>
+            </div>
           </div>
         )}
 
@@ -1332,67 +1470,6 @@ export default function ZakatPage() {
               )}
             </div>
           )}
-
-          {/* ====================================================
-              3. DATA MUZAKKI
-          ==================================================== */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <h2 className="text-xs sm:text-sm font-bold text-slate-800">
-                {modeTunaikan === "terdaftar" ? "Data Diri Muzakki" : "3. Data Pembayar Zakat"}
-              </h2>
-              <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={anonim}
-                  onChange={(e) => setAnonim(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 accent-[#08734f]"
-                />
-                <span>Tampilkan sebagai Hamba Allah (anonim)</span>
-              </label>
-            </div>
-
-            {!anonim && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Nama Lengkap <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="nama"
-                    value={data.nama}
-                    onChange={handleDataChange}
-                    required={!anonim}
-                    placeholder="Nama lengkap muzakki"
-                    className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    onChange={handleDataChange}
-                    placeholder="nama@email.com (untuk kwitansi & laporan)"
-                    className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">No. WhatsApp / HP</label>
-                  <input
-                    type="tel"
-                    name="telepon"
-                    value={data.telepon}
-                    onChange={handleDataChange}
-                    placeholder="08xxxxxxxxxx"
-                    className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* ====================================================
               4. METODE PEMBAYARAN

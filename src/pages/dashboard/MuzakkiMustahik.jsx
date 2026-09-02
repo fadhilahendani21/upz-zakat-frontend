@@ -3,6 +3,8 @@ import {
   Users, Plus, GraduationCap, Globe,
   X, Pencil, Trash2,
   Phone, Mail, Building2, BookOpen,
+  WalletCards, Landmark, Sprout,
+  Eye,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
@@ -103,18 +105,197 @@ function Field({ label, field, type = "text", placeholder, value, onChange, erro
   );
 }
 
-// ── Modal Form ────────────────────────────────────────────────────────────────
+// ── Modal Detail ──────────────────────────────────────────────────────
+function ModalDetail({ muzakki, onClose }) {
+  if (!muzakki) return null;
+  
+  const parsedInfo = parseUnitKerja(muzakki.unit_kerja);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
+              {muzakki.nama.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-900">Detail Muzakki</h2>
+              <p className="text-xs text-gray-500">{muzakki.nama}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 transition"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-5 space-y-5">
+          {/* Data Diri */}
+          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+              <Users size={14} />
+              Data Diri
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <DetailItem label="Nama Lengkap" value={muzakki.nama} />
+              <DetailItem label="NIK" value={muzakki.nik || "-"} />
+              {parsedInfo.isDosenStaf && (
+                <DetailItem label="NIP" value={muzakki.nip || "-"} />
+              )}
+              <DetailItem label="Jenis Kelamin" value={muzakki.jenis_kelamin || "-"} />
+              <DetailItem label="Tempat Lahir" value={muzakki.tempat_lahir || "-"} />
+              <DetailItem label="Tanggal Lahir" value={muzakki.tanggal_lahir || "-"} />
+            </div>
+          </div>
+
+          {/* Kategori & Unit Kerja */}
+          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+              <Building2 size={14} />
+              Kategori & Unit Kerja
+            </h4>
+            <div className="space-y-2">
+              <div>
+                <span className="text-xs text-gray-500">Kategori:</span>
+                <div className="mt-1">
+                  {parsedInfo.isDosenStaf ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                      <GraduationCap size={12} />
+                      Dosen / Staf Civitas
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+                      <Globe size={12} />
+                      Masyarakat Umum
+                    </span>
+                  )}
+                </div>
+              </div>
+              {parsedInfo.isDosenStaf && (
+                <>
+                  <DetailItem label="Fakultas / Unit Kerja" value={parsedInfo.fakultas} />
+                  <DetailItem label="Jurusan / Program Studi" value={parsedInfo.jurusan} />
+                  <DetailItem label="Jabatan" value={muzakki.jabatan || "-"} />
+                </>
+              )}
+              <DetailItem label="Pekerjaan" value={muzakki.pekerjaan || "-"} />
+            </div>
+          </div>
+
+          {/* Kontak */}
+          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+              <Phone size={14} />
+              Informasi Kontak
+            </h4>
+            <div className="grid grid-cols-1 gap-3 text-sm">
+              <DetailItem label="Email" value={muzakki.email || "-"} icon={<Mail size={12} />} />
+              <DetailItem label="No. HP / WA" value={muzakki.no_hp || "-"} icon={<Phone size={12} />} />
+              <DetailItem label="Alamat Lengkap" value={muzakki.alamat_lengkap || "-"} />
+            </div>
+          </div>
+
+          {/* Komitmen Zakat */}
+          {muzakki.kesepakatan_zakat && typeof muzakki.kesepakatan_zakat === 'string' && (
+            <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+              <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">
+                <Sprout size={14} />
+                Komitmen Zakat
+              </h4>
+              <div className="space-y-2 text-sm">
+                {muzakki.kesepakatan_zakat.split(',').map((zakat, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0"></span>
+                    <span className="text-gray-700">{zakat.trim()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Preferensi Pembayaran */}
+          {muzakki.metode_pembayaran && (
+            <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                <WalletCards size={14} />
+                Preferensi Pembayaran
+              </h4>
+              <div className="space-y-2 text-sm">
+                <DetailItem label="Metode Penyaluran" value={muzakki.metode_pembayaran} />
+                {muzakki.pilihan_bank && (
+                  <DetailItem label="Bank Pilihan" value={muzakki.pilihan_bank} icon={<Landmark size={12} />} />
+                )}
+                {muzakki.pilihan_ewallet && (
+                  <DetailItem label="E-Wallet / QRIS" value={muzakki.pilihan_ewallet} icon={<WalletCards size={12} />} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Statistik */}
+          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Statistik</h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <DetailItem label="Total Transaksi" value={`${muzakki.transaksi_count || 0} kali`} />
+              <DetailItem label="Terdaftar Sejak" value={muzakki.created_at ? new Date(muzakki.created_at).toLocaleDateString('id-ID') : "-"} />
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+          <Button variant="outline" onClick={onClose}>
+            Tutup
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper component untuk detail item
+function DetailItem({ label, value, icon }) {
+  return (
+    <div>
+      <span className="text-xs text-gray-500 block mb-1">{label}</span>
+      <div className="flex items-center gap-1.5">
+        {icon && <span className="text-gray-400">{icon}</span>}
+        <span className="text-gray-800 font-medium">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal Form ────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
   const parsed = parseUnitKerja(initial?.unit_kerja);
-  
+
   const [kategoriType, setKategoriType] = useState(
     initial ? (parsed.isDosenStaf ? "dosen_staf" : "umum") : "dosen_staf"
   );
   const [selectedFakultas, setSelectedFakultas] = useState(parsed.fakultas || FAKULTAS_LIST[0]);
-  const [selectedJurusan, setSelectedJurusan]   = useState(
+  const [selectedJurusan, setSelectedJurusan] = useState(
     parsed.jurusan || FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]
   );
+
+  // Multi-zakat selections (mirrors DaftarMuzakkiUnsilPage/DaftarMuzakkiUmumPage)
+  const [zakatSelections, setZakatSelections] = useState({
+    penghasilan: { selected: true, frekuensi: "bulanan", nominal: "250000" },
+    maal: { selected: false, frekuensi: "tahunan", nominal: "1500000" },
+    fitrah: { selected: false, frekuensi: "ramadan", jumlahJiwa: "1", nominalPerJiwa: "45000", nominal: "45000" },
+  });
+
+  const [metodePenyaluran, setMetodePenyaluran] = useState("transfer-bank");
+  const [pilihanBank, setPilihanBank] = useState("BSI");
+  const [pilihanEwallet, setPilihanEwallet] = useState("QRIS");
+
   const [form, setForm] = useState({
     nama: initial?.nama ?? "",
     nik: initial?.nik ?? "",
@@ -127,13 +308,10 @@ function ModalForm({ initial, onClose, onSaved }) {
     jabatan: initial?.jabatan ?? "",
     email: initial?.email ?? "",
     no_hp: initial?.no_hp ?? "",
-    jenis_zakat: initial?.jenis_zakat ?? "Zakat Penghasilan",
-    frekuensi: initial?.frekuensi ?? "bulanan",
-    nominal: initial?.nominal ?? "",
-    metode_pembayaran: initial?.metode_pembayaran ?? "potong-gaji",
   });
+
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors]   = useState({});
+  const [errors, setErrors] = useState({});
 
   function set(field, val) {
     setForm((f) => ({ ...f, [field]: val }));
@@ -145,6 +323,65 @@ function ModalForm({ initial, onClose, onSaved }) {
     setSelectedFakultas(fak);
     const jurusanList = FAKULTAS_JURUSAN_UNSIL[fak] || [];
     setSelectedJurusan(jurusanList[0] || "");
+  }
+
+  const toggleZakat = (key) => {
+    setZakatSelections((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], selected: !prev[key].selected },
+    }));
+    setErrors((e) => ({ ...e, zakat: undefined }));
+  };
+
+  const updateZakatField = (key, field, value) => {
+    setZakatSelections((prev) => {
+      const updated = { ...prev[key], [field]: value };
+      if (key === "fitrah" && (field === "jumlahJiwa" || field === "nominalPerJiwa")) {
+        const jiwa = Number(String(field === "jumlahJiwa" ? value : updated.jumlahJiwa).replace(/\D/g, "") || 1);
+        const perJiwa = Number(String(field === "nominalPerJiwa" ? value : updated.nominalPerJiwa).replace(/\D/g, "") || 45000);
+        updated.nominal = String(jiwa * perJiwa);
+      }
+      return { ...prev, [key]: updated };
+    });
+    setErrors((e) => ({ ...e, zakat: undefined }));
+  };
+
+  function getActiveZakatList() {
+    const list = [];
+    if (zakatSelections.penghasilan.selected) {
+      list.push({
+        key: "penghasilan",
+        jenis: "Zakat Penghasilan",
+        frekuensi: zakatSelections.penghasilan.frekuensi,
+        nominal: Number(String(zakatSelections.penghasilan.nominal || 0).replace(/\D/g, "")),
+        detail: zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : "Per tahun",
+      });
+    }
+    if (zakatSelections.maal.selected) {
+      list.push({
+        key: "maal",
+        jenis: "Zakat Maal",
+        frekuensi: zakatSelections.maal.frekuensi,
+        nominal: Number(String(zakatSelections.maal.nominal || 0).replace(/\D/g, "")),
+        detail: "Zakat atas simpanan & aset kekayaan",
+      });
+    }
+    if (zakatSelections.fitrah.selected) {
+      list.push({
+        key: "fitrah",
+        jenis: "Zakat Fitrah",
+        frekuensi: "ramadan",
+        jumlah_jiwa: Number(zakatSelections.fitrah.jumlahJiwa || 1),
+        nominal_per_jiwa: Number(String(zakatSelections.fitrah.nominalPerJiwa || 45000).replace(/\D/g, "")),
+        nominal: Number(String(zakatSelections.fitrah.nominal || 0).replace(/\D/g, "")),
+        detail: `${zakatSelections.fitrah.jumlahJiwa || 1} Jiwa × Rp ${Number(String(zakatSelections.fitrah.nominalPerJiwa || 45000).replace(/\D/g, "")).toLocaleString("id-ID")}`,
+      });
+    }
+    return list;
+  }
+
+  function getTotalNominal() {
+    return getActiveZakatList().reduce((sum, item) => sum + item.nominal, 0);
   }
 
   function validate() {
@@ -164,6 +401,7 @@ function ModalForm({ initial, onClose, onSaved }) {
       if (!selectedFakultas) errs.fakultas = "Fakultas wajib dipilih.";
       if (!selectedJurusan) errs.jurusan = "Jurusan wajib dipilih.";
     }
+    if (getActiveZakatList().length === 0) errs.zakat = "Pilih minimal 1 jenis zakat.";
     return errs;
   }
 
@@ -177,6 +415,10 @@ function ModalForm({ initial, onClose, onSaved }) {
       const finalUnitKerja = kategoriType === "umum"
         ? "Masyarakat Umum"
         : `${selectedFakultas} · ${selectedJurusan}`;
+
+      const activeZakat = getActiveZakatList();
+      const totalNominal = getTotalNominal();
+      const jenisJoined = activeZakat.map((z) => z.jenis).join(", ");
 
       const payload = {
         nama: form.nama,
@@ -192,10 +434,13 @@ function ModalForm({ initial, onClose, onSaved }) {
         no_hp: form.no_hp || null,
         kategori: kategoriType === "umum" ? "Muzakki Umum" : "Dosen & Staf UNSIL",
         unit_kerja: finalUnitKerja,
-        jenis_zakat: form.jenis_zakat || null,
-        frekuensi: form.frekuensi || null,
-        nominal: form.nominal ? Number(String(form.nominal).replace(/\D/g, "")) : null,
-        metode_pembayaran: form.metode_pembayaran || null,
+        jenis_zakat: jenisJoined || null,
+        frekuensi: activeZakat.length === 1 ? activeZakat[0].frekuensi : "multi-frekuensi",
+        nominal: totalNominal || null,
+        metode_pembayaran: metodePenyaluran || null,
+        pilihan_bank: metodePenyaluran === "transfer-bank" ? pilihanBank : null,
+        pilihan_ewallet: (metodePenyaluran === "e-wallet" || metodePenyaluran === "qris") ? pilihanEwallet : null,
+        kesepakatan_zakat: activeZakat,
       };
 
       if (isEdit) {
@@ -358,80 +603,279 @@ function ModalForm({ initial, onClose, onSaved }) {
               </div>
             )}
 
-            {/* Kesepakatan Zakat (Opsional/Komitmen) */}
+            {/* ── Kesepakatan Zakat (Multi-Zakat) ── */}
             <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/60 space-y-3">
               <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
                 Kesepakatan / Komitmen Zakat
               </h4>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Jenis Zakat</label>
-                  <select
-                    value={form.jenis_zakat}
-                    onChange={(e) => set("jenis_zakat", e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                  >
-                    <option value="Zakat Penghasilan">Zakat Penghasilan</option>
-                    <option value="Zakat Maal">Zakat Maal</option>
-                    <option value="Zakat Fitrah">Zakat Fitrah</option>
-                  </select>
+              {errors.zakat && (
+                <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600">
+                  {errors.zakat}
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Frekuensi</label>
-                  <select
-                    value={form.frekuensi}
-                    onChange={(e) => set("frekuensi", e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              {/* CHECKBOX PILIHAN MULTI-ZAKAT */}
+              <div className="grid grid-cols-1 gap-2.5">
+                {[
+                  { key: "penghasilan", label: "Zakat Penghasilan", desc: "Zakat atas gaji, remunerasi, sertifikasi dosen & honorarium rutin.", icon: WalletCards },
+                  { key: "maal", label: "Zakat Maal (Harta)", desc: "Zakat atas tabungan, simpanan emas, atau aset kekayaan mencapai haul.", icon: Landmark },
+                  { key: "fitrah", label: "Zakat Fitrah", desc: "Zakat jiwa untuk diri sendiri dan keluarga pada bulan suci Ramadan.", icon: Sprout },
+                ].map(({ key, label, desc, icon: Icon }) => (
+                  <div
+                    key={key}
+                    onClick={() => toggleZakat(key)}
+                    className={`cursor-pointer rounded-xl border p-3 transition ${
+                      zakatSelections[key].selected
+                        ? "border-[#08734f] bg-green-50/70 shadow-xs"
+                        : "border-gray-200 bg-white hover:border-green-200"
+                    }`}
                   >
-                    <option value="bulanan">Bulanan</option>
-                    <option value="tahunan">Tahunan</option>
-                    <option value="ramadan">Setiap Ramadan</option>
-                    <option value="kesepakatan">Sesuai Kesepakatan</option>
-                  </select>
-                </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-semibold text-xs sm:text-sm text-gray-800">
+                        <Icon size={16} className="text-[#08734f]" />
+                        {label}
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={zakatSelections[key].selected}
+                        onChange={() => {}}
+                        className="h-4 w-4 accent-[#08734f] rounded"
+                      />
+                    </div>
+                    <p className="mt-1 text-[11px] text-gray-500 leading-relaxed">{desc}</p>
+                  </div>
+                ))}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field
-                  label="Nominal Komitmen (Rp)"
-                  field="nominal"
-                  value={form.nominal ? new Intl.NumberFormat("id-ID").format(Number(String(form.nominal).replace(/\D/g, ""))) : ""}
-                  onChange={(field, val) => set("nominal", val.replace(/\D/g, ""))}
-                  placeholder="Contoh: 500.000"
-                />
+              {/* DETAIL SETTING PER ZAKAT YANG DIPILIH */}
+              <div className="mt-4 space-y-4">
+                {zakatSelections.penghasilan.selected && (
+                  <div className="rounded-xl border border-green-200 bg-green-50/40 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#08734f]">
+                        <WalletCards size={16} />
+                        Zakat Penghasilan
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Frekuensi</label>
+                        <select
+                          value={zakatSelections.penghasilan.frekuensi}
+                          onChange={(e) => updateZakatField("penghasilan", "frekuensi", e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                        >
+                          <option value="bulanan">Bulanan</option>
+                          <option value="tahunan">Tahunan</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Nominal (Rp)</label>
+                        <input
+                          type="text"
+                          value={zakatSelections.penghasilan.nominal ? new Intl.NumberFormat("id-ID").format(Number(String(zakatSelections.penghasilan.nominal).replace(/\D/g, ""))) : ""}
+                          onChange={(e) => updateZakatField("penghasilan", "nominal", e.target.value.replace(/\D/g, ""))}
+                          placeholder="Contoh: 250000"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Preferensi Pembayaran</label>
-                  <select
-                    value={form.metode_pembayaran}
-                    onChange={(e) => set("metode_pembayaran", e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                  >
-                    <option value="potong-gaji">Potong Gaji / Payroll</option>
-                    <option value="transfer-bank">Transfer Bank</option>
-                    <option value="qris">QRIS / E-Wallet</option>
-                  </select>
-                </div>
+                {zakatSelections.maal.selected && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-800">
+                        <Landmark size={16} />
+                        Zakat Maal
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Frekuensi</label>
+                        <select
+                          value={zakatSelections.maal.frekuensi}
+                          onChange={(e) => updateZakatField("maal", "frekuensi", e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                        >
+                          <option value="tahunan">Tahunan</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Nominal (Rp)</label>
+                        <input
+                          type="text"
+                          value={zakatSelections.maal.nominal ? new Intl.NumberFormat("id-ID").format(Number(String(zakatSelections.maal.nominal).replace(/\D/g, ""))) : ""}
+                          onChange={(e) => updateZakatField("maal", "nominal", e.target.value.replace(/\D/g, ""))}
+                          placeholder="Contoh: 1500000"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {zakatSelections.fitrah.selected && (
+                  <div className="rounded-xl border border-emerald-300 bg-emerald-50/40 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-800">
+                        <Sprout size={16} />
+                        Zakat Fitrah
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Jumlah Jiwa</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={zakatSelections.fitrah.jumlahJiwa}
+                          onChange={(e) => updateZakatField("fitrah", "jumlahJiwa", e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Nominal per Jiwa (Rp)</label>
+                        <input
+                          type="text"
+                          value={zakatSelections.fitrah.nominalPerJiwa ? new Intl.NumberFormat("id-ID").format(Number(String(zakatSelections.fitrah.nominalPerJiwa).replace(/\D/g, ""))) : ""}
+                          onChange={(e) => updateZakatField("fitrah", "nominalPerJiwa", e.target.value.replace(/\D/g, ""))}
+                          placeholder="45000"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
+              {/* RINGKASAN TOTAL */}
+              {getActiveZakatList().length > 0 && (
+                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
+                  <p className="text-xs font-bold text-emerald-900 mb-2">Ringkasan Komitmen Zakat:</p>
+                  {getActiveZakatList().map((item) => (
+                    <div key={item.key} className="flex items-center justify-between py-1 text-xs">
+                      <span className="text-gray-700">{item.jenis} ({item.detail})</span>
+                      <span className="font-bold text-[#08734f]">Rp {item.nominal.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between pt-2 mt-2 border-t border-emerald-200/60 text-xs font-bold text-slate-900">
+                    <span>Total Komitmen Zakat:</span>
+                    <span className="text-[#08734f]">Rp {getTotalNominal().toLocaleString("id-ID")}</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
-           <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white rounded-b-2xl">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Batal</Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah"}
-            </Button>
+            {/* ── Preferensi Pembayaran ── */}
+            <div className="p-4 bg-blue-50/60 rounded-xl border border-blue-200/60 space-y-3">
+              <h4 className="text-xs font-bold text-blue-900 uppercase tracking-wider">
+                Preferensi Pembayaran
+              </h4>
+
+              <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "transfer-bank", label: "Transfer Bank", icon: Landmark },
+                { id: "e-wallet", label: "E-Wallet", icon: WalletCards },
+                { id: "qris", label: "QRIS", icon: WalletCards },
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setMetodePenyaluran(id)}
+                  className={`py-2 rounded-lg border text-xs font-semibold transition ${
+                    metodePenyaluran === id
+                      ? "bg-[#08734f] text-white border-[#08734f]"
+                      : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+              </div>
+
+              {metodePenyaluran === "transfer-bank" && (
+              <div className="mt-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Pilih Bank Tujuan:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {["BSI", "Mandiri", "BRI", "BNI", "Muamalat"].map((b) => (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => setPilihanBank(b)}
+                      className={`py-1.5 rounded-lg border text-xs font-semibold transition ${
+                        pilihanBank === b
+                          ? "bg-[#08734f] text-white border-[#08734f]"
+                          : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              )}
+
+              {metodePenyaluran === "e-wallet" && (
+              <div className="mt-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Pilih E-Wallet:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {["QRIS", "GoPay", "OVO", "DANA", "ShopeePay"].map((w) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setPilihanEwallet(w)}
+                      className={`py-1.5 rounded-lg border text-xs font-semibold transition ${
+                        pilihanEwallet === w
+                          ? "bg-[#08734f] text-white border-[#08734f]"
+                          : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {w}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              )}
+
+              {metodePenyaluran === "qris" && (
+                <div className="mt-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Pilih Metode QRIS:</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["QRIS", "GoPay", "OVO", "DANA", "ShopeePay"].map((w) => (
+                      <button
+                        key={w}
+                        type="button"
+                        onClick={() => setPilihanEwallet(w)}
+                        className={`py-1.5 rounded-lg border text-xs font-semibold transition ${
+                          pilihanEwallet === w
+                            ? "bg-[#08734f] text-white border-[#08734f]"
+                            : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {w}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white rounded-b-2xl">
+              <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Batal</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah"}
+              </Button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>
+    </div>
   );
 }
 
-// ── Modal Konfirmasi Hapus ────────────────────────────────────────────────────
+// ── Modal Konfirmasi Hapus ────────────────────────────────────────────
 function ModalHapus({ muzakki, onClose, onDeleted }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -489,6 +933,7 @@ export default function MuzakkiMustahik() {
   const [page, setPage]             = useState(1);
   const [modalForm, setModalForm]   = useState(null);
   const [modalHapus, setModalHapus] = useState(null);
+  const [modalDetail, setModalDetail] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -651,6 +1096,13 @@ export default function MuzakkiMustahik() {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2 justify-end">
                           <button
+                            onClick={() => setModalDetail(row)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition"
+                            title="Lihat Detail"
+                          >
+                            <Eye size={14} />
+                          </button>
+                          <button
                             onClick={() => setModalForm({ mode: "edit", data: row })}
                             className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition"
                             title="Edit"
@@ -696,6 +1148,12 @@ export default function MuzakkiMustahik() {
           muzakki={modalHapus}
           onClose={() => setModalHapus(null)}
           onDeleted={handleDeleted}
+        />
+      )}
+      {modalDetail && (
+        <ModalDetail
+          muzakki={modalDetail}
+          onClose={() => setModalDetail(null)}
         />
       )}
     </div>
