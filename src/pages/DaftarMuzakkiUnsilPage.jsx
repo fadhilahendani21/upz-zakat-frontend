@@ -37,6 +37,7 @@ import {
   getZakatConfig,
 } from "../services/zakatService";
 import { registerPublicMuzakki, getPublicMuzakki } from "../services/muzakkiService";
+import Combobox from "../components/common/Combobox";
 
 const FAKULTAS_LIST = Object.keys(FAKULTAS_JURUSAN_UNSIL);
 
@@ -66,13 +67,10 @@ export default function DaftarMuzakkiUnsilPage() {
   };
 
   // =========================================================
-  // STATE PENCARIAN NIP & NO HP
+  // STATE PENCARIAN DATA PEGAWAI
   // =========================================================
 
-  const [nipCari, setNipCari] = useState("");
-  const [noHpCari, setNoHpCari] = useState("");
-  const [pegawaiDitemukan, setPegawaiDitemukan] = useState(null);
-  const [cariError, setCariError] = useState("");
+  const [pegawaiTerpilih, setPegawaiTerpilih] = useState(null);
   const [dataPegawai, setDataPegawai] = useState({
     nama: "",
     nip: "",
@@ -116,39 +114,42 @@ export default function DaftarMuzakkiUnsilPage() {
   };
 
   // =========================================================
-  // FUNGSI CARI DATA PEGAWAI
+  // FUNGSI SEARCH PEGAWAI UNTUK COMBOBOX
   // =========================================================
 
-  const handleCariData = () => {
-    setCariError("");
-    const cleanNip = nipCari.replace(/\D/g, "").trim();
-    const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
-
-    if (!cleanNip && !cleanNoHp) {
-      setCariError("Minimal masukkan NIP atau Nomor HP untuk pencarian.");
-      return;
+  const searchPegawaiOptions = async (query) => {
+    // Simulasi pencarian dari data dummy DOSEN_STAF_UNSIL
+    const q = query.toLowerCase().trim();
+    
+    if (!q) {
+      // Tampilkan semua data jika tidak ada query
+      return DOSEN_STAF_UNSIL.slice(0, 10).map(p => ({
+        id: p.nip,
+        nama: `${p.nama} - ${p.nip}`,
+        unit_kerja: `${p.jurusan} / ${p.unit}`,
+        ...p
+      }));
     }
 
-    const found = DOSEN_STAF_UNSIL.find((p) => {
-      const matchNip = cleanNip ? p.nip.replace(/\D/g, "") === cleanNip : true;
-      const matchNoHp = cleanNoHp ? p.noHp.replace(/\D/g, "") === cleanNoHp : true;
-      return matchNip && matchNoHp;
+    // Filter berdasarkan nama atau NIP
+    const filtered = DOSEN_STAF_UNSIL.filter((p) => {
+      const matchNama = p.nama.toLowerCase().includes(q);
+      const matchNip = p.nip.includes(q);
+      const matchJabatan = p.jabatan?.toLowerCase().includes(q);
+      return matchNama || matchNip || matchJabatan;
     });
 
-    if (found) {
-      setDataPegawai({ ...found });
-      setPegawaiDitemukan(found);
-      setCariError("");
-      setFormError("");
-      
-      // Update dropdown fakultas dan jurusan berdasarkan data yang ditemukan
-      if (found.unit) {
-        const foundFakultas = FAKULTAS_LIST.find(f => found.unit.includes(f)) || FAKULTAS_LIST[0];
-        setSelectedFakultas(foundFakultas);
-        setSelectedJurusan(found.jurusan || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
-      }
-    } else {
-      setPegawaiDitemukan(null);
+    return filtered.slice(0, 10).map(p => ({
+      id: p.nip,
+      nama: `${p.nama} - ${p.nip}`,
+      unit_kerja: `${p.jurusan} / ${p.unit}`,
+      ...p
+    }));
+  };
+
+  const handlePegawaiSelected = (pegawai) => {
+    if (!pegawai) {
+      setPegawaiTerpilih(null);
       setDataPegawai({
         nama: "",
         nip: "",
@@ -164,35 +165,22 @@ export default function DaftarMuzakkiUnsilPage() {
         tanggalLahir: "",
         alamatLengkap: "",
       });
-      setCariError(`Data pegawai dengan NIP "${nipCari}" atau No HP "${noHpCari}" tidak ditemukan.`);
+      setFormError("");
+      setSelectedFakultas(FAKULTAS_LIST[0]);
+      setSelectedJurusan(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
+      return;
     }
-  };
 
-  const handleResetCari = () => {
-    setNipCari("");
-    setNoHpCari("");
-    setPegawaiDitemukan(null);
-    setCariError("");
-    setDataPegawai({
-      nama: "",
-      nip: "",
-      nik: "",
-      unit: "",
-      jurusan: "",
-      jabatan: "",
-      email: "",
-      noHp: "",
-      golongan: "",
-      jenisKelamin: "",
-      tempatLahir: "",
-      tanggalLahir: "",
-      alamatLengkap: "",
-    });
+    setPegawaiTerpilih(pegawai);
+    setDataPegawai({ ...pegawai });
     setFormError("");
     
-    // Reset dropdown ke default
-    setSelectedFakultas(FAKULTAS_LIST[0]);
-    setSelectedJurusan(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
+    // Update dropdown fakultas dan jurusan berdasarkan data yang ditemukan
+    if (pegawai.unit) {
+      const foundFakultas = FAKULTAS_LIST.find(f => pegawai.unit.includes(f)) || FAKULTAS_LIST[0];
+      setSelectedFakultas(foundFakultas);
+      setSelectedJurusan(pegawai.jurusan || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
+    }
   };
 
   // =========================================================
@@ -776,89 +764,34 @@ export default function DaftarMuzakkiUnsilPage() {
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* =================================================
-                  1. PENCARIAN DATA KEPEGAWAIAN (NIP + NO HP)
+                  1. PENCARIAN DATA KEPEGAWAIAN
               ================================================== */}
               <div>
                 <SectionTitle
                   number="1."
                   icon={<UserRound size={21} />}
-                  title="Pencarian Data Kepegawaian"
+                  title="Cari Data Kepegawaian"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Masukkan NIP dan Nomor HP Anda untuk mengambil data dari sistem kepegawaian UNSIL.
+                  Ketik nama atau NIP untuk mencari data pegawai dari sistem kepegawaian UNSIL.
                 </p>
 
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      NIP <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={nipCari}
-                      onChange={(e) => setNipCari(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Contoh: 197503122001121001"
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Nomor HP <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={noHpCari}
-                      onChange={(e) => setNoHpCari(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Contoh: 081223450001"
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
-                    />
-                  </div>
+                <div className="mt-4">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Cari Data Pegawai <span className="text-red-500">*</span>
+                  </label>
+                  <Combobox
+                    value={pegawaiTerpilih}
+                    onChange={handlePegawaiSelected}
+                    onSearch={searchPegawaiOptions}
+                    placeholder="Ketik nama pegawai atau NIP..."
+                  />
+                  {pegawaiTerpilih && (
+                    <p className="text-xs text-gray-400 mt-1.5 ml-1">
+                      Data ditemukan: <strong>{pegawaiTerpilih.jurusan}</strong> · {pegawaiTerpilih.unit}
+                    </p>
+                  )}
                 </div>
-
-                <div className="mt-4 flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={handleCariData}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#08734f] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[#064f35]"
-                  >
-                    <Search size={17} />
-                    Cari Data
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResetCari}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 shadow-xs transition hover:bg-slate-50"
-                  >
-                    <X size={17} />
-                    Reset
-                  </button>
-                </div>
-
-                {cariError && (
-                  <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                    <span>{cariError}</span>
-                  </div>
-                )}
-
-                {pegawaiDitemukan && (
-                  <div className="mt-3 flex items-center justify-between gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-xs font-semibold text-emerald-800">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-                      <span>
-                        Data Ditemukan: <strong>{pegawaiDitemukan.nama}</strong> ({pegawaiDitemukan.jabatan})
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleResetCari}
-                      className="text-[11px] text-emerald-700 underline hover:text-emerald-900"
-                    >
-                      Ganti Data
-                    </button>
-                  </div>
-                )}
               </div>
 
               <div className="border-t border-slate-100" />

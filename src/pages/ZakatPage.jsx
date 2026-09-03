@@ -101,32 +101,54 @@ export default function ZakatPage() {
     loadMuzakki();
   }, []);
 
-  // Fungsi untuk mencari muzakki berdasarkan NIP/NIK dan No HP
+  // State untuk mode pencarian
+  const [searchMode, setSearchMode] = useState("nip"); // "nip" atau "hp"
+
+  // Fungsi untuk mencari muzakki berdasarkan NIP/NIK atau No HP
   const handleCariMuzakki = () => {
     setCariMuzakkiError("");
-    const cleanNipNik = nipNikCari.replace(/\D/g, "").trim();
-    const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
+    
+    if (searchMode === "nip") {
+      const cleanNipNik = nipNikCari.replace(/\D/g, "").trim();
+      
+      if (!cleanNipNik) {
+        setCariMuzakkiError("Harap isi NIP/NIK untuk mencari data muzakki.");
+        return;
+      }
 
-    // Validasi: keduanya harus diisi
-    if (!cleanNipNik || !cleanNoHp) {
-      setCariMuzakkiError("Harap isi NIP/NIK dan Nomor HP untuk mencari data muzakki.");
-      return;
-    }
+      // Cari muzakki berdasarkan NIP/NIK
+      const found = muzakkiList.find((m) => {
+        return (m.nip && m.nip.replace(/\D/g, "") === cleanNipNik) || 
+               (m.nik && m.nik.replace(/\D/g, "") === cleanNipNik);
+      });
 
-    // Cari muzakki yang cocok
-    const found = muzakkiList.find((m) => {
-      const matchNipNik = (m.nip && m.nip.replace(/\D/g, "") === cleanNipNik) || 
-                          (m.nik && m.nik.replace(/\D/g, "") === cleanNipNik);
-      const matchNoHp = m.no_hp && m.no_hp.replace(/\D/g, "") === cleanNoHp;
-      return matchNipNik && matchNoHp;
-    });
-
-    if (found) {
-      handleSelectMuzakki(found);
-      setCariMuzakkiError("");
+      if (found) {
+        handleSelectMuzakki(found);
+        setCariMuzakkiError("");
+      } else {
+        setCariMuzakkiError(`Data muzakki dengan NIP/NIK "${nipNikCari}" tidak ditemukan.`);
+        setSelectedMuzakki(null);
+      }
     } else {
-      setCariMuzakkiError(`Data muzakki dengan NIP/NIK "${nipNikCari}" dan No HP "${noHpCari}" tidak ditemukan.`);
-      setSelectedMuzakki(null);
+      const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
+      
+      if (!cleanNoHp) {
+        setCariMuzakkiError("Harap isi Nomor HP untuk mencari data muzakki.");
+        return;
+      }
+
+      // Cari muzakki berdasarkan No HP
+      const found = muzakkiList.find((m) => {
+        return m.no_hp && m.no_hp.replace(/\D/g, "") === cleanNoHp;
+      });
+
+      if (found) {
+        handleSelectMuzakki(found);
+        setCariMuzakkiError("");
+      } else {
+        setCariMuzakkiError(`Data muzakki dengan Nomor HP "${noHpCari}" tidak ditemukan.`);
+        setSelectedMuzakki(null);
+      }
     }
   };
 
@@ -852,38 +874,68 @@ export default function ZakatPage() {
               Cari Data Muzakki Anda di Sini:
             </div>
             <p className="mt-1 text-xs text-slate-600">
-              Masukkan NIP/NIK dan Nomor HP untuk memuat komitmen tagihan kesepakatan zakat Anda secara otomatis.
+              Pilih metode pencarian dan masukkan data untuk memuat komitmen tagihan kesepakatan zakat Anda secara otomatis.
             </p>
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* INPUT NIP/NIK */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  NIP / NIK <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={nipNikCari}
-                  onChange={(e) => setNipNikCari(e.target.value)}
-                  placeholder="Contoh: 198501302012121009 atau 3278..."
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
-                />
+            {/* SWITCH MODE PENCARIAN */}
+            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-xs font-semibold text-slate-700">Cari dengan:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSearchMode("nip")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    searchMode === "nip"
+                      ? "bg-[#08734f] text-white"
+                      : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+                  }`}
+                >
+                  NIP / NIK
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchMode("hp")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    searchMode === "hp"
+                      ? "bg-[#08734f] text-white"
+                      : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+                  }`}
+                >
+                  Nomor HP
+                </button>
               </div>
+            </div>
 
-              {/* INPUT NOMOR HP */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Nomor HP / WA <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={noHpCari}
-                  onChange={(e) => setNoHpCari(e.target.value)}
-                  placeholder="Contoh: 08123456789"
-                  pattern="[0-9]*"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
-                />
-              </div>
+            {/* INPUT FIELD - CONDITIONAL BASED ON searchMode */}
+            <div className="mt-3">
+              {searchMode === "nip" ? (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    NIP / NIK <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={nipNikCari}
+                    onChange={(e) => setNipNikCari(e.target.value)}
+                    placeholder="Contoh: 198501302012121009 atau 3278..."
+                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Nomor HP / WA <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={noHpCari}
+                    onChange={(e) => setNoHpCari(e.target.value)}
+                    placeholder="Contoh: 08123456789"
+                    pattern="[0-9]*"
+                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-2 focus:ring-green-100"
+                  />
+                </div>
+              )}
             </div>
 
             {/* TOMBOL CARI & RESET */}

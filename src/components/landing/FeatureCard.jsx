@@ -4,7 +4,6 @@ import {
   CreditCard,
   Users,
   FileText,
-  Newspaper,
   Headphones,
   ArrowRight,
 } from "lucide-react";
@@ -15,7 +14,6 @@ const icons = {
   CreditCard,
   Users,
   FileText,
-  Newspaper,
   Headphones,
 };
 
@@ -24,13 +22,12 @@ const rute = {
   "Tunaikan Zakat": "/zakat",
   "Program Penyaluran": "/program",
   "Laporan Transparansi": "/laporan",
-  "Berita & Kegiatan": "/berita",
   "Hubungi Kami": "/kontak",
 };
 
 export default function FeatureCard() {
   return (
-    <section className="max-w-7xl mx-auto px-6 pt-2 pb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+    <section className="max-w-7xl mx-auto px-6 pt-2 pb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
       {dummyFitur.map((fitur) => {
         const Icon = icons[fitur.icon];
         return (

@@ -13,6 +13,7 @@ import {
   FolderHeart,
   X,
   Search,
+  AlertCircle,
 } from "lucide-react";
 
 import Card from "../components/common/Card";
@@ -223,36 +224,63 @@ export default function DonasiPage() {
   // CARI DATA MUZAKKI
   // ======================================================
   
+  // State untuk mode pencarian
+  const [searchMode, setSearchMode] = useState("nip"); // "nip" atau "hp"
+  
   const handleCariMuzakki = () => {
     setCariMuzakkiError("");
-    const cleanNipNik = nipNikCari.replace(/\D/g, "").trim();
-    const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
+    
+    if (searchMode === "nip") {
+      const cleanNipNik = nipNikCari.replace(/\D/g, "").trim();
+      
+      if (!cleanNipNik) {
+        setCariMuzakkiError("Harap isi NIP/NIK untuk mencari data muzakki.");
+        return;
+      }
 
-    // Validasi: keduanya harus diisi
-    if (!cleanNipNik || !cleanNoHp) {
-      setCariMuzakkiError("Harap isi NIP/NIK dan Nomor HP untuk mencari data muzakki.");
-      return;
-    }
-
-    // Cari muzakki yang cocok
-    const found = muzakkiList.find((m) => {
-      const matchNipNik = (m.nip && m.nip.replace(/\D/g, "") === cleanNipNik) || 
-                          (m.nik && m.nik.replace(/\D/g, "") === cleanNipNik);
-      const matchNoHp = m.no_hp && m.no_hp.replace(/\D/g, "") === cleanNoHp;
-      return matchNipNik && matchNoHp;
-    });
-
-    if (found) {
-      setSelectedMuzakki(found);
-      setData({
-        nama: found.nama || "",
-        email: found.email || "",
-        telepon: found.no_hp || "",
+      // Cari muzakki berdasarkan NIP/NIK
+      const found = muzakkiList.find((m) => {
+        return (m.nip && m.nip.replace(/\D/g, "") === cleanNipNik) || 
+               (m.nik && m.nik.replace(/\D/g, "") === cleanNipNik);
       });
-      setCariMuzakkiError("");
+
+      if (found) {
+        setSelectedMuzakki(found);
+        setData({
+          nama: found.nama || "",
+          email: found.email || "",
+          telepon: found.no_hp || "",
+        });
+        setCariMuzakkiError("");
+      } else {
+        setCariMuzakkiError(`Data muzakki dengan NIP/NIK "${nipNikCari}" tidak ditemukan.`);
+        setSelectedMuzakki(null);
+      }
     } else {
-      setCariMuzakkiError(`Data muzakki dengan NIP/NIK "${nipNikCari}" dan No HP "${noHpCari}" tidak ditemukan.`);
-      setSelectedMuzakki(null);
+      const cleanNoHp = noHpCari.replace(/\D/g, "").trim();
+      
+      if (!cleanNoHp) {
+        setCariMuzakkiError("Harap isi Nomor HP untuk mencari data muzakki.");
+        return;
+      }
+
+      // Cari muzakki berdasarkan No HP
+      const found = muzakkiList.find((m) => {
+        return m.no_hp && m.no_hp.replace(/\D/g, "") === cleanNoHp;
+      });
+
+      if (found) {
+        setSelectedMuzakki(found);
+        setData({
+          nama: found.nama || "",
+          email: found.email || "",
+          telepon: found.no_hp || "",
+        });
+        setCariMuzakkiError("");
+      } else {
+        setCariMuzakkiError(`Data muzakki dengan Nomor HP "${noHpCari}" tidak ditemukan.`);
+        setSelectedMuzakki(null);
+      }
     }
   };
 
@@ -662,92 +690,137 @@ export default function DonasiPage() {
           </div>
 
           {/* MODE: CARI DATA MUZAKKI */}
-          {modeDataDiri === "cari" && !selectedMuzakki && (
+          {modeDataDiri === "cari" && (
             <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 mb-2">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-emerald-700 mb-2">
                 <Search size={16} />
                 Cari Data Muzakki Terdaftar
               </div>
               <p className="text-xs text-slate-600 mb-3">
-                Jika Anda sudah terdaftar sebagai Muzakki, masukkan NIP/NIK dan Nomor HP untuk mengisi data otomatis.
+                Jika Anda sudah terdaftar sebagai Muzakki, pilih metode pencarian dan masukkan data untuk mengisi form otomatis.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                    NIP / NIK <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={nipNikCari}
-                    onChange={(e) => setNipNikCari(e.target.value)}
-                    placeholder="Contoh: 198501302012121009"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                    Nomor HP / WA <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={noHpCari}
-                    onChange={(e) => setNoHpCari(e.target.value)}
-                    placeholder="Contoh: 08123456789"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                  />
+              {/* SWITCH MODE PENCARIAN */}
+              <div className="mb-3 flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <span className="text-xs font-semibold text-slate-700">Cari dengan:</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode("nip")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      searchMode === "nip"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+                    }`}
+                  >
+                    NIP / NIK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode("hp")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      searchMode === "hp"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+                    }`}
+                  >
+                    Nomor HP
+                  </button>
                 </div>
               </div>
 
-              {cariMuzakkiError && (
-                <div className="mb-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600">
-                  {cariMuzakkiError}
-                </div>
-              )}
+              {/* INPUT FIELD - CONDITIONAL BASED ON searchMode */}
+              <div className="mb-3">
+                {searchMode === "nip" ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      NIP / NIK <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={nipNikCari}
+                      onChange={(e) => setNipNikCari(e.target.value)}
+                      placeholder="Contoh: 198501302012121009 atau 3278..."
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Nomor HP / WA <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={noHpCari}
+                      onChange={(e) => setNoHpCari(e.target.value)}
+                      placeholder="Contoh: 08123456789"
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                )}
+              </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-3">
                 <button
                   type="button"
                   onClick={handleCariMuzakki}
-                  className="flex-1 h-9 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2"
+                  className="flex-1 h-10 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2"
                 >
-                  <Search size={14} />
+                  <Search size={16} />
                   Cari Data
                 </button>
                 <button
                   type="button"
                   onClick={handleResetCariMuzakki}
-                  className="h-9 px-4 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition"
+                  className="h-10 px-4 rounded-xl border border-slate-300 bg-white text-slate-600 text-xs sm:text-sm font-semibold hover:bg-slate-50 transition"
                 >
                   Reset
                 </button>
               </div>
-            </div>
-          )}
 
-          {/* Info Muzakki Terpilih */}
-          {selectedMuzakki && (
-            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <User size={16} className="text-emerald-700" />
-                    <span className="text-xs font-bold text-emerald-900">Muzakki Terdaftar</span>
-                  </div>
-                  <p className="text-sm font-semibold text-gray-900">{selectedMuzakki.nama}</p>
-                  {selectedMuzakki.email && (
-                    <p className="text-xs text-slate-600 mt-0.5">{selectedMuzakki.email}</p>
-                  )}
+              {cariMuzakkiError && (
+                <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                  <span>{cariMuzakkiError}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleResetCariMuzakki}
-                  className="text-slate-500 hover:text-slate-700 transition"
-                  title="Hapus data muzakki dan isi manual"
-                >
-                  <X size={18} />
-                </button>
-              </div>
+              )}
+
+              {selectedMuzakki && (
+                <>
+                  <div className="mt-3 flex items-center justify-between gap-2.5 rounded-xl border border-emerald-300 bg-white px-4 py-2.5 text-xs text-emerald-900 shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+                      <span>
+                        Muzakki Terdaftar: <strong>{selectedMuzakki.nama}</strong> ({selectedMuzakki.kategori})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleResetCariMuzakki}
+                      className="text-[11px] font-semibold text-emerald-700 underline hover:text-emerald-900"
+                    >
+                      Ganti Muzakki
+                    </button>
+                  </div>
+
+                  <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={anonim}
+                        onChange={(e) => setAnonim(e.target.checked)}
+                        className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      Tampilkan sebagai Hamba Allah (anonim)
+                    </label>
+                    <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
+                      Data diri Anda sudah tercatat dari profil muzakki terdaftar. 
+                      Centang opsi di atas jika ingin nama Anda ditampilkan sebagai "Hamba Allah" 
+                      dalam laporan publik (ID tetap tercatat untuk tagihan).
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -840,18 +913,20 @@ export default function DonasiPage() {
             </div>
           )}
 
-          {/* CHECKBOX HAMBA ALLAH - PALING BAWAH */}
-          <div className="pt-4 border-t border-gray-100">
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                checked={anonim}
-                onChange={(e) => setAnonim(e.target.checked)}
-                className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-              />
-              Donasi sebagai Hamba Allah (anonim)
-            </label>
-          </div>
+          {/* CHECKBOX HAMBA ALLAH - HANYA MUNCUL DI MODE ISI MANUAL */}
+          {modeDataDiri === "manual" && (
+            <div className="pt-4 border-t border-gray-100">
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={anonim}
+                  onChange={(e) => setAnonim(e.target.checked)}
+                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                Donasi sebagai Hamba Allah (anonim)
+              </label>
+            </div>
+          )}
 
         </Card>
 

@@ -30,7 +30,7 @@ export const dummyProgramAktif = [
   },
 ];
 
-// Data buat fitur-fitur di landing page (grid 6 card)
+// Data buat fitur-fitur di landing page (grid 5 card)
 export const dummyFitur = [
   {
     icon: "Calculator",
@@ -51,11 +51,6 @@ export const dummyFitur = [
     icon: "FileText",
     title: "Laporan Transparansi",
     desc: "Lihat laporan penerimaan dan penyaluran secara transparan.",
-  },
-  {
-    icon: "Newspaper",
-    title: "Berita & Kegiatan",
-    desc: "Informasi terbaru kegiatan dan program UPZ Zakat Unsil.",
   },
   {
     icon: "Headphones",

@@ -14,7 +14,7 @@ import profilUnsilImage from "../assets/images/profil-unsil.jpeg";
 
 const DATA_PENGURUS = [
   {
-    nama: "Pak Acep Irham",
+    nama: "Dr. Ir. Acep Irham Gufroni, M.Eng.",
     jabatan: "Ketua UPZ",
     foto: dummyPengurus[0]?.foto,
   },
