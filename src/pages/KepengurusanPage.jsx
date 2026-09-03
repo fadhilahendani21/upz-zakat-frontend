@@ -162,7 +162,7 @@ export default function KepengurusanPage() {
                 </p>
 
                 <p className="mt-1 text-sm leading-6 text-gray-700">
-                  Pak Acep Irham
+                  Dr. Ir. Acep Irham Gufroni, M.Eng
                 </p>
 
               </div>
