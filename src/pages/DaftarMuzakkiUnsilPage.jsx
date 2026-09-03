@@ -127,7 +127,20 @@ export default function DaftarMuzakkiUnsilPage() {
         id: p.nip,
         nama: `${p.nama} - ${p.nip}`,
         unit_kerja: `${p.jurusan} / ${p.unit}`,
-        ...p
+        // Simpan data asli dengan prefix _ agar tidak tertimpa
+        _namaAsli: p.nama,
+        _nipAsli: p.nip,
+        _nikAsli: p.nik,
+        _unitAsli: p.unit,
+        _jurusanAsli: p.jurusan,
+        _jabatanAsli: p.jabatan,
+        _emailAsli: p.email,
+        _noHpAsli: p.noHp,
+        _golonganAsli: p.golongan,
+        _jenisKelaminAsli: p.jenisKelamin,
+        _tempatLahirAsli: p.tempatLahir,
+        _tanggalLahirAsli: p.tanggalLahir,
+        _alamatLengkapAsli: p.alamatLengkap,
       }));
     }
 
@@ -143,7 +156,20 @@ export default function DaftarMuzakkiUnsilPage() {
       id: p.nip,
       nama: `${p.nama} - ${p.nip}`,
       unit_kerja: `${p.jurusan} / ${p.unit}`,
-      ...p
+      // Simpan data asli dengan prefix _ agar tidak tertimpa
+      _namaAsli: p.nama,
+      _nipAsli: p.nip,
+      _nikAsli: p.nik,
+      _unitAsli: p.unit,
+      _jurusanAsli: p.jurusan,
+      _jabatanAsli: p.jabatan,
+      _emailAsli: p.email,
+      _noHpAsli: p.noHp,
+      _golonganAsli: p.golongan,
+      _jenisKelaminAsli: p.jenisKelamin,
+      _tempatLahirAsli: p.tempatLahir,
+      _tanggalLahirAsli: p.tanggalLahir,
+      _alamatLengkapAsli: p.alamatLengkap,
     }));
   };
 
@@ -171,15 +197,32 @@ export default function DaftarMuzakkiUnsilPage() {
       return;
     }
 
+    // Simpan pegawai terpilih dengan format display untuk Combobox
     setPegawaiTerpilih(pegawai);
-    setDataPegawai({ ...pegawai });
+    
+    // Gunakan data asli dengan prefix _Asli
+    setDataPegawai({
+      nama: pegawai._namaAsli,
+      nip: pegawai._nipAsli,
+      nik: pegawai._nikAsli,
+      unit: pegawai._unitAsli,
+      jurusan: pegawai._jurusanAsli,
+      jabatan: pegawai._jabatanAsli,
+      email: pegawai._emailAsli,
+      noHp: pegawai._noHpAsli,
+      golongan: pegawai._golonganAsli,
+      jenisKelamin: pegawai._jenisKelaminAsli,
+      tempatLahir: pegawai._tempatLahirAsli,
+      tanggalLahir: pegawai._tanggalLahirAsli,
+      alamatLengkap: pegawai._alamatLengkapAsli,
+    });
     setFormError("");
     
     // Update dropdown fakultas dan jurusan berdasarkan data yang ditemukan
-    if (pegawai.unit) {
-      const foundFakultas = FAKULTAS_LIST.find(f => pegawai.unit.includes(f)) || FAKULTAS_LIST[0];
+    if (pegawai._unitAsli) {
+      const foundFakultas = FAKULTAS_LIST.find(f => pegawai._unitAsli.includes(f)) || FAKULTAS_LIST[0];
       setSelectedFakultas(foundFakultas);
-      setSelectedJurusan(pegawai.jurusan || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
+      setSelectedJurusan(pegawai._jurusanAsli || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
     }
   };
 
@@ -246,6 +289,7 @@ export default function DaftarMuzakkiUnsilPage() {
   const [setuju, setSetuju] = useState(false);
   const [formError, setFormError] = useState("");
   const [showAgreementAlert, setShowAgreementAlert] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   // =========================================================
   // STATE SUCCESS MODAL
@@ -476,6 +520,7 @@ export default function DaftarMuzakkiUnsilPage() {
     );
     if (nipExists) {
       setFormError(`NIP ${dataPegawai.nip} sudah terdaftar sebagai Muzakki. Silakan gunakan NIP lain.`);
+      setShowErrorModal(true);
       window.scrollTo({ top: 200, behavior: "smooth" });
       return;
     }
@@ -486,6 +531,7 @@ export default function DaftarMuzakkiUnsilPage() {
     );
     if (namaExists) {
       setFormError(`Nama "${dataPegawai.nama}" sudah terdaftar sebagai Muzakki. Jika Anda sudah terdaftar sebelumnya, tidak perlu mendaftar ulang.`);
+      setShowErrorModal(true);
       window.scrollTo({ top: 200, behavior: "smooth" });
       return;
     }
@@ -752,16 +798,6 @@ export default function DaftarMuzakkiUnsilPage() {
               FORM UTAMA KANAN
           ==================================================== */}
           <div className="lg:col-span-8 overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-            {formError && (
-              <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm text-red-700">
-                <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="font-semibold">Mohon Periksa Kembali:</p>
-                  <p className="mt-0.5 text-xs">{formError}</p>
-                </div>
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* =================================================
                   1. PENCARIAN DATA KEPEGAWAIAN
@@ -788,7 +824,7 @@ export default function DaftarMuzakkiUnsilPage() {
                   />
                   {pegawaiTerpilih && (
                     <p className="text-xs text-gray-400 mt-1.5 ml-1">
-                      Data ditemukan: <strong>{pegawaiTerpilih.jurusan}</strong> · {pegawaiTerpilih.unit}
+                      Data ditemukan: <strong>{pegawaiTerpilih._jurusanAsli}</strong> · {pegawaiTerpilih._unitAsli}
                     </p>
                   )}
                 </div>
@@ -1008,14 +1044,6 @@ export default function DaftarMuzakkiUnsilPage() {
                       Pilih 1 atau lebih jenis zakat yang ingin Anda tunaikan secara berkala.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openKalkulator("penghasilan")}
-                    className="inline-flex items-center gap-1.5 self-start rounded-lg border border-[#08734f]/30 bg-green-50 px-3 py-1.5 text-xs font-semibold text-[#08734f] hover:bg-green-100 transition"
-                  >
-                    <Calculator size={14} />
-                    Kalkulator Zakat
-                  </button>
                 </div>
 
                 {/* CHECKBOX PILIHAN MULTI-ZAKAT */}
@@ -1543,6 +1571,37 @@ export default function DaftarMuzakkiUnsilPage() {
               type="button"
               onClick={() => setShowAgreementAlert(false)}
               className="mt-6 w-full rounded-xl bg-[#08734f] py-3 text-sm font-semibold text-white hover:bg-[#065d40] transition"
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          MODAL ERROR (DATA DUPLIKAT)
+      ====================================================== */}
+      {showErrorModal && formError && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm animate-fade-in">
+          <div className="max-w-md w-full rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 mb-4">
+                <AlertCircle size={36} className="stroke-[2.5]" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Mohon Periksa Kembali
+              </h3>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                {formError}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowErrorModal(false);
+                setFormError("");
+              }}
+              className="mt-6 w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white hover:bg-red-700 transition"
             >
               Mengerti
             </button>
