@@ -1,40 +1,130 @@
-name: Deploy Frontend to cPanel
+name: Build & Deploy to VPS
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  NODE_VERSION: "22"
+  STAGING_DIR: /opt/lexa/upz-frontend-staging
+  RELEASES_DIR: /opt/lexa/upz-frontend-releases
+  APP_LINK: /opt/lexa/apps/upz-frontend
+  KEEP_RELEASES: 2
+
 jobs:
   build-and-deploy:
-    name: Build & Deploy Frontend
     runs-on: ubuntu-latest
     environment:
       name: production
+      url: ${{ vars.PRODUCTION_URL || 'https://upz.lexatech.my.id' }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Build Vite Application
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://upz.unsil.ac.id/upz-api/public/api' }}
-        run: npm run build
+    - name: Build Vite App
+      run: npm run build
+      env:
+        VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
-      - name: Deploy Static Files to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ./
-          local-dir: ./dist/
+    - name: Assemble deployment package
+      run: |
+        mkdir -p deploy-pkg
+        # Salin hasil build
+        cp -r dist deploy-pkg/
+        
+        # Salin file konfigurasi Nginx jika ada
+        if [ -d ".nginx" ]; then
+          cp -r .nginx deploy-pkg/
+        fi
+
+        echo "📦 Package size: $(du -sh deploy-pkg | cut -f1)"
+        echo "📊 Breakdown:"
+        du -sh deploy-pkg/dist 2>/dev/null || true
+        du -sh deploy-pkg/.nginx 2>/dev/null || true
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts 2>/dev/null
+
+    - name: Rsync to staging
+      run: |
+        rsync -az --no-o --no-g --delete \
+          -e "ssh -i ~/.ssh/deploy_key" \
+          deploy-pkg/ \
+          ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:${{ env.STAGING_DIR }}/
+
+    - name: Deploy with atomic swap
+      uses: appleboy/ssh-action@v1.2.0
+      env:
+        STAGING_DIR: ${{ env.STAGING_DIR }}
+        RELEASES_DIR: ${{ env.RELEASES_DIR }}
+        APP_LINK: ${{ env.APP_LINK }}
+        KEEP_RELEASES: ${{ env.KEEP_RELEASES }}
+      with:
+        host: ${{ secrets.VPS_IP }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        envs: STAGING_DIR,RELEASES_DIR,APP_LINK,KEEP_RELEASES
+        script: |
+          set -euo pipefail
+
+          # 1. Release Swapping
+          RELEASE_ID=$(date +%Y%m%d_%H%M%S)
+          RELEASE_DIR="${RELEASES_DIR}/${RELEASE_ID}"
+
+          echo "==> Creating release ${RELEASE_ID} (hardlink copy)"
+          mkdir -p "${RELEASES_DIR}"
+          cp -al "${STAGING_DIR}" "${RELEASE_DIR}"
+
+          echo "==> Ensuring read permissions for container"
+          chmod -R a+rX "${RELEASE_DIR}"
+
+          PREVIOUS_RELEASE=""
+          if [ -L "${APP_LINK}" ]; then
+            PREVIOUS_RELEASE=$(readlink -f "${APP_LINK}")
+            echo "    Previous: ${PREVIOUS_RELEASE}"
+          elif [ -d "${APP_LINK}" ]; then
+            echo "==> Removing existing directory ${APP_LINK} to make way for symlink"
+            rm -rf "${APP_LINK}"
+          fi
+
+          echo "==> Swapping symlink"
+          ln -sfn "${RELEASE_DIR}" "${APP_LINK}.tmp"
+          mv -Tf "${APP_LINK}.tmp" "${APP_LINK}"
+
+          # 2. Restart Container
+          echo "==> Recreating container"
+          cd /opt/lexa
+          docker compose up -d --force-recreate upz-frontend
+
+          # 3. Cleanup Old Releases
+          echo "==> Cleanup (keep ${KEEP_RELEASES})"
+          CURRENT=$(readlink -f "${APP_LINK}")
+          cd "${RELEASES_DIR}"
+          for dir in $(ls -1dt */ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1))); do
+            FULL="${RELEASES_DIR}/${dir%/}"
+            if [ "${FULL}" != "${CURRENT}" ]; then
+              echo "    🗑️ ${dir}"
+              rm -rf "${dir}"
+            fi
+          done
+
+          echo "==> ✅ Deploy done! Release: ${RELEASE_ID}"
+
+    - name: Cleanup SSH key
+      if: always()
+      run: rm -f ~/.ssh/deploy_key
