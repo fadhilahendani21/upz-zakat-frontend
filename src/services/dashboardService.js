@@ -4,7 +4,7 @@
  * Strategi:
  *  1. VITE_API_URL tidak di-set → mode demo (dummy data)
  *  2. VITE_API_URL di-set → 1 request ke /api/dashboard/all
- *  3. Kalau API gagal → fallback ke dummy data
+ *  3. Kalau API gagal → tampilkan error (TIDAK fallback ke dummy)
  *
  * Tidak ada caching — setiap kunjungan selalu fetch fresh dari API.
  */
@@ -71,18 +71,12 @@ export async function getAllDashboardData(tahun = new Date().getFullYear()) {
 
     return await res.json();
   } catch (err) {
-    console.warn(
-      `%c[UPZ Dashboard] API gagal, fallback ke dummy. Error: ${err.message}`,
-      "color: #f59e0b;"
+    console.error(
+      `%c[UPZ Dashboard] API gagal. Error: ${err.message}`,
+      "color: #dc2626;"
     );
-    // Fallback ke dummy data jika API gagal
-    return {
-      stats: dummyStats,
-      ringkasanDana: dummyRingkasanDana,
-      grafik: dummyChartTahunan,
-      transaksi: dummyTransaksi.slice(0, 5),
-      program: dummyProgramAktif,
-    };
+    // Throw error tanpa fallback ke dummy
+    throw err;
   }
 }
 
