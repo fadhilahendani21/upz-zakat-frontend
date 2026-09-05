@@ -19,6 +19,18 @@ import DonasiPage from "../pages/DonasiPage";
 import ZakatPage from "../pages/ZakatPage";
 import HitungZakatPage from "../pages/HitungZakatPage";
 import LoginPage from "../pages/LoginPage";
+import MuzakkiLoginPage from "../pages/MuzakkiLoginPage";
+import MuzakkiLayout from "../layouts/MuzakkiLayout";
+import MuzakkiDashboard from "../pages/MuzakkiDashboard";
+import ProfilSaya from "../pages/muzakki/ProfilSaya";
+import KartuMuzakki from "../pages/muzakki/KartuMuzakki";
+import KartuNPWZ from "../pages/muzakki/KartuNPWZ";
+import TunaikanZakat from "../pages/muzakki/TunaikanZakat";
+import RiwayatPembayaran from "../pages/muzakki/RiwayatPembayaran";
+import LaporanZakat from "../pages/muzakki/LaporanZakat";
+import KalkulatorZakat from "../pages/muzakki/KalkulatorZakat";
+import PengaturanMuzakki from "../pages/muzakki/PengaturanMuzakki";
+import BantuanMuzakki from "../pages/muzakki/BantuanMuzakki";
 
 // ===============================
 // PENDAFTARAN MUZAKKI
@@ -165,6 +177,21 @@ export default function AppRoutes() {
           path="/masuk"
           element={<LoginPage />}
         />
+
+        <Route path="/muzakki/masuk" element={<MuzakkiLoginPage />} />
+
+        <Route path="/muzakki" element={<MuzakkiLayout />}>
+          <Route path="dashboard" element={<MuzakkiDashboard />} />
+          <Route path="profil" element={<ProfilSaya />} />
+          <Route path="kartu" element={<KartuMuzakki />} />
+          <Route path="npwz" element={<KartuNPWZ />} />
+          <Route path="tunaikan" element={<TunaikanZakat />} />
+          <Route path="riwayat" element={<RiwayatPembayaran />} />
+          <Route path="laporan" element={<LaporanZakat />} />
+          <Route path="kalkulator" element={<KalkulatorZakat />} />
+          <Route path="pengaturan" element={<PengaturanMuzakki />} />
+          <Route path="bantuan" element={<BantuanMuzakki />} />
+        </Route>
 
         {/* =========================================
             DASHBOARD

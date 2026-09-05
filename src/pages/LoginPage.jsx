@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { ShieldCheck, Loader2, ArrowLeft } from "lucide-react";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FloatingLeaves from "../components/common/FloatingLeaves";
@@ -41,6 +41,15 @@ export default function LoginPage() {
     <div className="min-h-screen bg-linear-to-b from-white via-brand-50 to-brand-200 flex items-center justify-center px-6 relative overflow-hidden">
       <FloatingLeaves />
 
+      {/* Back to Home Button */}
+      <Link
+        to="/"
+        className="fixed top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm text-gray-700 rounded-lg hover:bg-white hover:shadow-md transition-all duration-200 border border-gray-200 z-50"
+      >
+        <ArrowLeft size={18} />
+        <span className="text-sm font-medium">Kembali ke Beranda</span>
+      </Link>
+
       <Card
         className="w-full max-w-sm relative z-10 bg-white/75 backdrop-blur-md"
         style={{ animation: "fadeInUp 0.6s ease-out" }}
@@ -72,7 +81,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:scale-[1.02] focus:border-brand-400"
-              placeholder="admin@unsil.ac.id"
+              placeholder="Masukkan email"
             />
           </div>
           <div>
@@ -85,7 +94,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:scale-[1.02] focus:border-brand-400"
-              placeholder="********"
+              placeholder="Masukkan password"
             />
           </div>
           <Button

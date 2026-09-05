@@ -191,6 +191,8 @@ export default function DaftarMuzakkiUnsilPage() {
         tanggalLahir: "",
         alamatLengkap: "",
       });
+      // Reset income components
+      setIncomeComponents(INCOME_COMPONENTS.map(comp => ({ ...comp, selected: false, nominal: 0, zakat: 0 })));
       setFormError("");
       setSelectedFakultas(FAKULTAS_LIST[0]);
       setSelectedJurusan(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
@@ -224,53 +226,62 @@ export default function DaftarMuzakkiUnsilPage() {
       setSelectedFakultas(foundFakultas);
       setSelectedJurusan(pegawai._jurusanAsli || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
     }
+
+    // Autofill income components from dummy data
+    const dummy = DOSEN_STAF_UNSIL.find(p => p.nip === pegawai._nipAsli);
+    if (dummy) {
+      setIncomeComponents(prev =>
+        prev.map(comp => {
+          const value = dummy[comp.id] || 0;
+          return {
+            ...comp,
+            nominal: value,
+            zakat: Math.round(value * 0.025),
+            selected: value > 0, // Auto-select if value > 0
+          };
+        })
+      );
+    }
   };
 
   // =========================================================
-  // STATE MULTI-KESEPAKATAN ZAKAT
+  // STATE KOMPONEN PENGHASILAN UNTUK ZAKAT
   // =========================================================
 
-  const [zakatSelections, setZakatSelections] = useState({
-    penghasilan: {
-      selected: true,
-      frekuensi: "bulanan", // "bulanan" | "tahunan"
-      nominal: "500000",
-    },
-    maal: {
-      selected: false,
-      frekuensi: "tahunan", // "tahunan"
-      nominal: "2500000",
-    },
-    fitrah: {
-      selected: false,
-      frekuensi: "ramadan", // "ramadan"
-      jumlahJiwa: "4",
-      nominalPerJiwa: "45000",
-      nominal: "180000",
-    },
-  });
+  const INCOME_COMPONENTS = [
+    { id: 'gajiPokok', label: 'Gaji Pokok' },
+    { id: 'tunjanganFungsional', label: 'Tunjangan Fungsional' },
+    { id: 'tunjanganProfesi', label: 'Tunjangan Profesi' },
+    { id: 'tunjanganJabatanStruktural', label: 'Tunjangan Jabatan Struktural' },
+    { id: 'tunjanganDosenTugasTambahan', label: 'Tunjangan Dosen Tugas Tambahan' },
+    { id: 'tunjanganKinerja', label: 'Tunjangan Kinerja (Tukin)' },
+  ];
 
-  const toggleZakat = (key) => {
-    setZakatSelections((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        selected: !prev[key].selected,
-      },
-    }));
+  const [incomeComponents, setIncomeComponents] = useState(
+    INCOME_COMPONENTS.map(comp => ({
+      ...comp,
+      selected: false,
+      nominal: 0,
+      zakat: 0,
+    }))
+  );
+
+  const toggleIncomeComponent = (id) => {
+    setIncomeComponents(prev =>
+      prev.map(comp =>
+        comp.id === id ? { ...comp, selected: !comp.selected } : comp
+      )
+    );
     setFormError("");
   };
 
-  const updateZakatField = (key, field, value) => {
-    setZakatSelections((prev) => {
-      const updated = { ...prev[key], [field]: value };
-      if (key === "fitrah" && (field === "jumlahJiwa" || field === "nominalPerJiwa")) {
-        const jiwa = Number(String(field === "jumlahJiwa" ? value : updated.jumlahJiwa).replace(/\D/g, "") || 1);
-        const perJiwa = Number(String(field === "nominalPerJiwa" ? value : updated.nominalPerJiwa).replace(/\D/g, "") || 45000);
-        updated.nominal = String(jiwa * perJiwa);
-      }
-      return { ...prev, [key]: updated };
-    });
+  const updateIncomeNominal = (id, value) => {
+    const num = Number(value.replace(/\D/g, "")) || 0;
+    setIncomeComponents(prev =>
+      prev.map(comp =>
+        comp.id === id ? { ...comp, nominal: num, zakat: Math.round(num * 0.025) } : comp
+      )
+    );
     setFormError("");
   };
 
@@ -278,9 +289,8 @@ export default function DaftarMuzakkiUnsilPage() {
   // PREFERENSI PENYALURAN (HANYA TRANSFER BANK & E-WALLET)
   // =========================================================
 
-  const [metodePenyaluran, setMetodePenyaluran] = useState("transfer-bank"); // "transfer-bank" | "e-wallet" | "qris"
-  const [pilihanBank, setPilihanBank] = useState("BSI");
-  const [pilihanEwallet, setPilihanEwallet] = useState("QRIS");
+  // Metode penyaluran tetap "Potong Gaji" – tidak perlu state
+  const metodePenyaluran = "Potong Gaji";
 
   // =========================================================
   // STATE PERSETUJUAN & ERROR BANNER
@@ -322,49 +332,15 @@ export default function DaftarMuzakkiUnsilPage() {
   };
 
   // =========================================================
-  // KALKULASI TOTAL KESEPAKATAN
+  // KALKULASI TOTAL ZAKAT
   // =========================================================
 
-  const getSelectedZakatCount = () => {
-    return Object.values(zakatSelections).filter((z) => z.selected).length;
+  const getTotalZakat = () => {
+    return incomeComponents.reduce((sum, c) => sum + (c.selected ? c.zakat : 0), 0);
   };
 
-  const getActiveZakatList = () => {
-    const list = [];
-    if (zakatSelections.penghasilan.selected) {
-      list.push({
-        key: "penghasilan",
-        jenis: "Zakat Penghasilan",
-        frekuensi: zakatSelections.penghasilan.frekuensi,
-        nominal: Number(String(zakatSelections.penghasilan.nominal || 0).replace(/\D/g, "")),
-        detail: `${zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : "Per tahun"}`,
-      });
-    }
-    if (zakatSelections.maal.selected) {
-      list.push({
-        key: "maal",
-        jenis: "Zakat Maal",
-        frekuensi: zakatSelections.maal.frekuensi,
-        nominal: Number(String(zakatSelections.maal.nominal || 0).replace(/\D/g, "")),
-        detail: "Zakat atas simpanan & aset kekayaan",
-      });
-    }
-    if (zakatSelections.fitrah.selected) {
-      list.push({
-        key: "fitrah",
-        jenis: "Zakat Fitrah",
-        frekuensi: "ramadan",
-        jumlah_jiwa: Number(zakatSelections.fitrah.jumlahJiwa || 1),
-        nominal_per_jiwa: Number(String(zakatSelections.fitrah.nominalPerJiwa || 45000).replace(/\D/g, "")),
-        nominal: Number(String(zakatSelections.fitrah.nominal || 0).replace(/\D/g, "")),
-        detail: `${zakatSelections.fitrah.jumlahJiwa} Jiwa × Rp ${formatNominal(zakatSelections.fitrah.nominalPerJiwa)}`,
-      });
-    }
-    return list;
-  };
-
-  const getTotalNominal = () => {
-    return getActiveZakatList().reduce((sum, item) => sum + item.nominal, 0);
+  const getSelectedComponents = () => {
+    return incomeComponents.filter(c => c.selected && c.nominal > 0);
   };
 
   // =========================================================
@@ -439,39 +415,20 @@ export default function DaftarMuzakkiUnsilPage() {
 
   const terapkanHasilKalkulator = () => {
     if (hasilKalkulator) {
-      // Hanya terapkan jika wajib zakat, atau jika ada value yang valid
+      // Terapkan hasil kalkulator ke komponen penghasilan yang sesuai
       const nominalPakai = hasilKalkulator.value;
-      if (nominalPakai > 0) {
-        if (jenisKalkulator === "penghasilan") {
-          setZakatSelections((prev) => ({
-            ...prev,
-            penghasilan: {
-              ...prev.penghasilan,
-              selected: true,
-              nominal: String(nominalPakai),
-            },
-          }));
-        } else if (jenisKalkulator === "maal") {
-          setZakatSelections((prev) => ({
-            ...prev,
-            maal: {
-              ...prev.maal,
-              selected: true,
-              nominal: String(nominalPakai),
-            },
-          }));
-        } else if (jenisKalkulator === "fitrah") {
-          setZakatSelections((prev) => ({
-            ...prev,
-            fitrah: {
-              ...prev.fitrah,
-              selected: true,
-              jumlahJiwa: String(jumlahJiwaCalc),
-              nominal: String(nominalPakai),
-            },
-          }));
-        }
+      if (nominalPakai > 0 && jenisKalkulator === "penghasilan") {
+        // Set ke Gaji Pokok
+        setIncomeComponents(prev =>
+          prev.map(comp =>
+            comp.id === 'gajiPokok'
+              ? { ...comp, selected: true, nominal: nominalPakai, zakat: Math.round(nominalPakai * 0.025) }
+              : comp
+          )
+        );
         setShowKalkulator(false);
+      } else {
+        setKalkulatorError("Kalkulator ini hanya untuk Zakat Penghasilan.");
       }
     }
   };
@@ -547,17 +504,17 @@ export default function DaftarMuzakkiUnsilPage() {
       return;
     }
 
-    // Prioritas 2: Validasi kesepakatan zakat
-    const activeZakat = getActiveZakatList();
-    if (activeZakat.length === 0) {
-      setFormError("Silakan pilih minimal 1 jenis zakat yang ingin disepakati.");
+    // Prioritas 2: Validasi komponen penghasilan
+    const selected = getSelectedComponents();
+    if (selected.length === 0) {
+      setFormError("Pilih minimal satu komponen penghasilan dan isi nominalnya.");
       window.scrollTo({ top: 400, behavior: "smooth" });
       return;
     }
 
-    for (const z of activeZakat) {
-      if (!z.nominal || z.nominal < 10000) {
-        setFormError(`Nominal untuk ${z.jenis} minimal Rp10.000.`);
+    for (const comp of selected) {
+      if (!comp.nominal || comp.nominal < 10000) {
+        setFormError(`Nominal untuk ${comp.label} minimal Rp10.000.`);
         window.scrollTo({ top: 400, behavior: "smooth" });
         return;
       }
@@ -571,8 +528,9 @@ export default function DaftarMuzakkiUnsilPage() {
 
     setSubmitting(true);
     try {
-      const totalNominal = getTotalNominal();
-      const jenisJoined = activeZakat.map((z) => z.jenis).join(", ");
+      const totalZakat = getTotalZakat();
+      const selectedComps = getSelectedComponents();
+      const jenisJoined = selectedComps.map(c => c.label).join(", ");
 
       const payload = {
         nama: dataPegawai.nama,
@@ -587,28 +545,75 @@ export default function DaftarMuzakkiUnsilPage() {
         alamat_lengkap: dataPegawai.alamatLengkap,
         email: dataPegawai.email || null,
         no_hp: dataPegawai.noHp || null,
-        jenis_zakat: jenisJoined,
-        frekuensi: activeZakat.length === 1 ? activeZakat[0].frekuensi : "multi-frekuensi",
-        nominal: totalNominal,
-        metode_pembayaran: metodePenyaluran,
-        pilihan_bank: metodePenyaluran === "transfer-bank" ? pilihanBank : null,
-        pilihan_ewallet:
-          metodePenyaluran === "e-wallet" || metodePenyaluran === "qris" ? pilihanEwallet : null,
-        kesepakatan_zakat: activeZakat,
+        jenis_zakat: "Zakat Penghasilan",
+        frekuensi: "bulanan",
+        nominal: totalZakat,
+        metode_pembayaran: "Potong Gaji", // default
+        pilihan_bank: null,
+        pilihan_ewallet: null,
+        kesepakatan_zakat: selectedComps.map(c => ({
+          komponen: c.label,
+          nominal: c.nominal,
+          zakat: c.zakat,
+        })),
       };
 
       await registerPublicMuzakki(payload);
 
+      // Generate random password and create user account
+      const generateRandomPassword = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let password = '';
+        for (let i = 0; i < 8; i++) {
+          password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return password;
+      };
+      const generatedPassword = generateRandomPassword();
+
+      // Call backend to create user account and send WhatsApp via Baileys
+      try {
+        const accountPayload = {
+          nama: dataPegawai.nama,
+          nip: dataPegawai.nip,
+          email: dataPegawai.email,
+          noHp: dataPegawai.noHp,
+          password: generatedPassword,
+          role: 'muzakki',
+          unit_kerja: `${dataPegawai.unit}${dataPegawai.jurusan ? ` · ${dataPegawai.jurusan}` : ''}`,
+        };
+        
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/muzakki/create-account`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(accountPayload),
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          console.log('✅ Akun muzakki berhasil dibuat dan WhatsApp terkirim');
+        } else {
+          console.warn('⚠️ Akun mungkin sudah ada:', result.message);
+        }
+      } catch (err) {
+        console.error('❌ Gagal membuat akun muzakki:', err);
+        // Store in localStorage as fallback
+        localStorage.setItem('muzakki_credentials_' + dataPegawai.nip, JSON.stringify({
+          email: dataPegawai.email || dataPegawai.noHp,
+          password: generatedPassword,
+        }));
+      }
+
       setRegisteredSummary({
         nama: dataPegawai.nama,
         nip: dataPegawai.nip,
+        noHp: dataPegawai.noHp,
         unit: dataPegawai.unit,
         jabatan: dataPegawai.jabatan,
-        activeZakat,
-        totalNominal,
-        metodePenyaluran,
-        pilihanBank,
-        pilihanEwallet,
+        selectedComponents: selectedComps,
+        totalZakat,
+        metodePenyaluran: "Potong Gaji",
       });
 
       setShowSuccessModal(true);
@@ -642,28 +647,7 @@ export default function DaftarMuzakkiUnsilPage() {
       tanggalLahir: "",
       alamatLengkap: "",
     });
-    setZakatSelections({
-      penghasilan: {
-        selected: true,
-        frekuensi: "bulanan",
-        nominal: "250000",
-      },
-      maal: {
-        selected: false,
-        frekuensi: "tahunan",
-        nominal: "1500000",
-      },
-      fitrah: {
-        selected: false,
-        frekuensi: "ramadan",
-        jumlahJiwa: "3",
-        nominalPerJiwa: "45000",
-        nominal: "135000",
-      },
-    });
-    setMetodePenyaluran("transfer-bank");
-    setPilihanBank("");
-    setPilihanEwallet("");
+    setIncomeComponents(INCOME_COMPONENTS.map(comp => ({ ...comp, selected: false, nominal: 0, zakat: 0 })));
     setSetuju(false);
     setFormError("");
   };
@@ -1030,463 +1014,81 @@ export default function DaftarMuzakkiUnsilPage() {
               <div className="border-t border-slate-100" />
 
               {/* =================================================
-                  3. INFORMASI KESEPAKATAN ZAKAT (MULTI-ZAKAT)
-              ================================================== */}
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div>
-                    <SectionTitle
-                      number="3."
-                      icon={<WalletCards size={21} />}
-                      title="Informasi Kesepakatan Zakat"
-                    />
-                    <p className="mt-1 text-xs text-slate-500">
-                      Pilih 1 atau lebih jenis zakat yang ingin Anda tunaikan secara berkala.
-                    </p>
-                  </div>
-                </div>
-
-                {/* CHECKBOX PILIHAN MULTI-ZAKAT */}
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {/* ZAKAT PENGHASILAN */}
-                  <div
-                    onClick={() => toggleZakat("penghasilan")}
-                    className={`cursor-pointer rounded-xl border p-4 transition ${
-                      zakatSelections.penghasilan.selected
-                        ? "border-[#08734f] bg-green-50/70 shadow-xs"
-                        : "border-slate-200 bg-white hover:border-green-200"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-semibold text-xs sm:text-sm text-slate-800">
-                        <WalletCards size={18} className="text-[#08734f]" />
-                        Zakat Penghasilan
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={zakatSelections.penghasilan.selected}
-                        onChange={() => {}}
-                        className="h-4 w-4 accent-[#08734f] rounded"
-                      />
-                    </div>
-                    <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
-                      Zakat atas gaji, remunerasi, sertifikasi dosen &amp; honorarium rutin.
-                    </p>
-                  </div>
-
-                  {/* ZAKAT MAAL */}
-                  <div
-                    onClick={() => toggleZakat("maal")}
-                    className={`cursor-pointer rounded-xl border p-4 transition ${
-                      zakatSelections.maal.selected
-                        ? "border-[#08734f] bg-green-50/70 shadow-xs"
-                        : "border-slate-200 bg-white hover:border-green-200"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-semibold text-xs sm:text-sm text-slate-800">
-                        <Landmark size={18} className="text-[#08734f]" />
-                        Zakat Maal (Harta)
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={zakatSelections.maal.selected}
-                        onChange={() => {}}
-                        className="h-4 w-4 accent-[#08734f] rounded"
-                      />
-                    </div>
-                    <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
-                      Zakat atas tabungan, simpanan emas, atau aset kekayaan mencapai haul.
-                    </p>
-                  </div>
-
-                  {/* ZAKAT FITRAH */}
-                  <div
-                    onClick={() => toggleZakat("fitrah")}
-                    className={`cursor-pointer rounded-xl border p-4 transition ${
-                      zakatSelections.fitrah.selected
-                        ? "border-[#08734f] bg-green-50/70 shadow-xs"
-                        : "border-slate-200 bg-white hover:border-green-200"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-semibold text-xs sm:text-sm text-slate-800">
-                        <Sprout size={18} className="text-[#08734f]" />
-                        Zakat Fitrah
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={zakatSelections.fitrah.selected}
-                        onChange={() => {}}
-                        className="h-4 w-4 accent-[#08734f] rounded"
-                      />
-                    </div>
-                    <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
-                      Zakat jiwa untuk diri sendiri dan keluarga pada bulan suci Ramadan.
-                    </p>
-                  </div>
-                </div>
-
-                {/* DETAIL SETTING PER ZAKAT YANG DIPILIH */}
-                <div className="mt-5 space-y-4">
-                  {/* DETAIL ZAKAT PENGHASILAN */}
-                  {zakatSelections.penghasilan.selected && (
-                    <div className="rounded-xl border border-green-200 bg-green-50/40 p-4.5 sm:p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#08734f]">
-                          <WalletCards size={17} />
-                          Pengaturan Zakat Penghasilan
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => openKalkulator("penghasilan")}
-                          className="text-[11px] font-semibold text-[#08734f] underline"
-                        >
-                          Hitung 2,5% via Kalkulator
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Frekuensi Penunaian
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
-                            {[
-                              { id: "bulanan", label: "Bulanan" },
-                              { id: "tahunan", label: "Tahunan" },
-                            ].map((f) => (
-                              <button
-                                key={f.id}
-                                type="button"
-                                onClick={() => updateZakatField("penghasilan", "frekuensi", f.id)}
-                                className={`py-2 px-2.5 rounded-lg border text-xs font-semibold transition ${
-                                  zakatSelections.penghasilan.frekuensi === f.id
-                                    ? "bg-[#08734f] text-white border-[#08734f]"
-                                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                                }`}
-                              >
-                                {f.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Nominal Zakat Penghasilan (Rp)
-                          </label>
-                          <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
-                            <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-500">
-                              Rp
-                            </span>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={formatNominal(zakatSelections.penghasilan.nominal)}
-                              onChange={(e) =>
-                                updateZakatField("penghasilan", "nominal", e.target.value.replace(/\D/g, ""))
-                              }
-                              placeholder="500.000"
-                              className="h-10 w-full px-3 text-xs sm:text-sm outline-none"
-                            />
-                          </div>
-                          <p className="mt-1 text-[11px] text-slate-500">
-                            {zakatSelections.penghasilan.frekuensi === "bulanan"
-                              ? `Estimasi komitmen: Rp ${formatNominal(Number(zakatSelections.penghasilan.nominal || 0) * 12)} / tahun`
-                              : "Nominal zakat penghasilan per penunaian"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* DETAIL ZAKAT MAAL */}
-                  {zakatSelections.maal.selected && (
-                    <div className="rounded-xl border border-green-200 bg-green-50/40 p-4.5 sm:p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#08734f]">
-                          <Landmark size={17} />
-                          Pengaturan Zakat Maal (Harta / Tabungan)
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => openKalkulator("maal")}
-                          className="text-[11px] font-semibold text-[#08734f] underline"
-                        >
-                          Hitung via Kalkulator Maal
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Frekuensi Penunaian
-                          </label>
-                          <div className="grid grid-cols-1 gap-2">
-                            {[
-                              { id: "tahunan", label: "Tahunan (Haul)" },
-                            ].map((f) => (
-                              <button
-                                key={f.id}
-                                type="button"
-                                onClick={() => updateZakatField("maal", "frekuensi", f.id)}
-                                className={`py-2 px-2.5 rounded-lg border text-xs font-semibold transition ${
-                                  zakatSelections.maal.frekuensi === f.id
-                                    ? "bg-[#08734f] text-white border-[#08734f]"
-                                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                                }`}
-                              >
-                                {f.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Nominal Zakat Maal (Rp)
-                          </label>
-                          <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
-                            <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-500">
-                              Rp
-                            </span>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={formatNominal(zakatSelections.maal.nominal)}
-                              onChange={(e) =>
-                                updateZakatField("maal", "nominal", e.target.value.replace(/\D/g, ""))
-                              }
-                              placeholder="2.500.000"
-                              className="h-10 w-full px-3 text-xs sm:text-sm outline-none"
-                            />
-                          </div>
-                          <p className="mt-1 text-[11px] text-slate-500">
-                            Kadar 2,5% dari total harta bersih yang telah mencapai nisab 85g emas.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* DETAIL ZAKAT FITRAH */}
-                  {zakatSelections.fitrah.selected && (
-                    <div className="rounded-xl border border-green-200 bg-green-50/40 p-4.5 sm:p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#08734f]">
-                          <Sprout size={17} />
-                          Pengaturan Zakat Fitrah (Ramadan)
-                        </div>
-                        <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-full">
-                          Setiap Ramadan
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Jumlah Tanggungan / Jiwa
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="20"
-                            value={zakatSelections.fitrah.jumlahJiwa}
-                            onChange={(e) => updateZakatField("fitrah", "jumlahJiwa", e.target.value)}
-                            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs sm:text-sm outline-none focus:border-[#08734f]"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Nominal per Jiwa (Rp)
-                          </label>
-                          <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
-                            <span className="flex items-center border-r border-slate-200 bg-slate-50 px-2.5 text-xs text-slate-500">
-                              Rp
-                            </span>
-                            <input
-                              type="text"
-                              value={formatNominal(zakatSelections.fitrah.nominalPerJiwa)}
-                              onChange={(e) =>
-                                updateZakatField("fitrah", "nominalPerJiwa", e.target.value.replace(/\D/g, ""))
-                              }
-                              className="h-10 w-full px-2.5 text-xs sm:text-sm outline-none"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Total Zakat Fitrah
-                          </label>
-                          <div className="flex h-10 items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs sm:text-sm font-bold text-[#08734f]">
-                            Rp {formatNominal(zakatSelections.fitrah.nominal)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* RINGKASAN GABUNGAN KOMITMEN ZAKAT */}
-                {getSelectedZakatCount() > 0 && (
-                  <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50/90 p-5 shadow-xs">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#08734f]">
-                      <ClipboardCheck size={18} />
-                      Ringkasan Total Kesepakatan Zakat Anda
-                    </div>
-
-                    <div className="mt-3 divide-y divide-emerald-200/60">
-                      {getActiveZakatList().map((item) => (
-                        <div key={item.key} className="flex items-center justify-between py-2 text-xs sm:text-sm">
-                          <div>
-                            <p className="font-semibold text-slate-800">{item.jenis}</p>
-                            <p className="text-[11px] text-slate-500">{item.detail}</p>
-                          </div>
-                          <p className="font-bold text-[#08734f]">
-                            Rp {formatNominal(item.nominal)}
-                          </p>
-                        </div>
-                      ))}
-
-                      <div className="flex items-center justify-between pt-3 text-sm font-bold text-slate-900">
-                        <span>Total Nominal Komitmen Gabungan:</span>
-                        <span className="text-base font-extrabold text-[#08734f]">
-                          Rp {formatNominal(getTotalNominal())}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-slate-100" />
-
-              {/* =================================================
-                  3. PREFERENSI PENYALURAN (TRANSFER BANK, E-WALLET, DAN QRIS)
+                  3. ZAKAT PENGHASILAN – KOMPONEN PENGHASILAN
               ================================================== */}
               <div>
                 <SectionTitle
                   number="3."
-                  icon={<Landmark size={21} />}
-                  title="Preferensi Penyaluran / Pembayaran Zakat"
+                  icon={<WalletCards size={21} />}
+                  title="Informasi Zakat Penghasilan"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Pilih metode pembayaran yang paling nyaman untuk Anda.
+                  Pilih komponen penghasilan yang Anda terima, masukkan nominalnya, dan sistem akan menghitung zakat (2,5%) secara otomatis. Anda dapat memilih satu atau lebih komponen.
                 </p>
 
-                {/* TIGA PILIHAN: TRANSFER BANK, E-WALLET, DAN QRIS */}
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {[
-                    {
-                      id: "transfer-bank",
-                      nama: "Transfer Bank",
-                      desc: "Transfer melalui Rekening Bank resmi UPZ UNSIL.",
-                      icon: Landmark,
-                    },
-                    {
-                      id: "e-wallet",
-                      nama: "E-Wallet",
-                      desc: "Bayar via dompet digital (GoPay/OVO/DANA/ShopeePay).",
-                      icon: WalletCards,
-                    },
-                    {
-                      id: "qris",
-                      nama: "QRIS",
-                      desc: "Scan QRIS resmi UPZ UNSIL melalui e-wallet apa pun.",
-                      icon: ScanLine,
-                    },
-                  ].map((m) => {
-                    const Icon = m.icon;
-                    const selected = metodePenyaluran === m.id;
-                    return (
-                      <div
-                        key={m.id}
-                        onClick={() => setMetodePenyaluran(m.id)}
-                        className={`cursor-pointer rounded-xl border p-4 transition ${
-                          selected
-                            ? "border-[#08734f] bg-green-50 text-[#08734f] shadow-xs"
-                            : "border-slate-200 bg-white hover:border-green-200 text-slate-700"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <Icon size={20} className={selected ? "text-[#08734f]" : "text-slate-500"} />
-                          <input
-                            type="radio"
-                            name="metodePenyaluran"
-                            checked={selected}
-                            onChange={() => {}}
-                            className="h-4 w-4 accent-[#08734f]"
-                          />
-                        </div>
-                        <p className="mt-2 text-xs sm:text-sm font-semibold text-slate-800">{m.nama}</p>
-                        <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">{m.desc}</p>
-                      </div>
-                    );
-                  })}
+                <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+                  <table className="w-full text-xs sm:text-sm">
+                    <thead className="bg-slate-50/80 border-b border-slate-200">
+                      <tr>
+                        <th className="px-3 py-2.5 text-left font-semibold text-slate-700 w-[60px]">Pilih</th>
+                        <th className="px-3 py-2.5 text-left font-semibold text-slate-700">Komponen Penghasilan</th>
+                        <th className="px-3 py-2.5 text-left font-semibold text-slate-700">Nominal (Rp) per Bulan</th>
+                        <th className="px-3 py-2.5 text-right font-semibold text-slate-700">Zakat 2,5% (Rp)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {incomeComponents.map((comp, idx) => (
+                        <tr key={comp.id} className="hover:bg-slate-50/50 transition">
+                          <td className="px-3 py-2.5">
+                            <input
+                              type="checkbox"
+                              checked={comp.selected}
+                              onChange={() => toggleIncomeComponent(comp.id)}
+                              className="h-4 w-4 accent-[#08734f] rounded border-slate-300"
+                            />
+                          </td>
+                          <td className="px-3 py-2.5 font-medium text-slate-800">
+                            {idx+1}. {comp.label}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <div className="flex items-center rounded-lg border border-slate-200 bg-white overflow-hidden">
+                              <span className="px-2.5 py-1 bg-slate-50 text-slate-500 border-r border-slate-200 text-xs">Rp</span>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={formatNominal(comp.nominal)}
+                                onChange={(e) => updateIncomeNominal(comp.id, e.target.value)}
+                                placeholder="Masukkan nominal"
+                                className="w-full px-2.5 py-1 text-xs outline-none"
+                                readOnly
+                              />
+                            </div>
+                          </td>
+                          <td className="px-3 py-2.5 text-right font-mono font-bold text-[#08734f]">
+                            {comp.selected ? formatNominal(comp.zakat) : '0'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
-                {/* SUB-PILIHAN BANK JIKA MEMILIH TRANSFER BANK */}
-                {metodePenyaluran === "transfer-bank" && (
-                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                    <label className="block text-xs font-semibold text-slate-700 mb-2">
-                      Pilih Bank Tujuan Transfer:
-                    </label>
-                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
-                      {[
-                        { id: "BSI", name: "BSI (Syariah)" },
-                        { id: "Mandiri", name: "Bank Mandiri" },
-                        { id: "BRI", name: "Bank BRI" },
-                        { id: "BNI", name: "Bank BNI" },
-                        { id: "Muamalat", name: "Bank Muamalat" },
-                      ].map((b) => (
-                        <button
-                          key={b.id}
-                          type="button"
-                          onClick={() => setPilihanBank(b.id)}
-                          className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
-                            pilihanBank === b.id
-                              ? "border-[#08734f] bg-[#08734f] text-white"
-                              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                          }`}
-                        >
-                          {b.name}
-                        </button>
-                      ))}
+                {/* Ringkasan total zakat */}
+                {incomeComponents.some(c => c.selected && c.nominal > 0) && (
+                  <>
+                    <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 flex justify-between items-center">
+                      <span className="text-sm font-semibold text-slate-700">Total Zakat Penghasilan (2,5%)</span>
+                      <span className="text-lg font-extrabold text-[#08734f]">
+                        Rp {formatNominal(
+                          incomeComponents.reduce((sum, c) => sum + (c.selected ? c.zakat : 0), 0)
+                        )}
+                      </span>
                     </div>
-                  </div>
-                )}
-
-                {/* SUB-PILIHAN E-WALLET JIKA MEMILIH E-WALLET */}
-                {metodePenyaluran === "e-wallet" && (
-                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                    <label className="block text-xs font-semibold text-slate-700 mb-2">
-                      Pilih Dompet Digital / E-Wallet:
-                    </label>
-                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
-                      {[
-                        { id: "GoPay", name: "GoPay" },
-                        { id: "OVO", name: "OVO" },
-                        { id: "Dana", name: "DANA" },
-                        { id: "ShopeePay", name: "ShopeePay" },
-                      ].map((w) => (
-                        <button
-                          key={w.id}
-                          type="button"
-                          onClick={() => setPilihanEwallet(w.id)}
-                          className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
-                            pilihanEwallet === w.id
-                              ? "border-[#08734f] bg-[#08734f] text-white"
-                              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                          }`}
-                        >
-                          {w.name}
-                        </button>
-                      ))}
+                    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 flex items-center gap-3 text-xs text-slate-600">
+                      <AlertCircle size={16} className="text-[#08734f] shrink-0" />
+                      <span>Data di atas diambil otomatis dari sistem kepegawaian Universitas Siliwangi dan tidak dapat diubah.</span>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -1497,7 +1099,7 @@ export default function DaftarMuzakkiUnsilPage() {
               ================================================== */}
               <div>
                 <SectionTitle
-                  number="5."
+                  number="4."
                   icon={<ShieldCheck size={21} />}
                   title="Persetujuan &amp; Akad Kesepakatan"
                 />
@@ -1661,30 +1263,38 @@ export default function DaftarMuzakkiUnsilPage() {
 
                 <div className="border-t border-emerald-200/70 pt-2 mt-2">
                   <p className="text-[11px] font-semibold text-emerald-800 mb-1">Rincian Kesepakatan Zakat:</p>
-                  {registeredSummary.activeZakat.map((item) => (
-                    <div key={item.key} className="flex justify-between py-1 text-xs">
-                      <span className="text-gray-600">{item.jenis} ({item.detail})</span>
-                      <span className="font-bold text-[#08734f]">Rp {formatNominal(item.nominal)}</span>
+                  {registeredSummary.selectedComponents.map((item, idx) => (
+                    <div key={idx} className="flex justify-between py-1 text-xs">
+                      <span className="text-gray-600">{item.komponen}</span>
+                      <span className="font-bold text-[#08734f]">Rp {formatNominal(item.zakat)}</span>
                     </div>
                   ))}
                 </div>
 
                 <div className="flex justify-between items-center border-t border-emerald-200/70 pt-2.5 font-bold">
-                  <span className="text-gray-700">Total Komitmen Zakat:</span>
+                  <span className="text-gray-700">Total Zakat Penghasilan:</span>
                   <span className="text-base text-[#08734f]">
-                    Rp {formatNominal(registeredSummary.totalNominal)}
+                    Rp {formatNominal(registeredSummary.totalZakat)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-xs pt-1">
-                  <span className="text-gray-500">Preferensi Penyaluran:</span>
-                  <span className="font-semibold text-gray-800 capitalize">
-                    {registeredSummary.metodePenyaluran === "transfer-bank"
-                      ? `Transfer Bank (${registeredSummary.pilihanBank})`
-                      : registeredSummary.metodePenyaluran === "qris"
-                        ? `QRIS (${registeredSummary.pilihanEwallet})`
-                        : `E-Wallet (${registeredSummary.pilihanEwallet})`}
-                  </span>
+                  <span className="text-gray-500">Metode Penyaluran:</span>
+                  <span className="font-semibold text-gray-800">Potong Gaji</span>
+                </div>
+                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
+                  <p className="font-semibold text-emerald-800 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Akun Berhasil Dibuat
+                  </p>
+                  <p className="text-gray-700 mt-1.5">
+                    Credentials login telah dikirim ke nomor WhatsApp Anda (<span className="font-semibold">{registeredSummary.noHp || 'nomor terdaftar'}</span>).
+                  </p>
+                  <p className="text-gray-600 text-[10px] mt-1">
+                    Silakan cek WhatsApp untuk mendapatkan email/nomor HP dan password login Anda.
+                  </p>
                 </div>
               </div>
             </div>

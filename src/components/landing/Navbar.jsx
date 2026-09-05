@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import {
   Heart,
   UserRoundPlus,
+  LogIn,
   Menu,
   X,
 } from "lucide-react";
@@ -96,6 +97,30 @@ export default function Navbar() {
         ==================================================== */}
 
         <div className="hidden items-center gap-2 lg:flex">
+
+          {/* LOGIN MUZAKKI */}
+          <Link
+            to="/muzakki/masuk"
+            className="
+              inline-flex
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              rounded-lg
+              border-1
+              border-brand-600
+              px-3
+              py-2
+              text-xs
+              font-semibold
+              text-brand-600
+              transition-colors
+              hover:bg-brand-50
+            "
+          >
+            <LogIn size={15} />
+            Login Muzakki
+          </Link>
 
           {/* DAFTAR MUZAKKI */}
 
@@ -212,6 +237,31 @@ export default function Navbar() {
             {/* ACTION MOBILE */}
 
             <div className="border-t border-gray-100 pt-4">
+
+              {/* LOGIN MUZAKKI */}
+
+              <Link
+                to="/muzakki/masuk"
+                onClick={() => setOpen(false)}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-lg
+                  border border-brand-600
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-brand-600
+                  transition-colors
+                  hover:bg-brand-50
+                "
+              >
+                <LogIn size={16} />
+                Login Muzakki
+              </Link>
 
               {/* DAFTAR MUZAKKI */}
 
