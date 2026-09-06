@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   User,
   CreditCard,
@@ -15,22 +16,95 @@ import {
   Eye,
 } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+
 export default function MuzakkiDashboard() {
-  const user = JSON.parse(localStorage.getItem("muzakki_user") || "{}");
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const paymentHistory = [
-    { date: "10 Sep 2025", type: "Zakat Penghasilan", period: "September 2025", amount: 500000, method: "Transfer Bank", status: "Lunas" },
-    { date: "10 Agu 2025", type: "Zakat Penghasilan", period: "Agustus 2025", amount: 500000, method: "QRIS", status: "Lunas" },
-    { date: "10 Jul 2025", type: "Zakat Penghasilan", period: "Juli 2025", amount: 500000, method: "Transfer Bank", status: "Lunas" },
-    { date: "10 Jun 2025", type: "Zakat Penghasilan", period: "Juni 2025", amount: 500000, method: "Virtual Account", status: "Lunas" },
-    { date: "10 Mei 2025", type: "Zakat Penghasilan", period: "Mei 2025", amount: 500000, method: "Transfer Bank", status: "Lunas" },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const stats = [
-    { label: "Total Zakat Tahun 2025", value: "Rp 6.000.000" },
-    { label: "Jumlah Pembayaran", value: "12 kali" },
-    { label: "Zakat Bulanan", value: "Rp 500.000" },
-    { label: "Status Muzakki", value: "Aktif", icon: CheckCircle },
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("muzakki_token");
+      
+      if (!token) {
+        setError("Token tidak ditemukan. Silakan login ulang.");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/muzakki/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching dashboard:", err);
+      setError(err.response?.data?.message || "Gagal memuat data dashboard");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#064f35] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
+          <button 
+            onClick={fetchDashboardData}
+            className="mt-4 px-4 py-2 bg-[#064f35] text-white rounded-lg"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { user, muzakki, stats, transaksi } = dashboardData || {};
+  
+  const statsDisplay = [
+    { 
+      label: `Total Zakat Tahun ${stats?.tahun || new Date().getFullYear()}`, 
+      value: stats?.total_zakat_tahun_ini 
+        ? `Rp ${stats.total_zakat_tahun_ini.toLocaleString("id-ID")}` 
+        : "Rp 0" 
+    },
+    { 
+      label: "Jumlah Pembayaran", 
+      value: `${stats?.jumlah_pembayaran || 0} kali` 
+    },
+    { 
+      label: "Zakat Bulanan (Rata-rata)", 
+      value: stats?.zakat_bulanan 
+        ? `Rp ${stats.zakat_bulanan.toLocaleString("id-ID")}` 
+        : "Rp 0" 
+    },
+    { 
+      label: "Status Muzakki", 
+      value: "Aktif", 
+      icon: CheckCircle 
+    },
   ];
 
   return (
@@ -38,7 +112,7 @@ export default function MuzakkiDashboard() {
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-[#064f35] to-[#0b7548] p-6 text-white relative overflow-hidden">
         <div className="relative z-10">
-          <h1 className="text-2xl font-bold">Selamat Datang, {user.name || "Muzakki"}!</h1>
+          <h1 className="text-2xl font-bold">Selamat Datang, {user?.name || "Muzakki"}!</h1>
           <p className="text-sm text-green-100 mt-1 max-w-lg">
             Terima kasih telah menjadi bagian dari gerakan kebaikan melalui zakat di Universitas Siliwangi.
           </p>
@@ -62,17 +136,27 @@ export default function MuzakkiDashboard() {
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex items-start gap-4">
             <div className="h-20 w-20 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-2xl shrink-0">
-              {user.name?.[0] || "U"}
+              {muzakki?.nama?.[0] || user?.name?.[0] || "U"}
             </div>
             <div>
-              <p className="font-bold text-gray-800">{user.name || "Muzakki"}</p>
-              <p className="text-sm text-gray-500">Dosen</p>
+              <p className="font-bold text-gray-800">{muzakki?.nama || user?.name || "-"}</p>
+              <p className="text-sm text-gray-500">{muzakki?.pekerjaan || muzakki?.kategori || "-"}</p>
               <div className="mt-1 space-y-0.5 text-sm">
-                <p><span className="text-gray-500">NIP:</span> <span className="font-medium">{user.nip || "198012052005011002"}</span></p>
-                <p><span className="text-gray-500">Fakultas:</span> <span className="font-medium">{user.faculty || "Fakultas Teknik"}</span></p>
-                <p><span className="text-gray-500">Program Studi:</span> <span className="font-medium">{user.study_program || "Teknik Informatika"}</span></p>
-                <p><span className="text-gray-500">Email:</span> <span className="font-medium">{user.email || "randi.rizal@unsil.ac.id"}</span></p>
-                <p><span className="text-gray-500">No. Handphone:</span> <span className="font-medium">{user.phone || "0812 3456 7890"}</span></p>
+                {muzakki?.nip && (
+                  <p><span className="text-gray-500">NIP:</span> <span className="font-medium">{muzakki.nip}</span></p>
+                )}
+                {muzakki?.nik && (
+                  <p><span className="text-gray-500">NIK:</span> <span className="font-medium">{muzakki.nik}</span></p>
+                )}
+                {muzakki?.unit_kerja && (
+                  <p><span className="text-gray-500">Unit Kerja:</span> <span className="font-medium">{muzakki.unit_kerja}</span></p>
+                )}
+                {muzakki?.email && (
+                  <p><span className="text-gray-500">Email:</span> <span className="font-medium">{muzakki.email}</span></p>
+                )}
+                {muzakki?.no_hp && (
+                  <p><span className="text-gray-500">No. Handphone:</span> <span className="font-medium">{muzakki.no_hp}</span></p>
+                )}
               </div>
             </div>
           </div>
@@ -90,49 +174,9 @@ export default function MuzakkiDashboard() {
         </div>
       </div>
 
-      {/* Cards: Kartu Muzakki & NPWZ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-800">KARTU MUZAKKI</h3>
-            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Aktif</span>
-          </div>
-          <div className="space-y-2 text-sm">
-            <p><span className="text-gray-500">Nama:</span> <span className="font-medium">{user.name || "Ir. Randi Rizal, PhD."}</span></p>
-            <p><span className="text-gray-500">NIP:</span> <span className="font-medium">{user.nip || "198012052005011002"}</span></p>
-            <p><span className="text-gray-500">Unit Kerja:</span> <span className="font-medium">{user.faculty || "Fakultas Teknik"}</span></p>
-            <p><span className="text-gray-500">No. Kartu:</span> <span className="font-medium">MZK-2025-000123</span></p>
-          </div>
-          <div className="mt-4 flex items-center gap-3 pt-4 border-t border-gray-100">
-            <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center">
-              <QrCode size={28} className="text-gray-600" />
-            </div>
-            <p className="text-xs text-gray-500">Scan untuk verifikasi</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-800">BAZNASCARD</h3>
-            <span className="text-xs text-gray-500">NPWZ</span>
-          </div>
-          <div className="space-y-2 text-sm">
-            <p><span className="text-gray-500">NPWZ:</span> <span className="font-medium">3171100 1 2655941</span></p>
-            <p><span className="text-gray-500">MUZAKI:</span> <span className="font-medium">{user.name || "Ir. Randi Rizal, PhD."}</span></p>
-            <p><span className="text-gray-500">TERDAFTAR:</span> <span className="font-medium">17/01/2015</span></p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-xs text-gray-500 italic">Amanah, Transparan dan Profesional</p>
-            <div className="mt-2 h-8 w-12 bg-green-100 rounded flex items-center justify-center text-xs text-green-700 font-bold">
-              BAZNAS
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => {
+        {statsDisplay.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <div key={idx} className="bg-white rounded-2xl border border-gray-200 p-4">
@@ -157,47 +201,48 @@ export default function MuzakkiDashboard() {
             Lihat Semua →
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500">
-              <tr>
-                <th className="px-3 py-2 text-left">No</th>
-                <th className="px-3 py-2 text-left">Tanggal</th>
-                <th className="px-3 py-2 text-left">Jenis Zakat</th>
-                <th className="px-3 py-2 text-left">Periode</th>
-                <th className="px-3 py-2 text-left">Nominal</th>
-                <th className="px-3 py-2 text-left">Metode</th>
-                <th className="px-3 py-2 text-left">Status</th>
-                <th className="px-3 py-2 text-left">Bukti</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {paymentHistory.map((item, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="px-3 py-2.5 text-gray-600">{idx + 1}</td>
-                  <td className="px-3 py-2.5 text-gray-700">{item.date}</td>
-                  <td className="px-3 py-2.5 text-gray-700">{item.type}</td>
-                  <td className="px-3 py-2.5 text-gray-700">{item.period}</td>
-                  <td className="px-3 py-2.5 font-medium text-gray-800">
-                    Rp {item.amount.toLocaleString("id-ID")}
-                  </td>
-                  <td className="px-3 py-2.5 text-gray-600">{item.method}</td>
-                  <td className="px-3 py-2.5">
-                    <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs font-medium">
-                      <CheckCircle size={12} />
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <Eye size={16} />
-                    </button>
-                  </td>
+        
+        {transaksi && transaksi.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-xs text-gray-500">
+                <tr>
+                  <th className="px-3 py-2 text-left">No</th>
+                  <th className="px-3 py-2 text-left">Tanggal</th>
+                  <th className="px-3 py-2 text-left">Jenis Zakat</th>
+                  <th className="px-3 py-2 text-left">Periode</th>
+                  <th className="px-3 py-2 text-left">Nominal</th>
+                  <th className="px-3 py-2 text-left">Metode</th>
+                  <th className="px-3 py-2 text-left">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {transaksi.map((item, idx) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2.5 text-gray-600">{idx + 1}</td>
+                    <td className="px-3 py-2.5 text-gray-700">{item.tanggal}</td>
+                    <td className="px-3 py-2.5 text-gray-700">{item.jenis_zakat}</td>
+                    <td className="px-3 py-2.5 text-gray-700">{item.periode}</td>
+                    <td className="px-3 py-2.5 font-medium text-gray-800">
+                      Rp {item.nominal.toLocaleString("id-ID")}
+                    </td>
+                    <td className="px-3 py-2.5 text-gray-600">{item.metode}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs font-medium">
+                        <CheckCircle size={12} />
+                        {item.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p>Belum ada riwayat pembayaran zakat.</p>
+          </div>
+        )}
       </div>
 
       {/* Action Cards */}

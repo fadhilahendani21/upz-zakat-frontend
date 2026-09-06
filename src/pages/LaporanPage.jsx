@@ -8,19 +8,6 @@ import {
 import { getPublicLaporan } from "../services/donasiService";
 import { useSettings } from "../services/settingService";
 
-const DEFAULT_PENERIMAAN = [
-  { label: "Zakat Penghasilan", amount: 850000000 },
-  { label: "Infak & Sedekah", amount: 480000000 },
-  { label: "Donasi Online", amount: 220000000 },
-];
-
-const DEFAULT_PENYALURAN = [
-  { label: "Beasiswa Pendidikan", amount: 400000000 },
-  { label: "Bantuan Kesehatan", amount: 250000000 },
-  { label: "Santunan Yatim & Dhuafa", amount: 300000000 },
-  { label: "Pemberdayaan Ekonomi", amount: 300000000 },
-];
-
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -38,45 +25,55 @@ function RincianList({ title, items, total }) {
         {title}
       </h3>
 
-      <div className="space-y-4">
-        {items.map((item) => {
-          const percent = Math.min(
-            100,
-            Math.round((item.amount / safeTotal) * 100)
-          );
+      {items.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-sm text-gray-400">
+            Belum ada data transaksi untuk tahun ini.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-4">
+            {items.map((item) => {
+              const percent = Math.min(
+                100,
+                Math.round((item.amount / safeTotal) * 100)
+              );
 
-          return (
-            <div key={item.label}>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">
-                  {item.label}
-                </span>
+              return (
+                <div key={item.label}>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-700">
+                      {item.label}
+                    </span>
 
-                <span className="font-semibold text-gray-900">
-                  {formatRupiah(item.amount)}
-                </span>
-              </div>
+                    <span className="font-semibold text-gray-900">
+                      {formatRupiah(item.amount)}
+                    </span>
+                  </div>
 
-              <div className="mt-1.5 w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-                <div
-                  className="h-full bg-brand-500 rounded-full transition-all duration-500"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  <div className="mt-1.5 w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+                    <div
+                      className="h-full bg-brand-500 rounded-full transition-all duration-500"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-      <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-900">
-          Total
-        </span>
+          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-900">
+              Total
+            </span>
 
-        <span className="text-sm font-bold text-brand-700">
-          {formatRupiah(total)}
-        </span>
-      </div>
+            <span className="text-sm font-bold text-brand-700">
+              {formatRupiah(total)}
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -108,27 +105,25 @@ export default function LaporanPage() {
 
   const totalPenerimaan = data?.penerimaan?.length
     ? data.penerimaan.reduce((sum, i) => sum + i.amount, 0)
-    : DEFAULT_PENERIMAAN.reduce((sum, i) => sum + i.amount, 0);
+    : 0;
 
   const totalPenyaluran = data?.penyaluran?.length
     ? data.penyaluran.reduce((sum, i) => sum + i.amount, 0)
-    : DEFAULT_PENYALURAN.reduce((sum, i) => sum + i.amount, 0);
+    : 0;
 
   const penerimaanList = data?.penerimaan?.length
     ? data.penerimaan
-    : DEFAULT_PENERIMAAN;
+    : [];
 
   const penyaluranList = data?.penyaluran?.length
     ? data.penyaluran
-    : DEFAULT_PENYALURAN;
+    : [];
 
   const stats = [
     {
       icon: Wallet,
       label: "Total Dana Terkumpul",
-      value: formatRupiah(
-        data?.total_masuk ?? totalPenerimaan
-      ),
+      value: formatRupiah(data?.total_masuk ?? 0),
       period: `Tahun ${
         data?.tahun || new Date().getFullYear()
       }`,
@@ -136,9 +131,7 @@ export default function LaporanPage() {
     {
       icon: HandCoins,
       label: "Total Dana Disalurkan",
-      value: formatRupiah(
-        data?.total_keluar ?? totalPenyaluran
-      ),
+      value: formatRupiah(data?.total_keluar ?? 0),
       period: `Tahun ${
         data?.tahun || new Date().getFullYear()
       }`,
@@ -146,13 +139,13 @@ export default function LaporanPage() {
     {
       icon: Users,
       label: "Total Muzakki Aktif",
-      value: `${data?.total_muzakki ?? 1580} Orang`,
+      value: `${data?.total_muzakki ?? 0} Orang`,
       period: `Terdaftar`,
     },
     {
       icon: HeartHandshake,
       label: "Total Mustahik Aktif",
-      value: `${data?.total_mustahik ?? 3120} Orang`,
+      value: `${data?.total_mustahik ?? 0} Orang`,
       period: `Penerima Manfaat`,
     },
   ];

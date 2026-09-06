@@ -482,7 +482,33 @@ export default function DaftarMuzakkiUnsilPage() {
       return;
     }
 
-    // Cek apakah sudah pernah daftar dengan NIK (sebagai Muzakki Umum)
+    // Cek apakah nomor HP sudah terdaftar
+    if (dataPegawai.noHp && dataPegawai.noHp.trim()) {
+      const hpExists = registeredMuzakkiList.some(
+        (m) => m.no_hp && m.no_hp.replace(/\D/g, "") === dataPegawai.noHp.replace(/\D/g, "")
+      );
+      if (hpExists) {
+        setFormError(`Nomor HP ${dataPegawai.noHp} sudah terdaftar sebagai Muzakki. Silakan gunakan nomor HP lain atau hubungi admin jika ini nomor Anda.`);
+        setShowErrorModal(true);
+        window.scrollTo({ top: 200, behavior: "smooth" });
+        return;
+      }
+    }
+
+    // Cek apakah email sudah terdaftar
+    if (dataPegawai.email && dataPegawai.email.trim()) {
+      const emailExists = registeredMuzakkiList.some(
+        (m) => m.email && m.email.toLowerCase().trim() === dataPegawai.email.toLowerCase().trim()
+      );
+      if (emailExists) {
+        setFormError(`Email ${dataPegawai.email} sudah terdaftar sebagai Muzakki. Silakan gunakan email lain atau hubungi admin jika ini email Anda.`);
+        setShowErrorModal(true);
+        window.scrollTo({ top: 200, behavior: "smooth" });
+        return;
+      }
+    }
+
+    // Cek apakah sudah pernah daftar dengan nama (sebagai Muzakki Umum)
     const namaExists = registeredMuzakkiList.some(
       (m) => m.nama && m.nama.toLowerCase().trim() === dataPegawai.nama.toLowerCase().trim()
     );

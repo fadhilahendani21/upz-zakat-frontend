@@ -61,6 +61,7 @@ export default function DaftarMuzakkiUmumPage() {
 
   const [formData, setFormData] = useState({
     nama: "",
+    nip: "",
     nik: "",
     jenis_kelamin: "Laki-laki",
     tempat_lahir: "",
@@ -144,6 +145,7 @@ export default function DaftarMuzakkiUmumPage() {
 
   const [setuju, setSetuju] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [showAgreementAlert, setShowAgreementAlert] = useState(false);
   const [registeredSummary, setRegisteredSummary] = useState(null);
 
@@ -347,6 +349,32 @@ export default function DaftarMuzakkiUmumPage() {
       );
       if (nikExists) {
         err.nik = `NIK ${formData.nik} sudah terdaftar sebagai Muzakki. Silakan gunakan NIK lain.`;
+        setFormError(`NIK ${formData.nik} sudah terdaftar sebagai Muzakki. Silakan gunakan NIK lain.`);
+        setShowErrorModal(true);
+      }
+    }
+
+    // Cek apakah nomor HP sudah terdaftar
+    if (formData.no_hp && formData.no_hp.trim()) {
+      const hpExists = registeredMuzakkiList.some(
+        (m) => m.no_hp && m.no_hp.replace(/\D/g, "") === formData.no_hp.replace(/\D/g, "")
+      );
+      if (hpExists) {
+        err.no_hp = `Nomor HP ${formData.no_hp} sudah terdaftar sebagai Muzakki. Silakan gunakan nomor HP lain atau hubungi admin jika ini nomor Anda.`;
+        setFormError(`Nomor HP ${formData.no_hp} sudah terdaftar sebagai Muzakki. Silakan gunakan nomor HP lain atau hubungi admin jika ini nomor Anda.`);
+        setShowErrorModal(true);
+      }
+    }
+
+    // Cek apakah email sudah terdaftar
+    if (formData.email && formData.email.trim()) {
+      const emailExists = registeredMuzakkiList.some(
+        (m) => m.email && m.email.toLowerCase().trim() === formData.email.toLowerCase().trim()
+      );
+      if (emailExists) {
+        err.email = `Email ${formData.email} sudah terdaftar sebagai Muzakki. Silakan gunakan email lain atau hubungi admin jika ini email Anda.`;
+        setFormError(`Email ${formData.email} sudah terdaftar sebagai Muzakki. Silakan gunakan email lain atau hubungi admin jika ini email Anda.`);
+        setShowErrorModal(true);
       }
     }
 
@@ -406,7 +434,7 @@ export default function DaftarMuzakkiUmumPage() {
       const payload = {
         nama: formData.nama,
         nik: formData.nik,
-        nip: null,
+        nip: formData.nip || null,
         jenis_kelamin: formData.jenis_kelamin,
         tempat_lahir: formData.tempat_lahir || null,
         tanggal_lahir: formData.tanggal_lahir || null,
@@ -458,6 +486,7 @@ export default function DaftarMuzakkiUmumPage() {
   const resetForm = () => {
     setFormData({
       nama: "",
+      nip: "",
       nik: "",
       jenis_kelamin: "Laki-laki",
       tempat_lahir: "",
@@ -1363,6 +1392,37 @@ export default function DaftarMuzakkiUmumPage() {
               type="button"
               onClick={() => setShowAgreementAlert(false)}
               className="mt-6 w-full rounded-xl bg-[#08734f] py-3 text-sm font-semibold text-white hover:bg-[#065d40] transition"
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          MODAL ERROR
+      ====================================================== */}
+      {showErrorModal && formError && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm animate-fade-in">
+          <div className="max-w-md w-full rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 mb-4">
+                <AlertCircle size={36} className="stroke-[2.5]" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Mohon Periksa Kembali
+              </h3>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                {formError}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowErrorModal(false);
+                setFormError("");
+              }}
+              className="mt-6 w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white hover:bg-red-700 transition"
             >
               Mengerti
             </button>
