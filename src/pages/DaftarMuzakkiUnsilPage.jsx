@@ -586,51 +586,6 @@ export default function DaftarMuzakkiUnsilPage() {
 
       await registerPublicMuzakki(payload);
 
-      // Generate random password and create user account
-      const generateRandomPassword = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let password = '';
-        for (let i = 0; i < 8; i++) {
-          password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return password;
-      };
-      const generatedPassword = generateRandomPassword();
-
-      // Call backend to create user account and send WhatsApp via Baileys
-      try {
-        const accountPayload = {
-          nama: dataPegawai.nama,
-          nip: dataPegawai.nip,
-          email: dataPegawai.email,
-          noHp: dataPegawai.noHp,
-          password: generatedPassword,
-          role: 'muzakki',
-          unit_kerja: `${dataPegawai.unit}${dataPegawai.jurusan ? ` · ${dataPegawai.jurusan}` : ''}`,
-        };
-        
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/muzakki/create-account`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(accountPayload),
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-          console.log('✅ Akun muzakki berhasil dibuat dan WhatsApp terkirim');
-        } else {
-          console.warn('⚠️ Akun mungkin sudah ada:', result.message);
-        }
-      } catch (err) {
-        console.error('❌ Gagal membuat akun muzakki:', err);
-        // Store in localStorage as fallback
-        localStorage.setItem('muzakki_credentials_' + dataPegawai.nip, JSON.stringify({
-          email: dataPegawai.email || dataPegawai.noHp,
-          password: generatedPassword,
-        }));
-      }
-
       setRegisteredSummary({
         nama: dataPegawai.nama,
         nip: dataPegawai.nip,
