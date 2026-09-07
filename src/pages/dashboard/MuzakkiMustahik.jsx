@@ -4,7 +4,7 @@ import {
   X, Pencil, Trash2,
   Phone, Mail, Building2, BookOpen,
   WalletCards, Landmark, Sprout,
-  Eye,
+  Eye, Download,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
@@ -12,7 +12,7 @@ import HighlightText from "../../components/common/HighlightText";
 import StatCard from "../../components/dashboard/StatCard";
 import { Pagination, SearchInput } from "../../components/dashboard/ui";
 import {
-  getMuzakki, createMuzakki, updateMuzakki, deleteMuzakki,
+  getMuzakki, createMuzakki, updateMuzakki, deleteMuzakki, exportMuzakkiToExcel,
 } from "../../services/muzakkiService";
 
 // ── Struktur Data Fakultas & Jurusan Universitas Siliwangi ────────────────────
@@ -938,6 +938,7 @@ export default function MuzakkiMustahik() {
   const [modalForm, setModalForm]   = useState(null);
   const [modalHapus, setModalHapus] = useState(null);
   const [modalDetail, setModalDetail] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -968,10 +969,29 @@ export default function MuzakkiMustahik() {
     else fetchData();
   }
 
+  async function handleExport() {
+    setExportLoading(true);
+    try {
+      await exportMuzakkiToExcel({ search, kategori: kategoriFilter });
+    } catch (err) {
+      alert(err.message || "Gagal mengekspor data muzakki.");
+    } finally {
+      setExportLoading(false);
+    }
+  }
+
   return (
     <div>
       {/* Header Actions */}
-      <div className="flex justify-end mb-4 -mt-3 relative z-20">
+      <div className="flex justify-end gap-3 mb-4 -mt-3 relative z-20">
+        <Button 
+          icon={Download} 
+          variant="outline"
+          onClick={handleExport}
+          disabled={exportLoading || loading}
+        >
+          {exportLoading ? "Mengekspor..." : "Ekspor"}
+        </Button>
         <Button icon={Plus} onClick={() => setModalForm({ mode: "add" })}>
           Tambah Muzakki
         </Button>

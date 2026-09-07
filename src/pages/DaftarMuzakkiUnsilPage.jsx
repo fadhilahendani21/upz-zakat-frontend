@@ -1246,7 +1246,7 @@ export default function DaftarMuzakkiUnsilPage() {
                   <p className="text-[11px] font-semibold text-emerald-800 mb-1">Rincian Kesepakatan Zakat:</p>
                   {registeredSummary.selectedComponents.map((item, idx) => (
                     <div key={idx} className="flex justify-between py-1 text-xs">
-                      <span className="text-gray-600">{item.komponen}</span>
+                      <span className="text-gray-600">{item.label || item.komponen}</span>
                       <span className="font-bold text-[#08734f]">Rp {formatNominal(item.zakat)}</span>
                     </div>
                   ))}
@@ -1262,20 +1262,6 @@ export default function DaftarMuzakkiUnsilPage() {
                 <div className="flex justify-between text-xs pt-1">
                   <span className="text-gray-500">Metode Penyaluran:</span>
                   <span className="font-semibold text-gray-800">Potong Gaji</span>
-                </div>
-                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
-                  <p className="font-semibold text-emerald-800 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Akun Berhasil Dibuat
-                  </p>
-                  <p className="text-gray-700 mt-1.5">
-                    Credentials login telah dikirim ke nomor WhatsApp Anda (<span className="font-semibold">{registeredSummary.noHp || 'nomor terdaftar'}</span>).
-                  </p>
-                  <p className="text-gray-600 text-[10px] mt-1">
-                    Silakan cek WhatsApp untuk mendapatkan email/nomor HP dan password login Anda.
-                  </p>
                 </div>
               </div>
             </div>

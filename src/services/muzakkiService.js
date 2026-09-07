@@ -144,3 +144,36 @@ export async function deleteMuzakki(id) {
   if (!res.ok) throw new Error("Gagal menghapus muzakki.");
   return res.json();
 }
+
+/**
+ * GET /api/muzakki/export?search=&kategori=
+ * Export daftar Muzakki ke Excel (.xlsx)
+ */
+export async function exportMuzakkiToExcel({ search = "", kategori = "" } = {}) {
+  if (!API_URL) throw new Error("API URL tidak dikonfigurasi.");
+
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (kategori) params.set("kategori", kategori);
+
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const res = await fetch(`${API_URL}/muzakki/export?${params}`, { headers });
+  handle401(res);
+  if (!res.ok) throw new Error("Gagal mengekspor data muzakki.");
+
+  // Download file
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Rekap_Daftar_Muzakki_${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
