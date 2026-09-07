@@ -20,8 +20,9 @@ import {
   Minus,
   RemoveFormatting,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { uploadBeritaImage, formatImageUrl, fileToDataUrl } from "../../services/beritaService";
+import { debounce } from "../../hooks/useDebounce";
 
 function ToolbarButton({ onClick, isActive = false, disabled = false, children, title }) {
   return (
@@ -44,6 +45,14 @@ function ToolbarButton({ onClick, isActive = false, disabled = false, children, 
 export default function TipTapEditor({ content, onChange, placeholder = "Tulis isi berita di sini..." }) {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Debounce onChange untuk mengurangi re-render parent
+  const debouncedOnChange = useCallback(
+    debounce((html) => {
+      onChange?.(html);
+    }, 150),
+    [onChange]
+  );
 
   const editor = useEditor({
     extensions: [
@@ -69,7 +78,7 @@ export default function TipTapEditor({ content, onChange, placeholder = "Tulis i
     ],
     content: content || "",
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+      debouncedOnChange(editor.getHTML());
     },
     editorProps: {
       attributes: {

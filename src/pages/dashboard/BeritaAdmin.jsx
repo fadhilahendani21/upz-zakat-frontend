@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo, useMemo } from "react";
 import {
   Plus,
   Newspaper,
@@ -44,9 +44,9 @@ const STATUS_LABEL = {
   draft: "Draf",
 };
 
-function BeritaThumbnail({ src, alt = "", className = "w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-100" }) {
+const BeritaThumbnail = memo(function BeritaThumbnail({ src, alt = "", className = "w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-100" }) {
   const [hasError, setHasError] = useState(false);
-  const resolved = formatImageUrl(src);
+  const resolved = useMemo(() => formatImageUrl(src), [src]);
 
   useEffect(() => {
     setHasError(false);
@@ -68,7 +68,7 @@ function BeritaThumbnail({ src, alt = "", className = "w-10 h-10 rounded-lg obje
       onError={() => setHasError(true)}
     />
   );
-}
+});
 
 // ── Helper Modal Form Berita ───────────────────────────────────────────────────
 function ModalFormBerita({ initial, onClose, onSaved }) {
@@ -90,10 +90,10 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
   const [localPreview, setLocalPreview] = useState(null);
   const [errors, setErrors] = useState({});
 
-  function setField(field, val) {
+  const setField = useCallback((field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
     setErrors((e) => ({ ...e, [field]: undefined }));
-  }
+  }, []);
 
   function validate() {
     const errs = {};
@@ -105,7 +105,7 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
     return errs;
   }
 
-  async function handleThumbnailUpload(e) {
+  const handleThumbnailUpload = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -136,7 +136,7 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
       setUploadingThumb(false);
       e.target.value = "";
     }
-  }
+  }, [setField]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -359,6 +359,7 @@ function ModalFormBerita({ initial, onClose, onSaved }) {
               value={form.ringkasan}
               onChange={(e) => setField("ringkasan", e.target.value)}
               className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white resize-none"
+              maxLength={500}
             />
           </div>
 

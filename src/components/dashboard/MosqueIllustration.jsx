@@ -1,6 +1,9 @@
+import { memo } from "react";
+
 // Ilustrasi masjid dekoratif, dipakai sebagai background halus di pojok
 // kanan atas dashboard (lihat DashboardLayout.jsx)
-export default function MosqueIllustration({ className = "" }) {
+// Memoized karena SVG statis — tidak perlu re-render
+const MosqueIllustration = memo(function MosqueIllustration({ className = "" }) {
   return (
     <svg
       viewBox="0 0 480 240"
@@ -44,4 +47,6 @@ export default function MosqueIllustration({ className = "" }) {
       </g>
     </svg>
   );
-}
+});
+
+export default MosqueIllustration;

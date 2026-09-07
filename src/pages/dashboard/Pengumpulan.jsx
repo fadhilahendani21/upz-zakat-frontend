@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   ArrowDownToLine, Plus, Search,
   Download, TrendingUp, Wallet, Users,
@@ -55,6 +55,19 @@ function ModalTambah({ onClose, onSaved }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const setFormField = useCallback((field, value) => {
+    setForm(f => ({ ...f, [field]: value }));
+  }, []);
+
+  const handleMuzakkiChange = useCallback((v) => {
+    setMuzakki(v);
+    setError("");
+  }, []);
+
+  const handleNumericChange = useCallback((values) => {
+    setForm(f => ({ ...f, nominal: values.value }));
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!muzakki) { setError("Pilih muzakki terlebih dahulu."); return; }
@@ -91,7 +104,7 @@ function ModalTambah({ onClose, onSaved }) {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Muzakki</label>
               <Combobox
                 value={muzakki}
-                onChange={(v) => { setMuzakki(v); setError(""); }}
+                onChange={handleMuzakkiChange}
                 onSearch={getMuzakkiOptions}
                 placeholder="Ketik nama muzakki..."
               />
@@ -103,7 +116,7 @@ function ModalTambah({ onClose, onSaved }) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
                 <select
-                  value={form.kategori} onChange={(e) => setForm({ ...form, kategori: e.target.value })}
+                  value={form.kategori} onChange={(e) => setFormField("kategori", e.target.value)}
                   className={inputCls}
                 >
                   {kategoriOptions.map((k) => <option key={k}>{k}</option>)}
@@ -112,7 +125,7 @@ function ModalTambah({ onClose, onSaved }) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Metode</label>
                 <select
-                  value={form.metode} onChange={(e) => setForm({ ...form, metode: e.target.value })}
+                  value={form.metode} onChange={(e) => setFormField("metode", e.target.value)}
                   className={inputCls}
                 >
                   {["Transfer Bank", "Tunai", "QRIS"].map((m) => <option key={m}>{m}</option>)}
@@ -124,7 +137,7 @@ function ModalTambah({ onClose, onSaved }) {
               <NumericFormat
                 placeholder="0"
                 value={form.nominal}
-                onValueChange={(values) => setForm({ ...form, nominal: values.value })}
+                onValueChange={handleNumericChange}
                 thousandSeparator="."
                 decimalSeparator=","
                 prefix="Rp "
@@ -135,8 +148,9 @@ function ModalTambah({ onClose, onSaved }) {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
               <textarea
                 rows={2} placeholder="Opsional"
-                value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })}
+                value={form.keterangan} onChange={(e) => setFormField("keterangan", e.target.value)}
                 className={`${inputCls} resize-none`}
+                maxLength={500}
               />
             </div>
           </div>

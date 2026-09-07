@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
 
 /**
@@ -11,7 +11,7 @@ import { Search, ChevronDown, X } from "lucide-react";
  *  - placeholder: string
  *  - disabled: boolean
  */
-export default function Combobox({
+export default memo(function Combobox({
   value,
   onChange,
   onSearch,
@@ -164,4 +164,4 @@ export default function Combobox({
       )}
     </div>
   );
-}
+});

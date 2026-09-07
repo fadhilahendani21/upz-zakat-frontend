@@ -1,10 +1,7 @@
-import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import logoUnsil from "../../assets/img/logo-upz.png";
-import MosqueIllustration from "./MosqueIllustration";
 import { useSettings } from "../../services/settingService";
-import { getUser } from "../../services/authService";
-import { getProfile } from "../../services/penggunaService";
+import { useUser } from "../../contexts/UserContext";
 import {
   LayoutDashboard,
   ArrowDownToLine,
@@ -36,13 +33,6 @@ const pengelolaan = [
   { label: "Revisi Kesepakatan", icon: FilePen, to: "/dashboard/zakat-requests" },
 ];
 
-const keuangan = [
-  { label: "Transaksi", icon: Receipt, to: "/dashboard/transaksi" },
-  { label: "Rekening & Kas", icon: Wallet, to: "/dashboard/rekening-kas" },
-  { label: "Laporan Keuangan", icon: BarChart3, to: "/dashboard/laporan-keuangan" },
-  { label: "Jurnal", icon: BookOpen, to: "/dashboard/jurnal" },
-];
-
 function SidebarLink({ item }) {
   return (
     <NavLink
@@ -67,28 +57,9 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const settings = useSettings();
   const brandName = settings?.profil?.namaSingkat || "UPZ Unsil";
 
-  // Baca dari localStorage dulu (cepat), lalu refresh dari API
-  const [user, setUser] = useState(() => getUser());
+  // Gunakan shared UserContext — TIDAK ada API call di sini
+  const { user } = useUser();
   const isAdmin = user?.role === "administrator";
-
-  useEffect(() => {
-    let cancelled = false;
-    async function refreshUser() {
-      try {
-        const fresh = await getProfile();
-        if (cancelled) return;
-        // Simpan ulang ke localStorage dengan data terbaru dari API
-        const existing = getUser() || {};
-        const updated = { ...existing, ...fresh };
-        localStorage.setItem("user", JSON.stringify(updated));
-        setUser(updated);
-      } catch {
-        // Abaikan error, tetap gunakan data localStorage
-      }
-    }
-    refreshUser();
-    return () => { cancelled = true; };
-  }, []);
 
   const pengaturan = [
     { label: isAdmin ? "Pengguna & Akses" : "Profil Pengguna", icon: UserCog, to: "/dashboard/pengguna" },
@@ -197,20 +168,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           </div>
         </div>
       </nav>
-
-      {/* <div className="relative m-4 p-4 rounded-xl bg-brand-700 text-white text-xs leading-relaxed overflow-hidden">
-        <MosqueIllustration className="pointer-events-none absolute -bottom-6 -right-4 w-32 text-white/10 -z-0" />
-        <div className="relative z-10">
-          <p className="text-lg leading-none mb-2">&ldquo;</p>
-          <p>
-            Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu
-            membersihkan dan mensucikan mereka.
-          </p>
-          <p className="mt-2 text-brand-200 text-[11px]">
-            – QS. At-Taubah: 103
-          </p>
-        </div>
-      </div> */}
       </aside>
     </>
   );

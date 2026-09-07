@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import {
   Plus,
@@ -48,9 +48,17 @@ function ProgressBar({ value, color = "brand" }) {
   );
 }
 
-function Field({ label, field, type = "text", placeholder, required, value, onChange, error, isCurrency }) {
+const Field = memo(function Field({ label, field, type = "text", placeholder, required, value, onChange, error, isCurrency }) {
   const className = `w-full px-3 py-2.5 rounded-lg border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`;
   
+  const handleChange = useCallback((e) => {
+    onChange(field, e.target.value);
+  }, [field, onChange]);
+
+  const handleNumericChange = useCallback((values) => {
+    onChange(field, values.value);
+  }, [field, onChange]);
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -60,7 +68,7 @@ function Field({ label, field, type = "text", placeholder, required, value, onCh
         <NumericFormat
           placeholder={placeholder}
           value={value}
-          onValueChange={(values) => onChange(field, values.value)}
+          onValueChange={handleNumericChange}
           thousandSeparator="."
           decimalSeparator=","
           prefix="Rp "
@@ -69,14 +77,14 @@ function Field({ label, field, type = "text", placeholder, required, value, onCh
       ) : (
         <input
           type={type} value={value} placeholder={placeholder}
-          onChange={(e) => onChange(field, e.target.value)}
+          onChange={handleChange}
           className={className}
         />
       )}
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );
-}
+});
 
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
@@ -91,10 +99,10 @@ function ModalForm({ initial, onClose, onSaved }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors]   = useState({});
 
-  function set(field, val) {
+  const set = useCallback((field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
     setErrors((e) => ({ ...e, [field]: undefined }));
-  }
+  }, []);
 
   function validate() {
     const errs = {};

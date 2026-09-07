@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   Heart, Phone, MapPin, Plus, Users,
   X, Pencil, Trash2,
@@ -36,20 +36,24 @@ const KATEGORI_COLORS = {
   "Riqab":         "bg-pink-50 text-pink-700 border-pink-200",
 };
 
-function Field({ label, field, type = "text", placeholder, value, onChange, error }) {
+const Field = memo(function Field({ label, field, type = "text", placeholder, value, onChange, error }) {
+  const handleChange = useCallback((e) => {
+    onChange(field, e.target.value);
+  }, [field, onChange]);
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
       <input
         type={type} value={value} placeholder={placeholder}
-        onChange={(e) => onChange(field, e.target.value)}
+        onChange={handleChange}
         className={`w-full px-3 py-2.5 rounded-lg border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500
           ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
       />
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );
-}
+});
 
 // ── Modal Form ────────────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
@@ -66,10 +70,10 @@ function ModalForm({ initial, onClose, onSaved }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors]   = useState({});
 
-  function set(field, val) {
+  const set = useCallback((field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
     setErrors((e) => ({ ...e, [field]: undefined }));
-  }
+  }, []);
 
   function validate() {
     const errs = {};

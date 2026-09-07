@@ -1,90 +1,133 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/dashboard/Sidebar";
 import Topbar from "../components/dashboard/Topbar";
 import MosqueIllustration from "../components/dashboard/MosqueIllustration";
 import { useSettings } from "../services/settingService";
+import { UserProvider } from "../contexts/UserContext";
+import { DashboardProvider, useDashboard } from "../contexts/DashboardContext";
+import { getAllDashboardData } from "../services/dashboardService";
 
 const APP_VERSION = "1.0.0";
 
-export default function DashboardLayout() {
+// Map path → { title, subtitle } untuk menghindari switch statement per-render
+const PAGE_INFO = {
+  "/dashboard": {
+    title: null, // Tampilkan Assalamu'alaikum bawaan Topbar
+    subtitleKey: "dashboard",
+  },
+  "/dashboard/pengumpulan": {
+    title: "Pengumpulan",
+    subtitle: "Manajemen dana zakat, infaq, dan sedekah yang masuk.",
+  },
+  "/dashboard/penyaluran": {
+    title: "Penyaluran",
+    subtitle: "Manajemen penyaluran dana zakat kepada mustahik.",
+  },
+  "/dashboard/muzakki": {
+    title: "Muzakki",
+    subtitleKey: "muzakki",
+  },
+  "/dashboard/tagihan": {
+    title: "Tagihan & Kepatuhan Zakat",
+    subtitle: "Kontrol status pembayaran zakat, tunggakan, dan pelunasan komitmen muzakki.",
+  },
+  "/dashboard/mustahik": {
+    title: "Mustahik",
+    subtitleKey: "mustahik",
+  },
+  "/dashboard/donasi-online": {
+    title: "Donasi Online",
+    subtitle: "Pantau dan kelola transaksi donasi online dari publik.",
+  },
+  "/dashboard/program": {
+    title: "Program Penyaluran",
+    subtitleKey: "program",
+  },
+  "/dashboard/berita": {
+    title: "Berita & Artikel",
+    subtitle: "Manajemen berita, publikasi, dan artikel kegiatan UPZ.",
+  },
+  "/dashboard/transaksi": {
+    title: "Transaksi Umum",
+    subtitle: "Riwayat seluruh transaksi yang tercatat di sistem.",
+  },
+  "/dashboard/rekening-kas": {
+    title: "Rekening & Kas",
+    subtitle: "Manajemen likuiditas dan saldo kas UPZ.",
+  },
+  "/dashboard/laporan-keuangan": {
+    title: "Laporan Keuangan",
+    subtitle: "Laporan dan pembukuan keuangan UPZ.",
+  },
+  "/dashboard/jurnal": {
+    title: "Jurnal Umum",
+    subtitle: "Pencatatan debit dan kredit pembukuan transaksi UPZ.",
+  },
+  "/dashboard/pengguna": {
+    title: "Pengaturan Pengguna",
+    subtitle: "Kelola profil akun, keamanan kata sandi, dan status sesi.",
+  },
+  "/dashboard/pengaturan": {
+    title: "Pengaturan Sistem",
+    subtitle: "Konfigurasi sistem dan preferensi aplikasi.",
+  },
+  "/dashboard/zakat-requests": {
+    title: "Revisi Kesepakatan",
+    subtitle: "Tinjau dan kelola usulan perubahan nominal atau frekuensi zakat dari muzakki.",
+  },
+};
+
+function getPageInfo(pathname, settings) {
+  const info = PAGE_INFO[pathname];
+  if (!info) return { title: "Dashboard", subtitle: "" };
+
+  const namaSingkat = settings?.profil?.namaSingkat || "UPZ Unsil";
+
+  let subtitle = info.subtitle || "";
+  if (info.subtitleKey) {
+    switch (info.subtitleKey) {
+      case "dashboard":
+        subtitle = `Selamat datang di Sistem Keuangan ${namaSingkat}`;
+        break;
+      case "muzakki":
+        subtitle = `Data induk muzakki (pemberi zakat) ${namaSingkat}.`;
+        break;
+      case "mustahik":
+        subtitle = `Data induk mustahik (penerima zakat) ${namaSingkat}.`;
+        break;
+      case "program":
+        subtitle = `Kelola program-program penyaluran zakat aktif ${namaSingkat}.`;
+        break;
+    }
+  }
+
+  return { title: info.title, subtitle };
+}
+
+function DashboardLayoutContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const settings = useSettings();
   const orgName = settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
+  const { setDashboardData, setLoading } = useDashboard();
 
-  let topbarTitle = "";
-  let topbarSubtitle = "";
+  useEffect(() => {
+    const tahun = new Date().getFullYear();
+    setLoading(true);
+    getAllDashboardData(tahun)
+      .then((data) => {
+        setDashboardData(data);
+      })
+      .catch(() => {
+        // Error handling tetap dilakukan di komponen anak
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [setDashboardData, setLoading]);
 
-  switch (location.pathname) {
-    case "/dashboard":
-      topbarTitle = null; // Tampilkan Assalamu'alaikum bawaan Topbar
-      topbarSubtitle = `Selamat datang di Sistem Keuangan ${settings?.profil?.namaSingkat || "UPZ Unsil"}`;
-      break;
-    case "/dashboard/pengumpulan":
-      topbarTitle = "Pengumpulan";
-      topbarSubtitle = "Manajemen dana zakat, infaq, dan sedekah yang masuk.";
-      break;
-    case "/dashboard/penyaluran":
-      topbarTitle = "Penyaluran";
-      topbarSubtitle = "Manajemen penyaluran dana zakat kepada mustahik.";
-      break;
-    case "/dashboard/muzakki":
-      topbarTitle = "Muzakki";
-      topbarSubtitle = `Data induk muzakki (pemberi zakat) ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
-      break;
-    case "/dashboard/tagihan":
-      topbarTitle = "Tagihan & Kepatuhan Zakat";
-      topbarSubtitle = "Kontrol status pembayaran zakat, tunggakan, dan pelunasan komitmen muzakki.";
-      break;
-    case "/dashboard/mustahik":
-      topbarTitle = "Mustahik";
-      topbarSubtitle = `Data induk mustahik (penerima zakat) ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
-      break;
-    case "/dashboard/donasi-online":
-      topbarTitle = "Donasi Online";
-      topbarSubtitle = "Pantau dan kelola transaksi donasi online dari publik.";
-      break;
-    case "/dashboard/program":
-      topbarTitle = "Program Penyaluran";
-      topbarSubtitle = `Kelola program-program penyaluran zakat aktif ${settings?.profil?.namaSingkat || "UPZ Unsil"}.`;
-      break;
-    case "/dashboard/berita":
-      topbarTitle = "Berita & Artikel";
-      topbarSubtitle = "Manajemen berita, publikasi, dan artikel kegiatan UPZ.";
-      break;
-    case "/dashboard/transaksi":
-      topbarTitle = "Transaksi Umum";
-      topbarSubtitle = "Riwayat seluruh transaksi yang tercatat di sistem.";
-      break;
-    case "/dashboard/rekening-kas":
-      topbarTitle = "Rekening & Kas";
-      topbarSubtitle = "Manajemen likuiditas dan saldo kas UPZ.";
-      break;
-    case "/dashboard/laporan-keuangan":
-      topbarTitle = "Laporan Keuangan";
-      topbarSubtitle = "Laporan dan pembukuan keuangan UPZ.";
-      break;
-    case "/dashboard/jurnal":
-      topbarTitle = "Jurnal Umum";
-      topbarSubtitle = "Pencatatan debit dan kredit pembukuan transaksi UPZ.";
-      break;
-    case "/dashboard/pengguna":
-      topbarTitle = "Pengaturan Pengguna";
-      topbarSubtitle = "Kelola profil akun, keamanan kata sandi, dan status sesi.";
-      break;
-    case "/dashboard/pengaturan":
-      topbarTitle = "Pengaturan Sistem";
-      topbarSubtitle = "Konfigurasi sistem dan preferensi aplikasi.";
-      break;
-    case "/dashboard/zakat-requests":
-      topbarTitle = "Revisi Kesepakatan";
-      topbarSubtitle = "Tinjau dan kelola usulan perubahan nominal atau frekuensi zakat dari muzakki.";
-      break;
-    default:
-      topbarTitle = "Dashboard";
-      break;
-  }
+  const { title: topbarTitle, subtitle: topbarSubtitle } = getPageInfo(location.pathname, settings);
 
   return (
     <div className="flex bg-gray-50 min-h-screen">
@@ -112,5 +155,15 @@ export default function DashboardLayout() {
         </footer>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout() {
+  return (
+    <UserProvider>
+      <DashboardProvider>
+        <DashboardLayoutContent />
+      </DashboardProvider>
+    </UserProvider>
   );
 }

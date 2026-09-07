@@ -1,6 +1,7 @@
+import { memo } from "react";
 import { AlertTriangle, Trash2, LogOut, Info, X, AlertCircle } from "lucide-react";
 
-export default function ConfirmModal({
+export default memo(function ConfirmModal({
   isOpen,
   onClose,
   onConfirm,
@@ -95,4 +96,4 @@ export default function ConfirmModal({
       </div>
     </div>
   );
-}
+});

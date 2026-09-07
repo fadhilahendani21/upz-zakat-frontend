@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo, useMemo } from "react";
 import {
   Users, Plus, GraduationCap, Globe,
   X, Pencil, Trash2,
@@ -89,13 +89,17 @@ function parseUnitKerja(unitKerjaStr) {
   return { isDosenStaf: true, fakultas: FAKULTAS_LIST[0], jurusan: unitKerjaStr };
 }
 
-function Field({ label, field, type = "text", placeholder, value, onChange, error, pattern, maxLength }) {
+const Field = memo(function Field({ label, field, type = "text", placeholder, value, onChange, error, pattern, maxLength }) {
+  const handleChange = useCallback((e) => {
+    onChange(field, e.target.value);
+  }, [field, onChange]);
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
       <input
         type={type} value={value} placeholder={placeholder}
-        onChange={(e) => onChange(field, e.target.value)}
+        onChange={handleChange}
         pattern={pattern} maxLength={maxLength}
         className={`w-full px-3 py-2.5 rounded-lg border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500
           ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
@@ -103,7 +107,7 @@ function Field({ label, field, type = "text", placeholder, value, onChange, erro
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );
-}
+});
 
 // ── Modal Detail ──────────────────────────────────────────────────────
 function ModalDetail({ muzakki, onClose }) {
@@ -260,7 +264,7 @@ function ModalDetail({ muzakki, onClose }) {
 }
 
 // Helper component untuk detail item
-function DetailItem({ label, value, icon }) {
+const DetailItem = memo(function DetailItem({ label, value, icon }) {
   return (
     <div>
       <span className="text-xs text-gray-500 block mb-1">{label}</span>
@@ -270,7 +274,7 @@ function DetailItem({ label, value, icon }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Modal Form ────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
@@ -313,27 +317,27 @@ function ModalForm({ initial, onClose, onSaved }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  function set(field, val) {
+  const set = useCallback((field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
     setErrors((e) => ({ ...e, [field]: undefined }));
-  }
+  }, []);
 
-  function handleFakultasChange(e) {
+  const handleFakultasChange = useCallback((e) => {
     const fak = e.target.value;
     setSelectedFakultas(fak);
     const jurusanList = FAKULTAS_JURUSAN_UNSIL[fak] || [];
     setSelectedJurusan(jurusanList[0] || "");
-  }
+  }, []);
 
-  const toggleZakat = (key) => {
+  const toggleZakat = useCallback((key) => {
     setZakatSelections((prev) => ({
       ...prev,
       [key]: { ...prev[key], selected: !prev[key].selected },
     }));
     setErrors((e) => ({ ...e, zakat: undefined }));
-  };
+  }, []);
 
-  const updateZakatField = (key, field, value) => {
+  const updateZakatField = useCallback((key, field, value) => {
     setZakatSelections((prev) => {
       const updated = { ...prev[key], [field]: value };
       if (key === "fitrah" && (field === "jumlahJiwa" || field === "nominalPerJiwa")) {
@@ -344,7 +348,7 @@ function ModalForm({ initial, onClose, onSaved }) {
       return { ...prev, [key]: updated };
     });
     setErrors((e) => ({ ...e, zakat: undefined }));
-  };
+  }, []);
 
   function getActiveZakatList() {
     const list = [];
@@ -384,6 +388,44 @@ function ModalForm({ initial, onClose, onSaved }) {
     return getActiveZakatList().reduce((sum, item) => sum + item.nominal, 0);
   }
 
+  const activeZakatList = useMemo(() => {
+    const list = [];
+    if (zakatSelections.penghasilan.selected) {
+      list.push({
+        key: "penghasilan",
+        jenis: "Zakat Penghasilan",
+        frekuensi: zakatSelections.penghasilan.frekuensi,
+        nominal: Number(String(zakatSelections.penghasilan.nominal || 0).replace(/\D/g, "")),
+        detail: zakatSelections.penghasilan.frekuensi === "bulanan" ? "Per bulan" : "Per tahun",
+      });
+    }
+    if (zakatSelections.maal.selected) {
+      list.push({
+        key: "maal",
+        jenis: "Zakat Maal",
+        frekuensi: zakatSelections.maal.frekuensi,
+        nominal: Number(String(zakatSelections.maal.nominal || 0).replace(/\D/g, "")),
+        detail: "Zakat atas simpanan & aset kekayaan",
+      });
+    }
+    if (zakatSelections.fitrah.selected) {
+      list.push({
+        key: "fitrah",
+        jenis: "Zakat Fitrah",
+        frekuensi: "ramadan",
+        jumlah_jiwa: Number(zakatSelections.fitrah.jumlahJiwa || 1),
+        nominal_per_jiwa: Number(String(zakatSelections.fitrah.nominalPerJiwa || 45000).replace(/\D/g, "")),
+        nominal: Number(String(zakatSelections.fitrah.nominal || 0).replace(/\D/g, "")),
+        detail: `${zakatSelections.fitrah.jumlahJiwa || 1} Jiwa × Rp ${Number(String(zakatSelections.fitrah.nominalPerJiwa || 45000).replace(/\D/g, "")).toLocaleString("id-ID")}`,
+      });
+    }
+    return list;
+  }, [zakatSelections]);
+
+  const totalNominal = useMemo(() => {
+    return activeZakatList.reduce((sum, item) => sum + item.nominal, 0);
+  }, [activeZakatList]);
+
   function validate() {
     const errs = {};
     if (!form.nama.trim()) errs.nama = "Nama wajib diisi.";
@@ -401,7 +443,7 @@ function ModalForm({ initial, onClose, onSaved }) {
       if (!selectedFakultas) errs.fakultas = "Fakultas wajib dipilih.";
       if (!selectedJurusan) errs.jurusan = "Jurusan wajib dipilih.";
     }
-    if (getActiveZakatList().length === 0) errs.zakat = "Pilih minimal 1 jenis zakat.";
+    if (activeZakatList.length === 0) errs.zakat = "Pilih minimal 1 jenis zakat.";
     return errs;
   }
 
@@ -416,9 +458,7 @@ function ModalForm({ initial, onClose, onSaved }) {
         ? "Masyarakat Umum"
         : `${selectedFakultas} · ${selectedJurusan}`;
 
-      const activeZakat = getActiveZakatList();
-      const totalNominal = getTotalNominal();
-      const jenisJoined = activeZakat.map((z) => z.jenis).join(", ");
+      const jenisJoined = activeZakatList.map((z) => z.jenis).join(", ");
 
       const payload = {
         nama: form.nama,
@@ -435,12 +475,12 @@ function ModalForm({ initial, onClose, onSaved }) {
         kategori: kategoriType === "umum" ? "Muzakki Umum" : "Dosen & Staf UNSIL",
         unit_kerja: finalUnitKerja,
         jenis_zakat: jenisJoined || null,
-        frekuensi: activeZakat.length === 1 ? activeZakat[0].frekuensi : "multi-frekuensi",
+        frekuensi: activeZakatList.length === 1 ? activeZakatList[0].frekuensi : "multi-frekuensi",
         nominal: totalNominal || null,
         metode_pembayaran: metodePenyaluran || null,
         pilihan_bank: metodePenyaluran === "transfer-bank" ? pilihanBank : null,
         pilihan_ewallet: (metodePenyaluran === "e-wallet" || metodePenyaluran === "qris") ? pilihanEwallet : null,
-        kesepakatan_zakat: activeZakat,
+        kesepakatan_zakat: activeZakatList,
       };
 
       if (isEdit) {
@@ -456,7 +496,9 @@ function ModalForm({ initial, onClose, onSaved }) {
     }
   }
 
-  const currentJurusanOptions = FAKULTAS_JURUSAN_UNSIL[selectedFakultas] || [];
+  const currentJurusanOptions = useMemo(() => {
+    return FAKULTAS_JURUSAN_UNSIL[selectedFakultas] || [];
+  }, [selectedFakultas]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">

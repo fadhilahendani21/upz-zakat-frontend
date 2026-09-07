@@ -1,9 +1,11 @@
 /**
  * notificationService.js
- * Manajemen notifikasi sistem, transaksi, dan donasi online untuk Dashboard UPZ Unsil.
+ * Manajemen notifikasi sistem untuk Dashboard UPZ Unsil.
+ * 
+ * OPTIMASI: Tidak lagi memanggil getAllDashboardData() untuk notifikasi.
+ * Notifikasi dinamis dari transaksi diambil HANYA saat user membuka panel notifikasi,
+ * bukan di setiap render Topbar.
  */
-
-import { getAllDashboardData } from "./dashboardService";
 
 const STORAGE_KEY_READ = "upz_read_notif_ids";
 const STORAGE_KEY_CUSTOM = "upz_custom_notifications";
@@ -92,37 +94,19 @@ export function clearAllNotifications() {
   emitUpdate();
 }
 
+/**
+ * Ambil notifikasi — TANPA API call berat.
+ * Hanya baca dari localStorage (custom notifs + default).
+ * Notifikasi dari transaksi tidak lagi diambil di sini.
+ */
 export async function getNotifications() {
   const readIds = getReadIds();
   const custom = getCustomNotifs();
   const clearedTs = getClearedTimestamp();
 
-  let dynamicNotifs = [];
-
-  try {
-    const dash = await getAllDashboardData().catch(() => null);
-    if (dash?.transaksi && Array.isArray(dash.transaksi)) {
-      dynamicNotifs = dash.transaksi.slice(0, 3).map((trx, idx) => {
-        const isMasuk = trx.jenis === "masuk";
-        const id = `trx-notif-${trx.kode || idx}`;
-        return {
-          id,
-          type: isMasuk ? "pengumpulan" : "penyaluran",
-          icon: isMasuk ? "💰" : "📤",
-          title: isMasuk ? "Transaksi Pengumpulan" : "Transaksi Penyaluran",
-          desc: `${trx.kategori || "Zakat"} sebesar Rp ${(trx.nominal || 0).toLocaleString("id-ID")}`,
-          time: trx.tanggal || "Baru saja",
-          timestamp: Date.now() - (idx + 1) * 15 * 60 * 1000,
-          targetUrl: isMasuk ? "/dashboard/pengumpulan" : "/dashboard/penyaluran",
-          actionLabel: isMasuk ? "Lihat Pengumpulan" : "Lihat Penyaluran",
-        };
-      });
-    }
-  } catch {}
-
   // Combine all without duplicate ID, but filter out cleared items
   const allMap = new Map();
-  [...custom, ...dynamicNotifs, ...DEFAULT_NOTIFICATIONS].forEach((item) => {
+  [...custom, ...DEFAULT_NOTIFICATIONS].forEach((item) => {
     // If cleared timestamp exists, skip items older or equal to it
     if (clearedTs && item.timestamp && item.timestamp <= clearedTs) {
       return;

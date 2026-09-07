@@ -1,4 +1,6 @@
-export default function HighlightText({ text, query, highlightClassName = "bg-yellow-200 rounded px-0.5" }) {
+import { memo } from "react";
+
+export default memo(function HighlightText({ text, query, highlightClassName = "bg-yellow-200 rounded px-0.5" }) {
   if (!query || !query.trim()) return <>{text}</>;
 
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -19,4 +21,4 @@ export default function HighlightText({ text, query, highlightClassName = "bg-ye
       })}
     </span>
   );
-}
+});

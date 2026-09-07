@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   ArrowUpFromLine, Plus, Download,
   TrendingUp, HandCoins, Users,
@@ -46,6 +46,19 @@ function ModalTambah({ onClose, onSaved }) {
   });
   const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
+
+  const setFormField = useCallback((field, value) => {
+    setForm(f => ({ ...f, [field]: value }));
+  }, []);
+
+  const handleMustahikChange = useCallback((v) => {
+    setMustahik(v);
+    setError("");
+  }, []);
+
+  const handleNumericChange = useCallback((values) => {
+    setForm(f => ({ ...f, nominal: values.value }));
+  }, []);
 
   useEffect(() => {
     async function loadPrograms() {
@@ -100,7 +113,7 @@ function ModalTambah({ onClose, onSaved }) {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Mustahik / Penerima</label>
               <Combobox
                 value={mustahik}
-                onChange={(v) => { setMustahik(v); setError(""); }}
+                onChange={handleMustahikChange}
                 onSearch={getMustahikOptions}
                 placeholder="Ketik nama mustahik..."
               />
@@ -112,7 +125,7 @@ function ModalTambah({ onClose, onSaved }) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Program Penyaluran</label>
                 <select
-                  value={form.program_id} onChange={(e) => setForm({ ...form, program_id: e.target.value })}
+                  value={form.program_id} onChange={(e) => setFormField("program_id", e.target.value)}
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
                 >
                   {programOptions.length === 0 ? (
@@ -131,7 +144,7 @@ function ModalTambah({ onClose, onSaved }) {
                 <NumericFormat
                   placeholder="0"
                   value={form.nominal}
-                  onValueChange={(values) => setForm({ ...form, nominal: values.value })}
+                  onValueChange={handleNumericChange}
                   thousandSeparator="."
                   decimalSeparator=","
                   prefix="Rp "
@@ -141,7 +154,7 @@ function ModalTambah({ onClose, onSaved }) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Metode</label>
                 <select
-                  value={form.metode} onChange={(e) => setForm({ ...form, metode: e.target.value })}
+                  value={form.metode} onChange={(e) => setFormField("metode", e.target.value)}
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition bg-white"
                 >
                   {["Transfer Bank", "Tunai", "Cek"].map((m) => <option key={m}>{m}</option>)}
@@ -152,8 +165,9 @@ function ModalTambah({ onClose, onSaved }) {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
               <textarea
                 rows={2} placeholder="Opsional"
-                value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })}
+                value={form.keterangan} onChange={(e) => setFormField("keterangan", e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition resize-none"
+                maxLength={500}
               />
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bell,
   HelpCircle,
@@ -11,11 +11,11 @@ import {
   Phone,
   CheckCheck,
   ExternalLink,
-  Info,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { logout, getUser } from "../../services/authService";
+import { logout } from "../../services/authService";
 import { useSettings } from "../../services/settingService";
+import { useUser } from "../../contexts/UserContext";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -23,7 +23,6 @@ import {
   addNotification,
 } from "../../services/notificationService";
 import { getPendingRequestCount } from "../../services/agreementService";
-import { getProfile } from "../../services/penggunaService";
 import HelpModal from "./HelpModal";
 import NotificationModal from "./NotificationModal";
 
@@ -31,28 +30,12 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
   const navigate  = useNavigate();
   const settings  = useSettings();
 
-  // Baca dari localStorage dulu lalu sinkronkan dengan API
-  const [currentUser, setCurrentUser] = useState(() => getUser());
-  const [today, setToday] = useState(new Date());
+  // Gunakan shared UserContext — TIDAK ada API call getProfile() di sini
+  const { user: currentUser } = useUser();
+  const [today, setToday] = useState(() => new Date());
   const userName    = currentUser?.name  ?? "Admin UPZ";
   const userRole    = currentUser?.role  ?? "administrator";
   const userInitial = userName.charAt(0).toUpperCase();
-
-  useEffect(() => {
-    let cancelled = false;
-    async function refreshUser() {
-      try {
-        const fresh = await getProfile();
-        if (cancelled) return;
-        const existing = getUser() || {};
-        const updated = { ...existing, ...fresh };
-        localStorage.setItem("user", JSON.stringify(updated));
-        setCurrentUser(updated);
-      } catch { /* tetap pakai cache */ }
-    }
-    refreshUser();
-    return () => { cancelled = true; };
-  }, []);
 
   const [openDropdown, setOpenDropdown] = useState(null); // "notif" | "help" | "profile" | null
   const [notifs, setNotifs] = useState([]);
@@ -67,15 +50,15 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
   const helpRef    = useRef(null);
   const profileRef = useRef(null);
 
-  // Load notifikasi
-  const loadNotifs = async () => {
+  // Load notifikasi — memoized
+  const loadNotifs = useCallback(async () => {
     try {
       const data = await getNotifications();
       setNotifs(data);
     } catch {
       // Fallback tetap aman
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadNotifs();
@@ -87,7 +70,7 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
       window.removeEventListener("upz_notifs_updated", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };
-  }, []);
+  }, [loadNotifs]);
 
   // Polling pending agreement count setiap 60 detik
   useEffect(() => {
@@ -116,12 +99,12 @@ export default function Topbar({ title, subtitle, onMenuClick }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Update tanggal tiap 30 detik
+  // Update tanggal tiap 60 detik (tidak perlu lebih sering)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
       setToday((prev) => (prev.toDateString() !== now.toDateString() ? now : prev));
-    }, 30_000);
+    }, 60_000);
     return () => clearInterval(interval);
   }, []);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   User,
   Shield,
@@ -46,6 +46,11 @@ function UserModal({ isOpen, onClose, onSaved, editData = null }) {
   const [role, setRole] = useState("operator");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const handleNameChange = useCallback((e) => setName(e.target.value), []);
+  const handleEmailChange = useCallback((e) => setEmail(e.target.value), []);
+  const handlePasswordChange = useCallback((e) => setPassword(e.target.value), []);
+  const handleRoleChange = useCallback((e) => setRole(e.target.value), []);
 
   useEffect(() => {
     if (isOpen) {
@@ -123,7 +128,7 @@ function UserModal({ isOpen, onClose, onSaved, editData = null }) {
               type="text"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
               placeholder="Nama pengguna"
               className={inputCls}
             />
@@ -137,7 +142,7 @@ function UserModal({ isOpen, onClose, onSaved, editData = null }) {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="email@upz-unsil.ac.id"
               className={inputCls}
             />
@@ -151,7 +156,7 @@ function UserModal({ isOpen, onClose, onSaved, editData = null }) {
               type="password"
               required={!isEdit}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               placeholder={isEdit ? "Kosongkan jika tidak ingin diubah" : "Min. 8 karakter"}
               className={inputCls}
             />
@@ -163,7 +168,7 @@ function UserModal({ isOpen, onClose, onSaved, editData = null }) {
             </label>
             <select
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={handleRoleChange}
               className={inputCls}
             >
               <option value="administrator">Administrator — Akses Penuh</option>

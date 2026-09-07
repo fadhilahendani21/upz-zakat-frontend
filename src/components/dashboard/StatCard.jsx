@@ -1,5 +1,6 @@
 /**
  * StatCard — Compact horizontal stat card component used across all dashboard pages.
+ * Memoized untuk menghindari re-render saat parent re-render karena state lain.
  *
  * Props:
  *  - icon: Lucide icon component
@@ -9,6 +10,7 @@
  *  - loading: boolean (shows skeleton)
  *  - className: string (optional)
  */
+import { memo } from "react";
 
 const COLOR_MAP = {
   brand:   { bg: "bg-brand-50",   text: "text-brand-600"   },
@@ -25,7 +27,7 @@ const COLOR_MAP = {
   gray:    { bg: "bg-gray-100",   text: "text-gray-600"    },
 };
 
-export default function StatCard({
+const StatCard = memo(function StatCard({
   icon: Icon,
   label,
   value,
@@ -60,4 +62,6 @@ export default function StatCard({
       </div>
     </div>
   );
-}
+});
+
+export default StatCard;
