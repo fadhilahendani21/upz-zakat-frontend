@@ -26,7 +26,7 @@ export const DOSEN_STAF_UNSIL = [
     unit: "Fakultas Teknik",
     jurusan: "Informatika",
     jabatan: "Dosen",
-    email: "cihils46@gmail.com",
+    email: "cihilxd46@gmail.com",
     noHp: "082116375827",
     golongan: "III/a - Penata Muda",
     jenisKelamin: "Laki-laki",
