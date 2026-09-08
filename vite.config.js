@@ -25,15 +25,23 @@ export default defineConfig({
     // Code splitting untuk vendor dependencies
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'tiptap': ['@tiptap/react', '@tiptap/core', '@tiptap/starter-kit'],
-          'icons': ['lucide-react'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@tiptap')) {
+              return 'tiptap';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+          }
         }
       }
     },
     // Enable minification
-    minify: 'esbuild',
+    minify: true,
     // Source maps untuk debugging
     sourcemap: false,
   },
