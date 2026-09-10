@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  FileText, CheckCircle2, XCircle, Clock, ChevronDown,
+  FileText, CheckCircle2, XCircle, Clock,
   RefreshCw, MessageSquare, User, Phone,
 } from "lucide-react";
 import Button from "../../components/common/Button";
-import { Pagination, SearchInput } from "../../components/dashboard/ui";
+import { Pagination } from "../../components/dashboard/ui";
 import { getAgreementRequests, approveRequest, rejectRequest } from "../../services/agreementService";
 
 const STATUS_TABS = [

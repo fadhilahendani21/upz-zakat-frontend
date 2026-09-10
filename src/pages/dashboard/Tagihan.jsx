@@ -5,9 +5,7 @@ import {
   Users,
   Download,
   CreditCard,
-  History,
   X,
-  CheckCircle2,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";

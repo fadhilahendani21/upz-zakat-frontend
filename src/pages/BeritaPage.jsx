@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, ArrowRight, Search, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
+import { Calendar, ArrowRight, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSettings } from "../services/settingService";
 import { getPublicBerita, formatImageUrl } from "../services/beritaService";

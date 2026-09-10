@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Mail, Phone, Briefcase, MapPin, Edit2, Save, X } from "lucide-react";
+import { Mail, Phone, Briefcase, MapPin, Edit2, Save, X } from "lucide-react";
 
 export default function ProfilSaya() {
   const [isEditing, setIsEditing] = useState(false);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import {
   Heart,
@@ -6,32 +6,23 @@ import {
   QrCode,
   Smartphone,
   CheckCircle2,
-  Copy,
   User,
-  Mail,
-  Phone,
   Calculator,
   X,
   Search,
-  Users,
-  Building2,
   Check,
   ClipboardCheck,
-  ChevronDown,
-  Layers,
   Sparkles,
   Sprout,
   WalletCards,
-  Info,
   BookOpen,
-  ArrowRight,
   FilePen,
   AlertCircle,
 } from "lucide-react";
 
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
-import { dummyJenisDonasi, nominalCepat, metodePembayaran } from "../data/dummyDonasi";
+import { metodePembayaran } from "../data/dummyDonasi";
 import { formatRupiah } from "../utils/formatRupiah";
 import { submitDonasi } from "../services/donasiService";
 import { getPublicMuzakki } from "../services/muzakkiService";

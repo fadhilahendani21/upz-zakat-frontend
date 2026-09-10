@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, memo } from "react";
-import { Link } from "react-router-dom";
 import {
   Plus,
   GraduationCap, HeartHandshake, HeartPulse, Store,

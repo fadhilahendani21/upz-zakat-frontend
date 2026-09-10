@@ -2,19 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  User,
-  CreditCard,
-  IdCard,
-  Wallet,
-  Calendar,
   CheckCircle,
   ArrowRight,
   Download,
   Calculator as CalcIcon,
   HandCoins,
-  FileText,
-  QrCode,
-  Eye,
 } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";

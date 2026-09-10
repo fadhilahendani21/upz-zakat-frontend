@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import {
   UserRound,
   ShieldCheck,
-  Building2,
   Calculator,
   X,
   UserPlus,
@@ -16,10 +15,8 @@ import {
   Sprout,
   ClipboardCheck,
   Check,
-  Smartphone,
   LockKeyhole,
   Clock3,
-  ChevronDown,
   AlertCircle,
   Sparkles,
   Heart,

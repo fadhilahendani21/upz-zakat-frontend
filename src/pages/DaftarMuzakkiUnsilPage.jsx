@@ -2,30 +2,23 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   UserRound,
-  Search,
   ShieldCheck,
   Clock3,
   Building2,
   Calculator,
   X,
   UserPlus,
-  Users,
   CheckCircle2,
   Sparkles,
   Loader2,
   WalletCards,
   Landmark,
-  ScanLine,
   Sprout,
-  ClipboardCheck,
   Check,
   ChevronDown,
-  Smartphone,
-  QrCode,
   GraduationCap,
   AlertCircle,
   Heart,
-  Calendar,
 } from "lucide-react";
 
 import { DOSEN_STAF_UNSIL } from "../data/dummyDosenStaf";

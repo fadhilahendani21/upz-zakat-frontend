@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   BookOpen,
-  HelpCircle,
   X,
   Layers,
   ArrowDownToLine,
@@ -15,8 +14,6 @@ import {
   MapPin,
   ExternalLink,
   ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
 } from "lucide-react";
 import { useSettings } from "../../services/settingService";
 

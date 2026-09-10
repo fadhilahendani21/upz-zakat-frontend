@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, memo, useMemo } from "react";
 import {
   Plus,
   Newspaper,
-  Calendar,
   Pencil,
   Trash2,
   X,
@@ -10,8 +9,6 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   FileText,
-  Clock,
-  User,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
