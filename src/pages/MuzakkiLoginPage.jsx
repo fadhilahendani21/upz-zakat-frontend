@@ -29,9 +29,13 @@ export default function MuzakkiLoginPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/muzakki/login`, {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+      const response = await fetch(`${apiUrl}/muzakki/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: JSON.stringify({ email, password }),
       });
 
@@ -90,10 +94,12 @@ export default function MuzakkiLoginPage() {
     
     try {
       const token = localStorage.getItem("muzakki_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/muzakki/set-password`, {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+      const response = await fetch(`${apiUrl}/muzakki/set-password`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
@@ -242,7 +248,6 @@ export default function MuzakkiLoginPage() {
                   setLoading(false);
                   // Proceed without setting password (skip for now)
                   const tempUser = JSON.parse(localStorage.getItem("muzakki_temp_user") || "{}");
-                  localStorage.setItem("muzakki_token", "mock-token");
                   localStorage.setItem("muzakki_user", JSON.stringify(tempUser));
                   localStorage.removeItem("muzakki_temp_user");
                   navigate("/muzakki/dashboard");

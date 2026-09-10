@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   User,
@@ -19,9 +20,11 @@ import {
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export default function MuzakkiDashboard() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -30,16 +33,20 @@ export default function MuzakkiDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
+      setIsUnauthorized(false);
       const token = localStorage.getItem("muzakki_token");
       
       if (!token) {
-        setError("Token tidak ditemukan. Silakan login ulang.");
+        setIsUnauthorized(true);
+        setError("Sesi login telah berakhir atau token tidak ditemukan. Silakan login ulang.");
         return;
       }
 
       const response = await axios.get(`${API_URL}/muzakki/dashboard`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       });
 
@@ -48,7 +55,14 @@ export default function MuzakkiDashboard() {
       }
     } catch (err) {
       console.error("Error fetching dashboard:", err);
-      setError(err.response?.data?.message || "Gagal memuat data dashboard");
+      if (err.response?.status === 401) {
+        setIsUnauthorized(true);
+        localStorage.removeItem("muzakki_token");
+        localStorage.removeItem("muzakki_user");
+        setError("Sesi Anda telah berakhir atau tidak valid. Silakan masuk kembali.");
+      } else {
+        setError(err.response?.data?.message || "Gagal memuat data dashboard");
+      }
     } finally {
       setLoading(false);
     }
@@ -68,14 +82,23 @@ export default function MuzakkiDashboard() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-600">{error}</p>
-          <button 
-            onClick={fetchDashboardData}
-            className="mt-4 px-4 py-2 bg-[#064f35] text-white rounded-lg"
-          >
-            Coba Lagi
-          </button>
+        <div className="text-center max-w-md px-4">
+          <p className="text-red-600 font-medium">{error}</p>
+          {isUnauthorized ? (
+            <button 
+              onClick={() => navigate("/muzakki/masuk")}
+              className="mt-4 px-6 py-2.5 bg-[#064f35] hover:bg-[#05402b] text-white font-semibold rounded-lg transition"
+            >
+              Masuk Kembali
+            </button>
+          ) : (
+            <button 
+              onClick={fetchDashboardData}
+              className="mt-4 px-4 py-2 bg-[#064f35] text-white rounded-lg"
+            >
+              Coba Lagi
+            </button>
+          )}
         </div>
       </div>
     );
