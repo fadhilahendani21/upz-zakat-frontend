@@ -1,10 +1,22 @@
 import { useState } from "react";
-import { HandCoins, CreditCard, Smartphone, QrCode, Building2, CheckCircle } from "lucide-react";
+import {
+  HandCoins,
+  CreditCard,
+  Smartphone,
+  QrCode,
+  Building2,
+  CheckCircle,
+} from "lucide-react";
 
 export default function TunaikanZakat() {
   const [activeMethod, setActiveMethod] = useState("potong-gaji");
   const [amount, setAmount] = useState("");
+  const [jenisZakat, setJenisZakat] = useState("Zakat Penghasilan");
+  const [catatan, setCatatan] = useState("");
 
+  // =====================================================
+  // METODE PEMBAYARAN
+  // =====================================================
   const methods = [
     {
       id: "potong-gaji",
@@ -25,211 +37,542 @@ export default function TunaikanZakat() {
       icon: Smartphone,
       label: "E-Wallet",
       desc: "Bayar melalui OVO, GoPay, Dana",
-      available: false,
+      available: true,
     },
     {
       id: "qris",
       icon: QrCode,
       label: "QRIS",
       desc: "Scan QR Code untuk pembayaran",
-      available: false,
+      available: true,
     },
   ];
 
+  // =====================================================
+  // REKENING BANK
+  // =====================================================
   const bankAccounts = [
-    { bank: "Bank Syariah Indonesia (BSI)", norek: "1234567890", atas: "UPZ Universitas Siliwangi" },
-    { bank: "Bank Mandiri Syariah", norek: "9876543210", atas: "UPZ UNSIL" },
+    {
+      bank: "Bank Syariah Indonesia (BSI)",
+      norek: "1234567890",
+      atas: "UPZ Universitas Siliwangi",
+    },
+    {
+      bank: "Bank Mandiri Syariah",
+      norek: "9876543210",
+      atas: "UPZ UNSIL",
+    },
   ];
 
+  // =====================================================
+  // FORMAT RUPIAH
+  // =====================================================
   const formatRupiah = (value) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
-    }).format(value);
+    }).format(Number(value) || 0);
   };
 
+  // =====================================================
+  // SUBMIT PEMBAYARAN
+  // =====================================================
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!amount || parseFloat(amount) <= 0) {
+
+    if (!amount || Number(amount) <= 0) {
       alert("Masukkan nominal zakat yang valid!");
       return;
     }
-    alert(`Pembayaran ${formatRupiah(amount)} melalui ${methods.find(m => m.id === activeMethod)?.label} berhasil diproses!`);
+
+    const selectedMethod = methods.find(
+      (method) => method.id === activeMethod
+    );
+
+    alert(
+      `Pembayaran berhasil diproses!\n\n` +
+        `Jenis: ${jenisZakat}\n` +
+        `Nominal: ${formatRupiah(amount)}\n` +
+        `Metode: ${selectedMethod?.label || "-"}`
+    );
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Tunaikan Zakat</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Pilih metode pembayaran dan nominal zakat yang akan Anda tunaikan
-        </p>
-      </div>
+    <div className="p-4 sm:p-6 space-y-5">
+      {/* =====================================================
+          INFO BANNER
+      ===================================================== */}
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 sm:p-4 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+          <CheckCircle size={17} className="text-emerald-600" />
+        </div>
 
-      {/* Info Banner */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
-        <CheckCircle size={20} className="text-emerald-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-emerald-900">
-          <p className="font-semibold">Untuk Dosen & Staf UNSIL:</p>
-          <p className="mt-1">
-            Pembayaran zakat penghasilan Anda sudah otomatis dipotong dari gaji setiap bulan. 
-            Gunakan metode lain jika ingin membayar zakat tambahan (maal, fitrah, dll).
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-emerald-900">
+            Untuk Dosen & Staf UNSIL
+          </p>
+
+          <p className="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
+            Pembayaran zakat penghasilan dapat dilakukan melalui
+            potong gaji setiap bulan. Gunakan metode lain untuk
+            pembayaran zakat tambahan seperti zakat maal atau
+            zakat fitrah.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Payment Methods */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Method Selection */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Pilih Metode Pembayaran</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {methods.map((method) => (
-                <button
-                  key={method.id}
-                  onClick={() => method.available && setActiveMethod(method.id)}
-                  disabled={!method.available}
-                  className={`flex items-start gap-3 p-4 border-2 rounded-lg text-left transition ${
-                    activeMethod === method.id
-                      ? "border-emerald-500 bg-emerald-50"
-                      : method.available
-                      ? "border-gray-200 hover:border-gray-300"
-                      : "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      activeMethod === method.id
-                        ? "bg-emerald-500 text-white"
-                        : "bg-gray-100 text-gray-600"
+      {/* =====================================================
+          MAIN CONTENT
+      ===================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+        {/* ===================================================
+            LEFT CONTENT
+        =================================================== */}
+        <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+          {/* =================================================
+              PAYMENT METHOD
+          ================================================= */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+            <div className="mb-4">
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+                Pilih Metode Pembayaran
+              </h3>
+
+              <p className="text-xs text-gray-500 mt-1">
+                Pilih metode pembayaran zakat yang tersedia.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {methods.map((method) => {
+                const Icon = method.icon;
+                const isActive = activeMethod === method.id;
+
+                return (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => setActiveMethod(method.id)}
+                    className={`flex items-start gap-3 p-3.5 border rounded-xl text-left transition ${
+                      isActive
+                        ? "border-emerald-500 bg-emerald-50"
+                        : "border-gray-200 bg-white hover:border-emerald-300 hover:bg-gray-50"
                     }`}
                   >
-                    <method.icon size={18} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{method.label}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{method.desc}</p>
-                    {!method.available && (
-                      <span className="inline-block mt-1 text-xs text-red-600 font-medium">
-                        Segera Hadir
-                      </span>
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                        isActive
+                          ? "bg-emerald-600 text-white"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      <Icon size={17} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {method.label}
+                      </p>
+
+                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                        {method.desc}
+                      </p>
+                    </div>
+
+                    {isActive && (
+                      <CheckCircle
+                        size={17}
+                        className="text-emerald-600 shrink-0 mt-0.5"
+                      />
                     )}
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Payment Form */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Detail Pembayaran</h3>
+          {/* =================================================
+              PAYMENT DETAIL
+          ================================================= */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+            <div className="mb-4">
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+                Detail Pembayaran
+              </h3>
+
+              <p className="text-xs text-gray-500 mt-1">
+                Lengkapi informasi pembayaran zakat Anda.
+              </p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* =================================================
+                  JENIS ZAKAT
+              ================================================= */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                   Jenis Zakat
                 </label>
-                <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+
+                <select
+                  value={jenisZakat}
+                  onChange={(e) => setJenisZakat(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
                   <option>Zakat Penghasilan</option>
                   <option>Zakat Maal</option>
                   <option>Zakat Fitrah</option>
-                  <option>Infaq/Sedekah</option>
                 </select>
               </div>
 
+              {/* =================================================
+                  NOMINAL
+              ================================================= */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nominal (Rp)
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
+                  Nominal Zakat
                 </label>
-                <input
-                  type="number"
-                  placeholder="Masukkan nominal"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  required
-                />
-                {amount && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    {formatRupiah(parseFloat(amount))}
+
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                    Rp
+                  </span>
+
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Masukkan nominal zakat"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full pl-10 pr-3.5 py-2.5 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+
+                {amount && Number(amount) > 0 && (
+                  <p className="text-xs text-emerald-600 font-medium mt-1.5">
+                    {formatRupiah(amount)}
                   </p>
                 )}
               </div>
 
+              {/* =================================================
+                  TRANSFER BANK
+              ================================================= */}
               {activeMethod === "transfer" && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5">
                   <p className="text-sm font-semibold text-blue-900 mb-3">
-                    Transfer ke Rekening:
+                    Transfer ke Rekening UPZ
                   </p>
-                  {bankAccounts.map((acc, idx) => (
-                    <div key={idx} className="bg-white rounded-lg p-3 mb-2 last:mb-0">
-                      <p className="text-xs text-gray-600">{acc.bank}</p>
-                      <p className="font-bold text-gray-900 text-lg">{acc.norek}</p>
-                      <p className="text-xs text-gray-600">a.n. {acc.atas}</p>
-                    </div>
-                  ))}
+
+                  <div className="space-y-2">
+                    {bankAccounts.map((account, index) => (
+                      <div
+                        key={index}
+                        className="bg-white border border-blue-100 rounded-lg p-3"
+                      >
+                        <p className="text-[11px] text-gray-500">
+                          {account.bank}
+                        </p>
+
+                        <p className="text-base sm:text-lg font-bold text-gray-900 mt-0.5 tracking-wide">
+                          {account.norek}
+                        </p>
+
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          a.n. {account.atas}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[11px] text-blue-700 mt-3 leading-relaxed">
+                    Setelah melakukan transfer, simpan bukti pembayaran
+                    untuk proses verifikasi.
+                  </p>
                 </div>
               )}
 
+              {/* =================================================
+                  E-WALLET
+              ================================================= */}
+              {activeMethod === "ewallet" && (
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Smartphone
+                        size={17}
+                        className="text-purple-600"
+                      />
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-purple-900">
+                        Pembayaran E-Wallet
+                      </p>
+
+                      <p className="text-[11px] text-purple-700">
+                        Pilih salah satu e-wallet berikut
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {/* OVO */}
+                    <div className="bg-white border border-purple-100 rounded-lg p-3">
+                      <p className="text-[11px] text-gray-500">
+                        OVO
+                      </p>
+
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        081234567890
+                      </p>
+
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        UPZ Universitas Siliwangi
+                      </p>
+                    </div>
+
+                    {/* GOPAY */}
+                    <div className="bg-white border border-purple-100 rounded-lg p-3">
+                      <p className="text-[11px] text-gray-500">
+                        GoPay
+                      </p>
+
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        081234567890
+                      </p>
+
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        UPZ Universitas Siliwangi
+                      </p>
+                    </div>
+
+                    {/* DANA */}
+                    <div className="bg-white border border-purple-100 rounded-lg p-3">
+                      <p className="text-[11px] text-gray-500">
+                        DANA
+                      </p>
+
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        081234567890
+                      </p>
+
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        UPZ Universitas Siliwangi
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-purple-700 mt-3 leading-relaxed">
+                    Setelah melakukan pembayaran, simpan bukti
+                    pembayaran untuk proses verifikasi.
+                  </p>
+                </div>
+              )}
+
+              {/* =================================================
+                  QRIS
+              ================================================= */}
+              {activeMethod === "qris" && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <QrCode
+                        size={17}
+                        className="text-emerald-600"
+                      />
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-900">
+                        Pembayaran QRIS
+                      </p>
+
+                      <p className="text-[11px] text-emerald-700">
+                        Scan QR Code untuk melakukan pembayaran
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center bg-white border border-emerald-100 rounded-lg p-5">
+                    <div className="w-40 h-40 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                      <QrCode
+                        size={100}
+                        className="text-gray-400"
+                      />
+                    </div>
+
+                    <p className="text-xs font-semibold text-gray-700 mt-3">
+                      QRIS UPZ Universitas Siliwangi
+                    </p>
+
+                    <p className="text-[11px] text-gray-500 text-center mt-1">
+                      Scan QR Code menggunakan aplikasi pembayaran
+                      yang mendukung QRIS.
+                    </p>
+                  </div>
+
+                  <p className="text-[11px] text-emerald-700 mt-3 leading-relaxed">
+                    Setelah melakukan pembayaran, simpan bukti
+                    pembayaran untuk proses verifikasi.
+                  </p>
+                </div>
+              )}
+
+              {/* =================================================
+                  POTONG GAJI
+              ================================================= */}
+              {activeMethod === "potong-gaji" && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <Building2
+                        size={17}
+                        className="text-emerald-600"
+                      />
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-900">
+                        Potong Gaji
+                      </p>
+
+                      <p className="text-[11px] text-emerald-700">
+                        Zakat akan dipotong dari gaji bulanan.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 bg-white border border-emerald-100 rounded-lg p-3">
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Metode ini dapat digunakan oleh dosen dan
+                      staf UNSIL yang telah terdaftar dalam program
+                      potong gaji zakat.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  CATATAN
+              ================================================= */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Catatan (Opsional)
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
+                  Catatan{" "}
+                  <span className="text-gray-400 font-normal">
+                    (Opsional)
+                  </span>
                 </label>
+
                 <textarea
                   rows={3}
-                  placeholder="Tambahkan catatan jika diperlukan"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                ></textarea>
+                  value={catatan}
+                  onChange={(e) => setCatatan(e.target.value)}
+                  placeholder="Tambahkan catatan jika diperlukan..."
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg resize-none outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
               </div>
 
+              {/* =================================================
+                  SUBMIT
+              ================================================= */}
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium"
+                className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 active:scale-[0.99] transition"
               >
+                <HandCoins size={17} />
                 Proses Pembayaran
               </button>
             </form>
           </div>
         </div>
 
-        {/* Summary & Info */}
-        <div className="space-y-6">
-          {/* Quick Calculation */}
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <HandCoins size={20} />
-              <h3 className="font-semibold">Kalkulator Cepat</h3>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="bg-white/10 rounded-lg p-3">
-                <p className="text-emerald-100">2.5% Zakat Penghasilan</p>
-                <p className="text-2xl font-bold mt-1">
-                  {amount ? formatRupiah(parseFloat(amount)) : "Rp 0"}
+        {/* ===================================================
+            RIGHT SIDEBAR
+        =================================================== */}
+        <div className="space-y-4 sm:space-y-5">
+          {/* =================================================
+              QUICK CALCULATION
+          ================================================= */}
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <HandCoins size={17} />
+              </div>
+
+              <div>
+                <h3 className="text-sm sm:text-base font-semibold">
+                  Kalkulator Cepat
+                </h3>
+
+                <p className="text-[11px] text-emerald-100">
+                  Perkiraan nominal zakat
                 </p>
               </div>
-              <p className="text-emerald-100 text-xs">
-                Masukkan nominal di form samping untuk melihat perhitungan
+            </div>
+
+            <div className="bg-white/10 rounded-lg p-3">
+              <p className="text-xs text-emerald-100">
+                Nominal Zakat
+              </p>
+
+              <p className="text-xl sm:text-2xl font-bold mt-1">
+                {amount ? formatRupiah(amount) : "Rp 0"}
               </p>
             </div>
+
+            <p className="text-[11px] text-emerald-100 mt-3 leading-relaxed">
+              Masukkan nominal zakat pada formulir untuk melihat
+              nominal pembayaran.
+            </p>
           </div>
 
-          {/* Tips */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-3">💡 Tips Pembayaran</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600">•</span>
-                <span>Simpan bukti transfer untuk verifikasi</span>
+          {/* =================================================
+              PAYMENT TIPS
+          ================================================= */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                <span className="text-base">💡</span>
+              </div>
+
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+                Tips Pembayaran
+              </h3>
+            </div>
+
+            <ul className="space-y-2.5">
+              <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+                <span className="text-emerald-600 font-bold">
+                  •
+                </span>
+
+                <span>
+                  Simpan bukti transfer untuk proses verifikasi.
+                </span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600">•</span>
-                <span>Pembayaran akan diproses maksimal 1x24 jam</span>
+
+              <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+                <span className="text-emerald-600 font-bold">
+                  •
+                </span>
+
+                <span>
+                  Pembayaran akan diproses maksimal 1×24 jam.
+                </span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600">•</span>
-                <span>Bukti pembayaran dapat diunduh di menu Riwayat</span>
+
+              <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+                <span className="text-emerald-600 font-bold">
+                  •
+                </span>
+
+                <span>
+                  Bukti pembayaran dapat dilihat di menu Riwayat
+                  Pembayaran.
+                </span>
               </li>
             </ul>
           </div>
