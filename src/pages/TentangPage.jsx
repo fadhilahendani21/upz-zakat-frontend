@@ -60,6 +60,7 @@ export default function TentangPage() {
 
       <section className="w-full bg-brand-700 text-white">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:py-12">
+
           <div className="text-center">
 
             <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
@@ -73,6 +74,7 @@ export default function TentangPage() {
             </p>
 
           </div>
+
         </div>
       </section>
 
@@ -102,16 +104,6 @@ export default function TentangPage() {
 
           {/* =================================================
               GRID PENGURUS
-
-              DESKTOP:
-              5 CARD DALAM 1 BARIS
-              PENUH DARI KIRI SAMPAI KANAN
-
-              TABLET:
-              2 CARD PER BARIS
-
-              MOBILE:
-              1 CARD PER BARIS
           ================================================== */}
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
@@ -174,11 +166,20 @@ export default function TentangPage() {
                     INFORMASI
                 ================================================== */}
 
-                <div className="flex min-h-[110px] flex-1 flex-col items-center justify-center px-4 py-5 text-center">
+                <div className="flex min-h-[110px] flex-1 flex-col items-center justify-center overflow-hidden px-2 py-5 text-center">
 
-                  {/* NAMA */}
-
-                  <p className="text-sm font-bold leading-snug text-gray-900">
+                  {/* NAMA
+                      dibuat satu baris */}
+                  <p
+                    className="
+                      whitespace-nowrap
+                      text-[11px]
+                      font-bold
+                      leading-tight
+                      tracking-tight
+                      text-gray-900
+                    "
+                  >
                     {p.nama}
                   </p>
 
