@@ -99,7 +99,7 @@ jobs:
         port: ${{ secrets.VPS_PORT || 22 }}
         envs: STAGING_DIR,RELEASES_DIR,APP_LINK,KEEP_RELEASES
         script: |
-          set -euo pipefail
+          set -euxo pipefail
 
           # 1. Release Swapping
           RELEASE_ID=$(date +%Y%m%d_%H%M%S)
