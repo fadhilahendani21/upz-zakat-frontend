@@ -67,8 +67,22 @@ export const FAKULTAS_JURUSAN_UNSIL = {
 
 const FAKULTAS_LIST = Object.keys(FAKULTAS_JURUSAN_UNSIL);
 
-function parseUnitKerja(unitKerjaStr) {
+function parseUnitKerja(unitKerjaStr, kategori = "") {
+  const isDosenCat = Boolean(
+    kategori && /dosen|staf|civitas|unsil/i.test(kategori)
+  );
+  const isUmumCat = Boolean(
+    kategori && /umum/i.test(kategori)
+  );
+
+  if (isUmumCat) {
+    return { isDosenStaf: false, fakultas: "", jurusan: "" };
+  }
+
   if (!unitKerjaStr || unitKerjaStr === "Masyarakat Umum" || unitKerjaStr === "Umum") {
+    if (isDosenCat) {
+      return { isDosenStaf: true, fakultas: "Civitas Akademika UNSIL", jurusan: "" };
+    }
     return { isDosenStaf: false, fakultas: "", jurusan: "" };
   }
   
@@ -86,7 +100,11 @@ function parseUnitKerja(unitKerjaStr) {
     return { isDosenStaf: true, fakultas: foundFak, jurusan: FAKULTAS_JURUSAN_UNSIL[foundFak][0] };
   }
 
-  return { isDosenStaf: true, fakultas: FAKULTAS_LIST[0], jurusan: unitKerjaStr };
+  if (unitKerjaStr.toLowerCase().includes("civitas") || unitKerjaStr.toLowerCase().includes("unsil") || unitKerjaStr.toLowerCase().includes("universitas")) {
+    return { isDosenStaf: true, fakultas: unitKerjaStr, jurusan: "" };
+  }
+
+  return { isDosenStaf: isDosenCat, fakultas: unitKerjaStr, jurusan: "" };
 }
 
 const Field = memo(function Field({ label, field, type = "text", placeholder, value, onChange, error, pattern, maxLength }) {
@@ -113,7 +131,7 @@ const Field = memo(function Field({ label, field, type = "text", placeholder, va
 function ModalDetail({ muzakki, onClose }) {
   if (!muzakki) return null;
   
-  const parsedInfo = parseUnitKerja(muzakki.unit_kerja);
+  const parsedInfo = parseUnitKerja(muzakki.unit_kerja, muzakki.kategori);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -279,7 +297,7 @@ const DetailItem = memo(function DetailItem({ label, value, icon }) {
 // ── Modal Form ────────────────────────────────────────────────────────
 function ModalForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
-  const parsed = parseUnitKerja(initial?.unit_kerja);
+  const parsed = parseUnitKerja(initial?.unit_kerja, initial?.kategori);
 
   const [kategoriType, setKategoriType] = useState(
     initial ? (parsed.isDosenStaf ? "dosen_staf" : "umum") : "dosen_staf"
@@ -1104,7 +1122,7 @@ export default function MuzakkiMustahik() {
                 </tr>
               ) : (
                 data.map((row) => {
-                  const parsedInfo = parseUnitKerja(row.unit_kerja);
+                  const parsedInfo = parseUnitKerja(row.unit_kerja, row.kategori);
                   return (
                     <tr key={row.id} className="hover:bg-gray-50/60 transition-colors">
                       <td className="px-5 py-3.5">
@@ -1125,12 +1143,14 @@ export default function MuzakkiMustahik() {
                           <div className="space-y-1.5">
                             <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                               <GraduationCap size={12} className="shrink-0 text-emerald-700" />
-                              <span className="truncate max-w-[260px]">{parsedInfo.fakultas}</span>
+                              <span className="truncate max-w-[260px]">{parsedInfo.fakultas || "Civitas Akademika UNSIL"}</span>
                             </span>
-                            <div className="flex items-center gap-1.5 pl-[9px] text-xs font-medium text-gray-700">
-                              <BookOpen size={12} className="text-gray-400 shrink-0" />
-                              <span>{parsedInfo.jurusan}</span>
-                            </div>
+                            {parsedInfo.jurusan && (
+                              <div className="flex items-center gap-1.5 pl-[9px] text-xs font-medium text-gray-700">
+                                <BookOpen size={12} className="text-gray-400 shrink-0" />
+                                <span>{parsedInfo.jurusan}</span>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
