@@ -1,3 +1,4 @@
+
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -78,35 +79,39 @@ export default function TentangPage() {
         </div>
       </section>
 
-
       {/* =====================================================
           STRUKTUR PENGURUS
       ====================================================== */}
 
-      <section className="w-full px-4 pb-14 pt-12 sm:px-6">
+      <section className="w-full px-4 pb-12 pt-10 sm:px-6">
 
         <div className="mx-auto max-w-7xl">
 
           {/* JUDUL */}
 
-          <div className="mb-8 text-center">
+          <div className="mb-7 text-center">
 
             <h2 className="text-2xl font-bold text-gray-900">
               Struktur Pengurus
             </h2>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500">
               Susunan pengurus UPZ Zakat Universitas Siliwangi.
             </p>
 
-          </div>
+            {/* PERIODE KEPENGURUSAN */}
 
+            <p className="mt-2 text-sm font-semibold text-brand-700">
+              Periode 2026/2029
+            </p>
+
+          </div>
 
           {/* =================================================
               GRID PENGURUS
           ================================================== */}
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-5">
 
             {DATA_PENGURUS.map((p) => (
 
@@ -131,23 +136,24 @@ export default function TentangPage() {
               >
 
                 {/* =================================================
-                    FOTO
+                    FOTO PENGURUS
                 ================================================== */}
 
-                <div className="flex h-[210px] w-full items-center justify-center overflow-hidden bg-gray-50">
+                <div className="flex h-[180px] w-full shrink-0 items-center justify-center overflow-hidden bg-gray-50">
 
                   {p.foto ? (
 
                     <img
                       src={p.foto}
-                      alt={p.nama}
+                      alt={`Foto ${p.nama}`}
                       className="
                         h-full
                         w-full
                         object-contain
+                        object-center
                         transition
                         duration-500
-                        group-hover:scale-[1.02]
+                        group-hover:scale-[1.03]
                       "
                     />
 
@@ -161,36 +167,23 @@ export default function TentangPage() {
 
                 </div>
 
+{/* =================================================
+    INFORMASI PENGURUS
+================================================== */}
 
-                {/* =================================================
-                    INFORMASI
-                ================================================== */}
+<div className="flex flex-col items-center justify-start px-2 pb-0.5 pt-1 text-center">
 
-                <div className="flex min-h-[110px] flex-1 flex-col items-center justify-center overflow-hidden px-2 py-5 text-center">
+  {/* NAMA PENGURUS */}
+  <p className="w-full break-words text-xs font-bold leading-tight text-gray-900">
+    {p.nama}
+  </p>
 
-                  {/* NAMA
-                      dibuat satu baris */}
-                  <p
-                    className="
-                      whitespace-nowrap
-                      text-[11px]
-                      font-bold
-                      leading-tight
-                      tracking-tight
-                      text-gray-900
-                    "
-                  >
-                    {p.nama}
-                  </p>
+  {/* JABATAN */}
+  <p className="mt-0.5 pb-1 text-xs font-semibold leading-tight text-brand-600 sm:text-sm">
+    {p.jabatan}
+  </p>
 
-
-                  {/* JABATAN */}
-
-                  <p className="mt-3 text-xs font-semibold text-brand-600 sm:text-sm">
-                    {p.jabatan}
-                  </p>
-
-                </div>
+</div>
 
               </div>
 
@@ -202,12 +195,11 @@ export default function TentangPage() {
 
       </section>
 
-
       {/* =====================================================
           TENTANG KAMI
       ====================================================== */}
 
-      <section className="w-full px-4 pb-14 sm:px-6">
+      <section className="w-full px-4 pb-14 pt-4 sm:px-6">
 
         <div className="mx-auto max-w-7xl">
 
@@ -226,13 +218,11 @@ export default function TentangPage() {
 
           </div>
 
-
           {/* =================================================
               3 PILIHAN HALAMAN
           ================================================== */}
 
           <div className="grid gap-6 md:grid-cols-3">
-
 
             {/* =================================================
                 KEPENGURUSAN
@@ -272,7 +262,6 @@ export default function TentangPage() {
 
               </div>
 
-
               <div className="p-5">
 
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
@@ -302,7 +291,6 @@ export default function TentangPage() {
               </div>
 
             </Link>
-
 
             {/* =================================================
                 VISI & MISI
@@ -342,7 +330,6 @@ export default function TentangPage() {
 
               </div>
 
-
               <div className="p-5">
 
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
@@ -372,7 +359,6 @@ export default function TentangPage() {
               </div>
 
             </Link>
-
 
             {/* =================================================
                 PROFIL LEMBAGA
@@ -411,7 +397,6 @@ export default function TentangPage() {
                 />
 
               </div>
-
 
               <div className="p-5">
 
