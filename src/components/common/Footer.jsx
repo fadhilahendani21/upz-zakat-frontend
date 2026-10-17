@@ -1,3 +1,4 @@
+
 import { MapPin, LogIn, Phone, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import logoUpz from "../../assets/img/logo-upz.png";
@@ -230,7 +231,7 @@ export default function Footer() {
           </div>
 
           {/* ================= HUBUNGI KAMI ================= */}
-          <div className="col-span-1 lg:col-span-3">
+          <div className="col-span-3 min-w-0 sm:col-span-2 lg:col-span-3">
 
             <h4 className="text-sm font-semibold text-white">
               Hubungi Kami
@@ -240,28 +241,27 @@ export default function Footer() {
 
             <div className="space-y-3">
 
-              {/* ALAMAT */}
-              <div className="flex items-start gap-2.5">
 
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
 
-                  <MapPin size={14} />
+{/* ALAMAT */}
+<div className="flex items-start gap-2.5">
+  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+    <MapPin size={14} />
+  </div>
 
-                </div>
+  <div className="min-w-0 flex-1 overflow-hidden">
+    <p className="text-[10px] font-medium leading-3 text-green-300">
+      Alamat
+    </p>
 
-                <div className="min-w-0">
-
-                  <p className="text-[11px] font-medium leading-4 text-green-300">
-                    Alamat
-                  </p>
-
-                  <p className="text-xs leading-5 text-green-100">
-                    {alamat}
-                  </p>
-
-                </div>
-
-              </div>
+    <p
+      title={alamat}
+      className="mt-0.5 line-clamp-2 break-words text-[9px] leading-[11px] text-green-100 [overflow-wrap:anywhere]"
+    >
+      {alamat}
+    </p>
+  </div>
+</div>
 
               {/* WHATSAPP */}
               <div className="flex items-start gap-2.5">
@@ -272,20 +272,24 @@ export default function Footer() {
 
                 </div>
 
-                <div className="min-w-0">
+                <div className="flex h-8 min-w-0 flex-1 items-center overflow-hidden">
 
-                  <p className="text-[11px] font-medium leading-4 text-green-300">
-                    WhatsApp / Telepon
-                  </p>
+                  <div className="w-full overflow-hidden">
 
-                  <a
-                    href={whatsappHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs leading-5 text-green-100 transition-colors hover:text-white"
-                  >
-                    {whatsapp}
-                  </a>
+                    <p className="truncate text-[11px] font-medium leading-4 text-green-300">
+                      WhatsApp / Telepon
+                    </p>
+
+                    <a
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block truncate text-xs leading-4 text-green-100 transition-colors hover:text-white"
+                    >
+                      {whatsapp}
+                    </a>
+
+                  </div>
 
                 </div>
 
@@ -300,18 +304,22 @@ export default function Footer() {
 
                 </div>
 
-                <div className="min-w-0">
+                <div className="flex h-8 min-w-0 flex-1 items-center overflow-hidden">
 
-                  <p className="text-[11px] font-medium leading-4 text-green-300">
-                    Email
-                  </p>
+                  <div className="w-full overflow-hidden">
 
-                  <a
-                    href={`mailto:${email}`}
-                    className="break-all text-xs leading-5 text-green-100 transition-colors hover:text-white"
-                  >
-                    {email}
-                  </a>
+                    <p className="text-[11px] font-medium leading-4 text-green-300">
+                      Email
+                    </p>
+
+                    <a
+                      href={`mailto:${email}`}
+                      className="block truncate text-xs leading-4 text-green-100 transition-colors hover:text-white"
+                    >
+                      {email}
+                    </a>
+
+                  </div>
 
                 </div>
 

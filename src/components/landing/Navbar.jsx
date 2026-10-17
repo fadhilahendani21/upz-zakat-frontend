@@ -34,8 +34,7 @@ export default function Navbar() {
           NAVBAR UTAMA
       ====================================================== */}
 
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5">
-
+      <div className="flex h-20 w-full items-center justify-between px-3 sm:px-5 lg:px-6 xl:px-8">
         {/* ===================================================
             LOGO
         ==================================================== */}

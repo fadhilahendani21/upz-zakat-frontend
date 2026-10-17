@@ -1,5 +1,11 @@
+
 import { useState, useEffect } from "react";
-import { Users, HeartHandshake, HandCoins, ClipboardList } from "lucide-react";
+import {
+  Users,
+  HeartHandshake,
+  HandCoins,
+  ClipboardList,
+} from "lucide-react";
 import { getPublicLaporan } from "../../services/donasiService";
 import { formatRupiahShort } from "../../utils/formatRupiah";
 
@@ -21,6 +27,7 @@ export default function StatsBar() {
         setLoading(false);
       }
     }
+
     loadStats();
   }, [currentYear]);
 
@@ -33,7 +40,10 @@ export default function StatsBar() {
   const items = [
     {
       icon: Users,
-      value: totalMuzakki > 0 ? `${totalMuzakki.toLocaleString("id-ID")}+` : `${totalMuzakki}`,
+      value:
+        totalMuzakki > 0
+          ? `${totalMuzakki.toLocaleString("id-ID")}+`
+          : `${totalMuzakki}`,
       label: "Muzakki Terdaftar",
     },
     {
@@ -43,7 +53,10 @@ export default function StatsBar() {
     },
     {
       icon: HeartHandshake,
-      value: totalMustahik > 0 ? `${totalMustahik.toLocaleString("id-ID")}+` : `${totalMustahik}`,
+      value:
+        totalMustahik > 0
+          ? `${totalMustahik.toLocaleString("id-ID")}+`
+          : `${totalMustahik}`,
       label: "Mustahik Terbantu",
     },
     {
@@ -54,33 +67,41 @@ export default function StatsBar() {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-6 pb-8">
-      <div className="bg-brand-700 rounded-2xl px-8 py-6 flex flex-col lg:flex-row lg:items-center lg:divide-x lg:divide-white/15 gap-6 lg:gap-0 shadow-sm">
-        <div className="flex-1 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:pr-8">
+    <section className="mx-auto w-full max-w-none px-3 pt-0 pb-3 sm:px-5 lg:px-6 xl:px-8">
+      <div className="flex flex-col gap-3 rounded-2xl bg-brand-700 px-4 py-3 shadow-sm sm:px-5 sm:py-4 lg:flex-row lg:items-center lg:gap-0 lg:px-6 lg:py-4 xl:px-8">
+        <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-x-5 lg:pr-7">
           {items.map((item) => (
-            <div key={item.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center text-white shrink-0">
-                <item.icon size={20} />
+            <div
+              key={item.label}
+              className="flex min-w-0 items-center gap-2.5 sm:gap-3"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white sm:h-11 sm:w-11">
+                <item.icon size={19} />
               </div>
-              <div>
+
+              <div className="min-w-0">
                 {loading ? (
-                  <div className="h-6 w-20 bg-white/20 rounded animate-pulse mb-1" />
+                  <div className="mb-1 h-5 w-16 animate-pulse rounded bg-white/20" />
                 ) : (
-                  <p className="text-white text-xl font-bold leading-tight">
+                  <p className="break-words text-base font-bold leading-tight text-white sm:text-lg">
                     {item.value}
                   </p>
                 )}
-                <p className="text-brand-100 text-xs">{item.label}</p>
+
+                <p className="mt-1 text-[10px] leading-snug text-brand-100 sm:text-xs">
+                  {item.label}
+                </p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex items-start gap-3 lg:pl-8 lg:w-72 shrink-0">
-          <span className="text-white/70 text-3xl leading-none font-serif">
+        <div className="flex shrink-0 items-start gap-2 border-t border-white/15 pt-4 lg:w-56 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 xl:w-64 xl:pl-7">
+          <span className="text-2xl font-serif leading-none text-white/70">
             &ldquo;
           </span>
-          <p className="text-white text-sm leading-relaxed">
+
+          <p className="text-xs leading-relaxed text-white sm:text-sm">
             Bersama zakat, kita bangun kebaikan dan keberkahan.
           </p>
         </div>
@@ -88,4 +109,3 @@ export default function StatsBar() {
     </section>
   );
 }
-
