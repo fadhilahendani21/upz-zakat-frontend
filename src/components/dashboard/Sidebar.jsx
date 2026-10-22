@@ -19,6 +19,10 @@ import {
   X,
   FilePen,
   CalendarCheck,
+  UserCheck,
+  LayoutTemplate,
+  Home,
+  PhoneCall,
 } from "lucide-react";
 
 const pengelolaan = [
@@ -29,6 +33,7 @@ const pengelolaan = [
   { label: "Mustahik", icon: Heart, to: "/dashboard/mustahik" },
   { label: "Program", icon: FolderKanban, to: "/dashboard/program" },
   { label: "Berita & Artikel", icon: BookOpen, to: "/dashboard/berita" },
+  { label: "Kepengurusan", icon: UserCheck, to: "/dashboard/pengurus" },
   { label: "Donasi Online", icon: Globe, to: "/dashboard/donasi-online" },
   { label: "Revisi Kesepakatan", icon: FilePen, to: "/dashboard/zakat-requests" },
 ];
@@ -63,6 +68,9 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
   const pengaturan = [
     { label: isAdmin ? "Pengguna & Akses" : "Profil Pengguna", icon: UserCog, to: "/dashboard/pengguna" },
+    { label: "Pengaturan Beranda", icon: Home, to: "/dashboard/pengaturan-beranda" },
+    { label: "Pengaturan Kontak", icon: PhoneCall, to: "/dashboard/pengaturan-kontak" },
+    { label: "Pengaturan Footer", icon: LayoutTemplate, to: "/dashboard/pengaturan-footer" },
     ...(isAdmin ? [{ label: "Pengaturan Sistem", icon: Settings, to: "/dashboard/pengaturan" }] : []),
   ];
 

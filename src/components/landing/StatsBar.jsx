@@ -14,6 +14,27 @@ export default function StatsBar() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [berandaCustom, setBerandaCustom] = useState(() => {
+    try {
+      const saved = localStorage.getItem("upz_beranda_settings");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const handleUpdate = (e) => {
+      if (e?.detail) setBerandaCustom(e.detail);
+    };
+    window.addEventListener("upz_beranda_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("upz_beranda_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
   useEffect(() => {
     async function loadStats() {
       try {
@@ -44,7 +65,7 @@ export default function StatsBar() {
         totalMuzakki > 0
           ? `${totalMuzakki.toLocaleString("id-ID")}+`
           : `${totalMuzakki}`,
-      label: "Muzakki Terdaftar",
+      label: berandaCustom?.infoTambahan?.labelMuzakki || "Muzakki Terdaftar",
     },
     {
       icon: HandCoins,
@@ -57,7 +78,7 @@ export default function StatsBar() {
         totalMustahik > 0
           ? `${totalMustahik.toLocaleString("id-ID")}+`
           : `${totalMustahik}`,
-      label: "Mustahik Terbantu",
+      label: berandaCustom?.infoTambahan?.labelMustahik || "Mustahik Terbantu",
     },
     {
       icon: ClipboardList,
@@ -65,6 +86,11 @@ export default function StatsBar() {
       label: "Program Penyaluran",
     },
   ];
+
+  const taglineTeks =
+    berandaCustom?.infoTambahan?.taglineBanner ||
+    "Bersama zakat, kita bangun kebaikan dan keberkahan.";
+  const kutipanSumber = berandaCustom?.kutipan?.sumber;
 
   return (
     <section className="mx-auto w-full max-w-none px-3 pt-0 pb-3 sm:px-5 lg:px-6 xl:px-8">
@@ -101,9 +127,16 @@ export default function StatsBar() {
             &ldquo;
           </span>
 
-          <p className="text-xs leading-relaxed text-white sm:text-sm">
-            Bersama zakat, kita bangun kebaikan dan keberkahan.
-          </p>
+          <div>
+            <p className="text-xs leading-relaxed text-white sm:text-sm">
+              {taglineTeks}
+            </p>
+            {kutipanSumber && (
+              <p className="text-[10px] text-brand-200 mt-0.5 font-medium">
+                — {kutipanSumber}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Wallet, FileSearch } from "lucide-react";
 import Button from "../common/Button";
@@ -9,9 +10,56 @@ export default function Hero() {
   const navigate = useNavigate();
   const settings = useSettings();
 
+  const [berandaCustom, setBerandaCustom] = useState(() => {
+    try {
+      const saved = localStorage.getItem("upz_beranda_settings");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const handleUpdate = (e) => {
+      if (e?.detail) {
+        setBerandaCustom(e.detail);
+      } else {
+        try {
+          const saved = localStorage.getItem("upz_beranda_settings");
+          if (saved) setBerandaCustom(JSON.parse(saved));
+        } catch {
+          // ignore
+        }
+      }
+    };
+    window.addEventListener("upz_beranda_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("upz_beranda_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
   const orgName =
     settings?.profil?.namaLembaga ||
     "UPZ Zakat Universitas Siliwangi";
+
+  const badgeText =
+    berandaCustom?.hero?.badge || "Transparan • Amanah • Profesional";
+
+  const judulText =
+    berandaCustom?.hero?.judul || "Menunaikan Zakat, Membersamai Umat";
+
+  const deskripsiText =
+    berandaCustom?.hero?.deskripsi ||
+    `${orgName} hadir untuk memudahkan sivitas akademika dan masyarakat dalam menunaikan zakat, infak, dan sedekah secara aman, transparan, dan terpercaya.`;
+
+  const fotoHero = berandaCustom?.hero?.foto || gedungUnsil;
+  const kutipanIsi =
+    berandaCustom?.kutipan?.isi ||
+    "Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu membersihkan dan mensucikan mereka.";
+  const kutipanSumber =
+    berandaCustom?.kutipan?.sumber || "QS. At-Taubah: 103";
 
   return (
     <section className="relative w-full overflow-hidden">
@@ -22,7 +70,7 @@ export default function Hero() {
         ====================================================== */}
         <div className="absolute inset-y-0 right-3 hidden sm:block sm:right-5 sm:w-[58%] lg:right-6 lg:w-[58%] xl:right-8 xl:w-[60%]">
           <img
-            src={gedungUnsil}
+            src={fotoHero}
             alt="Gedung Universitas Siliwangi"
             className="h-full w-full object-cover object-center"
             style={{
@@ -53,22 +101,17 @@ export default function Hero() {
           {/* BADGE */}
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-[11px] font-medium text-brand-700 sm:text-xs">
             <ShieldCheck size={14} />
-            Transparan • Amanah • Profesional
+            {badgeText}
           </span>
 
           {/* JUDUL */}
           <h1 className="mt-2 text-2xl font-extrabold leading-tight text-gray-900 sm:mt-2 sm:text-3xl md:text-3xl lg:mt-2 lg:text-3xl xl:text-4xl">
-            Menunaikan Zakat,{" "}
-            <span className="text-brand-600">
-              Membersamai Umat
-            </span>
+            {judulText}
           </h1>
 
           {/* DESKRIPSI */}
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-gray-600 sm:text-xs md:text-sm lg:mt-2">
-            {orgName} hadir untuk memudahkan sivitas
-            akademika dan masyarakat dalam menunaikan zakat, infak, dan
-            sedekah secara aman, transparan, dan terpercaya.
+            {deskripsiText}
           </p>
 
           {/* ======================================================
@@ -109,7 +152,7 @@ export default function Hero() {
         ====================================================== */}
         <div className="relative mt-5 overflow-hidden rounded-2xl shadow-md sm:hidden">
           <img
-            src={gedungUnsil}
+            src={fotoHero}
             alt="Gedung Universitas Siliwangi"
             className="h-48 w-full object-cover object-bottom"
           />
@@ -118,12 +161,11 @@ export default function Hero() {
         {/* KUTIPAN HP */}
         <div className="mt-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:hidden">
           <p className="text-xs leading-relaxed text-gray-700">
-            &ldquo;Ambillah zakat dari sebagian harta mereka, dengan zakat itu
-            kamu membersihkan dan mensucikan mereka.&rdquo;
+            &ldquo;{kutipanIsi}&rdquo;
           </p>
 
           <p className="mt-1 text-[11px] font-medium text-gray-500">
-            – QS. At-Taubah: 103
+            – {kutipanSumber}
           </p>
         </div>
 
@@ -131,7 +173,7 @@ export default function Hero() {
             KARTU KUTIPAN DESKTOP
         ====================================================== */}
         <div className="absolute bottom-2 right-3 z-10 hidden w-44 sm:block md:right-5 md:w-52 lg:bottom-3 lg:right-6 lg:w-64 xl:right-8 xl:w-72">
-          <div className="relative rounded-xl bg-white/75 p-3 pt-4 shadow-lg backdrop-blur-sm lg:rounded-2xl lg:p-4 lg:pt-5">
+          <div className="relative rounded-xl bg-white/80 p-3 pt-4 shadow-lg backdrop-blur-sm lg:rounded-2xl lg:p-4 lg:pt-5 border border-white/50">
 
             {/* ICON KUTIPAN */}
             <div className="absolute -top-2.5 left-3 flex h-6 w-6 items-center justify-center rounded-full bg-brand-700 text-[11px] font-serif text-white shadow-md lg:-top-3 lg:left-4 lg:h-7 lg:w-7 lg:text-base">
@@ -140,13 +182,12 @@ export default function Hero() {
 
             {/* ISI KUTIPAN */}
             <p className="text-[10px] leading-snug text-gray-800 md:text-[11px] lg:text-xs lg:leading-relaxed">
-              Ambillah zakat dari sebagian harta mereka, dengan zakat itu
-              kamu membersihkan dan mensucikan mereka.
+              {kutipanIsi}
             </p>
 
             {/* SUMBER */}
             <p className="mt-1.5 text-[9px] font-medium text-gray-600 lg:text-[10px]">
-              – QS. At-Taubah: 103
+              – {kutipanSumber}
             </p>
 
           </div>

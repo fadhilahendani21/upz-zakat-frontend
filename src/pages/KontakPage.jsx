@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Mail,
   MapPin,
@@ -26,11 +27,50 @@ export default function KontakPage() {
   const settings = useSettings();
   const profil = settings.profil || {};
 
-  const alamat = profil.alamat || dummyKontak.alamat;
+  // Membaca pengaturan dinamis kontak dari Admin (localStorage / state)
+  const [customSettings, setCustomSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("upz_kontak_settings");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  // Nomor WhatsApp — dibaca dari pengaturan sistem
+  useEffect(() => {
+    // Sinkronisasi realtime jika ada perubahan dari Dashboard Admin
+    const handleUpdate = (e) => {
+      if (e.detail) setCustomSettings(e.detail);
+    };
+    const handleStorage = (e) => {
+      if (e.key === "upz_kontak_settings" && e.newValue) {
+        try {
+          setCustomSettings(JSON.parse(e.newValue));
+        } catch {
+          // ignore
+        }
+      }
+    };
+    window.addEventListener("upz_kontak_updated", handleUpdate);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("upz_kontak_updated", handleUpdate);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  const alamat =
+    customSettings?.infoUtama?.alamat || profil.alamat || dummyKontak.alamat;
+
+  // Nomor WhatsApp
   const whatsapp =
-    profil.whatsapp || dummyKontak.whatsapp || "081234567890";
+    customSettings?.infoUtama?.whatsapp ||
+    profil.whatsapp ||
+    dummyKontak.whatsapp ||
+    "0812-3456-7890";
+
+  const subteksWa =
+    customSettings?.infoUtama?.subteksWa || "Layanan Aktif Jam Kerja";
 
   const whatsappClean = whatsapp.replace(/\D/g, "");
 
@@ -40,7 +80,52 @@ export default function KontakPage() {
       : whatsappClean
   }`;
 
-  const email = profil.email || dummyKontak.email;
+  const email =
+    customSettings?.infoUtama?.email || profil.email || dummyKontak.email;
+
+  const subteksEmail =
+    customSettings?.infoUtama?.subteksEmail || "Respon Cepat 1x24 Jam";
+
+  const mapsUrl =
+    customSettings?.googleMaps?.embedUrl ||
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3261.4603646424735!2d108.22021287404235!3d-7.350249372311004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f5765c64bb1f9%3A0xd8b04746f0f62ad4!2sUniversitas%20Siliwangi!5e1!3m2!1sid!2sid!4v1786676648205!5m2!1sid!2sid";
+
+  const jamOperasional = customSettings?.jamOperasional || {
+    hariKerja: "Senin – Jumat",
+    jamKerja: "09.00 – 16.00 WIB",
+    hariLibur: "Sabtu, Minggu, & Hari Libur",
+    jamLibur: "Tutup",
+  };
+
+  const sosialMediaList = customSettings?.sosialMedia
+    ? [
+        {
+          label: "Facebook",
+          handle:
+            customSettings.sosialMedia.facebook?.handle || "@upzzakatunsil",
+          url: customSettings.sosialMedia.facebook?.url || "#",
+        },
+        {
+          label: "Instagram",
+          handle:
+            customSettings.sosialMedia.instagram?.handle ||
+            "@upzzakat.unsil",
+          url: customSettings.sosialMedia.instagram?.url || "#",
+        },
+        {
+          label: "Twitter / X",
+          handle:
+            customSettings.sosialMedia.twitter?.handle || "@upzzakatunsil",
+          url: customSettings.sosialMedia.twitter?.url || "#",
+        },
+        {
+          label: "YouTube",
+          handle:
+            customSettings.sosialMedia.youtube?.handle || "UPZ Zakat Unsil",
+          url: customSettings.sosialMedia.youtube?.url || "#",
+        },
+      ]
+    : dummyKontak.sosialMedia;
 
   const orgName =
     profil.namaLembaga || "UPZ Zakat Universitas Siliwangi";
@@ -126,7 +211,7 @@ export default function KontakPage() {
           </a>
 
           <p className="mt-1 text-xs text-gray-500">
-            Layanan Aktif Jam Kerja
+            {subteksWa}
           </p>
 
         </Card>
@@ -152,7 +237,7 @@ export default function KontakPage() {
           </p>
 
           <p className="mt-1 text-xs text-gray-500">
-            Respon Cepat 1x24 Jam
+            {subteksEmail}
           </p>
 
         </Card>
@@ -173,7 +258,7 @@ export default function KontakPage() {
 
           <iframe
             title="Lokasi Universitas Siliwangi"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3261.4603646424735!2d108.22021287404235!3d-7.350249372311004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f5765c64bb1f9%3A0xd8b04746f0f62ad4!2sUniversitas%20Siliwangi!5e1!3m2!1sid!2sid!4v1786676648205!5m2!1sid!2sid"
+            src={mapsUrl}
             className="min-h-[280px] h-72 w-full border-0 lg:h-full"
             allowFullScreen
             loading="lazy"
@@ -211,11 +296,11 @@ export default function KontakPage() {
               <li className="flex justify-between gap-3 text-sm text-gray-600">
 
                 <span>
-                  Senin – Jumat
+                  {jamOperasional.hariKerja}
                 </span>
 
                 <span className="text-right font-medium text-gray-800">
-                  09.00 – 16.00 WIB
+                  {jamOperasional.jamKerja}
                 </span>
 
               </li>
@@ -223,11 +308,11 @@ export default function KontakPage() {
               <li className="flex justify-between gap-3 text-sm text-gray-600">
 
                 <span>
-                  Sabtu, Minggu, &amp; Hari Libur
+                  {jamOperasional.hariLibur}
                 </span>
 
                 <span className="text-right font-medium text-gray-800">
-                  Tutup
+                  {jamOperasional.jamLibur}
                 </span>
 
               </li>
@@ -248,7 +333,7 @@ export default function KontakPage() {
 
             <ul className="space-y-2.5">
 
-              {dummyKontak.sosialMedia.map((s) => {
+              {sosialMediaList.map((s) => {
 
                 const Icon =
                   SOSMED_ICON[s.label] || MessageCircle;
@@ -259,6 +344,8 @@ export default function KontakPage() {
 
                     <a
                       href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center gap-3 text-sm text-gray-600 transition-colors hover:text-brand-700"
                     >
 

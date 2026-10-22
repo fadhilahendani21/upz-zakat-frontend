@@ -48,6 +48,10 @@ const PAGE_INFO = {
     title: "Berita & Artikel",
     subtitle: "Manajemen berita, publikasi, dan artikel kegiatan UPZ.",
   },
+  "/dashboard/pengurus": {
+    title: "Struktur Kepengurusan",
+    subtitle: "Kelola susunan pengurus, ketua, bendahara, dan divisi UPZ.",
+  },
   "/dashboard/transaksi": {
     title: "Transaksi Umum",
     subtitle: "Riwayat seluruh transaksi yang tercatat di sistem.",
@@ -71,6 +75,18 @@ const PAGE_INFO = {
   "/dashboard/pengaturan": {
     title: "Pengaturan Sistem",
     subtitle: "Konfigurasi sistem dan preferensi aplikasi.",
+  },
+  "/dashboard/pengaturan-beranda": {
+    title: "Pengaturan Beranda",
+    subtitle: "Kelola teks hero utama, kutipan ayat, dan banner pada halaman depan publik.",
+  },
+  "/dashboard/pengaturan-footer": {
+    title: "Pengaturan Footer",
+    subtitle: "Kelola deskripsi, sosial media resmi, dan kontak pada footer website publik.",
+  },
+  "/dashboard/pengaturan-kontak": {
+    title: "Pengaturan Kontak",
+    subtitle: "Kelola alamat, WhatsApp, email, jam operasional, peta, dan sosial media publik.",
   },
   "/dashboard/zakat-requests": {
     title: "Revisi Kesepakatan",

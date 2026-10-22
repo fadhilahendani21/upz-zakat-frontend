@@ -48,6 +48,7 @@ const MuzakkiMustahik = lazy(() => import("../pages/dashboard/MuzakkiMustahik"))
 const Mustahik = lazy(() => import("../pages/dashboard/Mustahik"));
 const Program = lazy(() => import("../pages/dashboard/Program"));
 const BeritaAdmin = lazy(() => import("../pages/dashboard/BeritaAdmin"));
+const PengurusAdmin = lazy(() => import("../pages/dashboard/PengurusAdmin"));
 const DonasiOnline = lazy(() => import("../pages/dashboard/DonasiOnline"));
 const Transaksi = lazy(() => import("../pages/dashboard/Transaksi"));
 const RekeningKas = lazy(() => import("../pages/dashboard/RekeningKas"));
@@ -55,6 +56,9 @@ const LaporanKeuangan = lazy(() => import("../pages/dashboard/LaporanKeuangan"))
 const Jurnal = lazy(() => import("../pages/dashboard/Jurnal"));
 const Pengguna = lazy(() => import("../pages/dashboard/Pengguna"));
 const Pengaturan = lazy(() => import("../pages/dashboard/Pengaturan"));
+const PengaturanFooterAdmin = lazy(() => import("../pages/dashboard/PengaturanFooterAdmin"));
+const PengaturanBerandaAdmin = lazy(() => import("../pages/dashboard/PengaturanBerandaAdmin"));
+const PengaturanKontakAdmin = lazy(() => import("../pages/dashboard/PengaturanKontakAdmin"));
 const ZakatRequests = lazy(() => import("../pages/dashboard/ZakatRequests"));
 const Tagihan = lazy(() => import("../pages/dashboard/Tagihan"));
 
@@ -261,6 +265,11 @@ export default function AppRoutes() {
             />
 
             <Route
+              path="pengurus"
+              element={<PengurusAdmin />}
+            />
+
+            <Route
               path="donasi-online"
               element={<DonasiOnline />}
             />
@@ -273,6 +282,21 @@ export default function AppRoutes() {
             <Route
               path="pengguna"
               element={<Pengguna />}
+            />
+
+            <Route
+              path="pengaturan-footer"
+              element={<PengaturanFooterAdmin />}
+            />
+
+            <Route
+              path="pengaturan-beranda"
+              element={<PengaturanBerandaAdmin />}
+            />
+
+            <Route
+              path="pengaturan-kontak"
+              element={<PengaturanKontakAdmin />}
             />
 
             {/* =========================================

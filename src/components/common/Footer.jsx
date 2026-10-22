@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { MapPin, LogIn, Phone, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import logoUpz from "../../assets/img/logo-upz.png";
@@ -23,6 +24,36 @@ const layanan = [
 export default function Footer() {
   const settings = useSettings();
 
+  const [footerCustom, setFooterCustom] = useState(() => {
+    try {
+      const saved = localStorage.getItem("upz_footer_settings");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const handleFooterUpdate = (e) => {
+      if (e?.detail) {
+        setFooterCustom(e.detail);
+      } else {
+        try {
+          const saved = localStorage.getItem("upz_footer_settings");
+          if (saved) setFooterCustom(JSON.parse(saved));
+        } catch {
+          // ignore
+        }
+      }
+    };
+    window.addEventListener("upz_footer_updated", handleFooterUpdate);
+    window.addEventListener("storage", handleFooterUpdate);
+    return () => {
+      window.removeEventListener("upz_footer_updated", handleFooterUpdate);
+      window.removeEventListener("storage", handleFooterUpdate);
+    };
+  }, []);
+
   const brandName =
     settings?.profil?.namaSingkat || "UPZ Unsil";
 
@@ -30,18 +61,31 @@ export default function Footer() {
     settings?.profil?.namaLembaga ||
     "UPZ Zakat Universitas Siliwangi";
 
+  const deskripsi =
+    footerCustom?.deskripsi ||
+    `${orgName} berkomitmen dalam mengelola dan menyalurkan zakat, infak, dan sedekah secara amanah, transparan, dan tepat sasaran.`;
+
+  const instagramHref = footerCustom?.sosialMedia?.instagram || "#";
+  const facebookHref = footerCustom?.sosialMedia?.facebook || "#";
+  const youtubeHref = footerCustom?.sosialMedia?.youtube || "#";
+
   const alamat =
+    footerCustom?.kontak?.alamat ||
     settings?.profil?.alamat ||
     "Universitas Siliwangi, Tasikmalaya";
 
   const whatsapp =
-    settings?.profil?.whatsapp || "081234567890";
+    footerCustom?.kontak?.telepon ||
+    settings?.profil?.whatsapp ||
+    "081234567890";
 
   const whatsappClean = whatsapp.replace(/\D/g, "");
   const whatsappHref = `https://wa.me/${whatsappClean.startsWith("0") ? "62" + whatsappClean.slice(1) : whatsappClean}`;
 
   const email =
-    settings?.profil?.email || "upz@unsil.ac.id";
+    footerCustom?.kontak?.email ||
+    settings?.profil?.email ||
+    "upz@unsil.ac.id";
 
 
   return (
@@ -83,11 +127,7 @@ export default function Footer() {
             </div>
 
             <p className="mt-3 max-w-md text-xs leading-5 text-green-100">
-
-              {orgName} berkomitmen
-              dalam mengelola dan menyalurkan zakat, infak, dan sedekah
-              secara amanah, transparan, dan tepat sasaran.
-
+              {deskripsi}
             </p>
 
             {/* ================= SOCIAL MEDIA ================= */}
@@ -95,7 +135,9 @@ export default function Footer() {
 
               {/* Instagram */}
               <a
-                href="#"
+                href={instagramHref}
+                target={instagramHref !== "#" ? "_blank" : undefined}
+                rel={instagramHref !== "#" ? "noopener noreferrer" : undefined}
                 aria-label="Instagram"
                 className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 transition-all duration-300 hover:bg-white hover:text-green-800"
               >
@@ -129,7 +171,9 @@ export default function Footer() {
 
               {/* Facebook */}
               <a
-                href="#"
+                href={facebookHref}
+                target={facebookHref !== "#" ? "_blank" : undefined}
+                rel={facebookHref !== "#" ? "noopener noreferrer" : undefined}
                 aria-label="Facebook"
                 className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 transition-all duration-300 hover:bg-white hover:text-green-800"
               >
@@ -150,7 +194,9 @@ export default function Footer() {
 
               {/* YouTube */}
               <a
-                href="#"
+                href={youtubeHref}
+                target={youtubeHref !== "#" ? "_blank" : undefined}
+                rel={youtubeHref !== "#" ? "noopener noreferrer" : undefined}
                 aria-label="YouTube"
                 className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 transition-all duration-300 hover:bg-white hover:text-green-800"
               >

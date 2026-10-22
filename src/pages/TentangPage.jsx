@@ -1,9 +1,12 @@
 
+import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { dummyPengurus } from "../data/dummyTentang";
 import { useSettings } from "../services/settingService";
+import { getPublicPengurus } from "../services/pengurusService";
+import { formatImageUrl } from "../services/beritaService";
 
 import kepengurusanImage from "../assets/images/kepengurusan.jpeg";
 import visiMisiImage from "../assets/images/visi-misi.jpeg";
@@ -47,6 +50,32 @@ const DATA_PENGURUS = [
 
 export default function TentangPage() {
   const settings = useSettings();
+  const [pengurusList, setPengurusList] = useState([]);
+  const [loadingPengurus, setLoadingPengurus] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    getPublicPengurus()
+      .then((data) => {
+        if (mounted) {
+          if (Array.isArray(data) && data.length > 0) {
+            setPengurusList(data);
+          } else {
+            setPengurusList(DATA_PENGURUS);
+          }
+        }
+      })
+      .catch(() => {
+        if (mounted) setPengurusList(DATA_PENGURUS);
+      })
+      .finally(() => {
+        if (mounted) setLoadingPengurus(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const orgName =
     settings?.profil?.namaLembaga ||
@@ -113,81 +142,85 @@ export default function TentangPage() {
 
           <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-5">
 
-            {DATA_PENGURUS.map((p) => (
+            {loadingPengurus ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-gray-100 bg-white p-3 shadow-xs animate-pulse flex flex-col items-center"
+                >
+                  <div className="h-[180px] w-full rounded-xl bg-gray-100 mb-3" />
+                  <div className="h-3.5 w-3/4 bg-gray-200 rounded mb-1.5" />
+                  <div className="h-3 w-1/2 bg-gray-100 rounded" />
+                </div>
+              ))
+            ) : (
+              pengurusList.map((p, idx) => {
+                const fotoSrc = p.foto ? formatImageUrl(p.foto) : null;
+                return (
+                  <div
+                    key={p.id || p.nama || idx}
+                    className="
+                      group
+                      flex
+                      min-w-0
+                      flex-col
+                      overflow-hidden
+                      rounded-2xl
+                      border
+                      border-gray-200
+                      bg-white
+                      shadow-sm
+                      transition
+                      duration-300
+                      hover:-translate-y-1
+                      hover:shadow-md
+                    "
+                  >
+                    {/* =================================================
+                        FOTO PENGURUS
+                    ================================================== */}
 
-              <div
-                key={p.nama}
-                className="
-                  group
-                  flex
-                  min-w-0
-                  flex-col
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  border-gray-200
-                  bg-white
-                  shadow-sm
-                  transition
-                  duration-300
-                  hover:-translate-y-1
-                  hover:shadow-md
-                "
-              >
-
-                {/* =================================================
-                    FOTO PENGURUS
-                ================================================== */}
-
-                <div className="flex h-[180px] w-full shrink-0 items-center justify-center overflow-hidden bg-gray-50">
-
-                  {p.foto ? (
-
-                    <img
-                      src={p.foto}
-                      alt={`Foto ${p.nama}`}
-                      className="
-                        h-full
-                        w-full
-                        object-contain
-                        object-center
-                        transition
-                        duration-500
-                        group-hover:scale-[1.03]
-                      "
-                    />
-
-                  ) : (
-
-                    <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
-                      Foto Pengurus
+                    <div className="flex h-[180px] w-full shrink-0 items-center justify-center overflow-hidden bg-gray-50">
+                      {fotoSrc ? (
+                        <img
+                          src={fotoSrc}
+                          alt={`Foto ${p.nama}`}
+                          className="
+                            h-full
+                            w-full
+                            object-contain
+                            object-center
+                            transition
+                            duration-500
+                            group-hover:scale-[1.03]
+                          "
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+                          Foto Pengurus
+                        </div>
+                      )}
                     </div>
 
-                  )}
+                    {/* =================================================
+                        INFORMASI PENGURUS
+                    ================================================== */}
 
-                </div>
+                    <div className="flex flex-col items-center justify-start px-2 pb-1.5 pt-2 text-center">
+                      {/* NAMA PENGURUS */}
+                      <p className="w-full break-words text-xs font-bold leading-tight text-gray-900">
+                        {p.nama}
+                      </p>
 
-{/* =================================================
-    INFORMASI PENGURUS
-================================================== */}
-
-<div className="flex flex-col items-center justify-start px-2 pb-0.5 pt-1 text-center">
-
-  {/* NAMA PENGURUS */}
-  <p className="w-full break-words text-xs font-bold leading-tight text-gray-900">
-    {p.nama}
-  </p>
-
-  {/* JABATAN */}
-  <p className="mt-0.5 pb-1 text-xs font-semibold leading-tight text-brand-600 sm:text-sm">
-    {p.jabatan}
-  </p>
-
-</div>
-
-              </div>
-
-            ))}
+                      {/* JABATAN */}
+                      <p className="mt-0.5 pb-1 text-xs font-semibold leading-tight text-brand-600 sm:text-sm">
+                        {p.jabatan}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
 
           </div>
 
