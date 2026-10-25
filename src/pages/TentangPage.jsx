@@ -84,29 +84,26 @@ export default function TentangPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
+
       {/* =====================================================
-          HEADER
-      ====================================================== */}
+    HEADER
+====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
-        <div className="mx-auto max-w-7xl px-6 py-10 lg:py-12">
-
+        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
           <div className="text-center">
-
-            <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
+            <h1 className="text-xl font-bold leading-tight sm:text-2xl">
               Tentang UPZ
             </h1>
 
-            <p className="mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-green-50 sm:text-base">
-              Mengenal lebih dekat {orgName} dan berbagai
-              kegiatan yang dijalankan dalam pengelolaan zakat,
-              infak, dan sedekah.
+            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
+              Mengenal lebih dekat {orgName} dan berbagai kegiatan yang dijalankan
+              dalam pengelolaan zakat, infak, dan sedekah.
             </p>
-
           </div>
-
         </div>
       </section>
+
 
       {/* =====================================================
           STRUKTUR PENGURUS

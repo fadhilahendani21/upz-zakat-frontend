@@ -51,6 +51,14 @@ const DEFAULT_BERITA = [
       "UPZ Unsil menyalurkan Al-Qur'an sebagai bagian dari program pembinaan dan kepedulian sosial.",
     image: berita4,
   },
+  {
+  id: 5,
+  tanggal: "20 Juli 2026",
+  judul: "Bantuan Modal Usaha Dorong Kemandirian Mustahik",
+  deskripsi:
+    "UPZ Zakat Universitas Siliwangi mendukung kemandirian ekonomi mustahik melalui bantuan modal usaha untuk mengembangkan usaha produktif.",
+  image: null,
+},
 ];
 
 // =========================================================
@@ -65,21 +73,20 @@ export default function LandingPage() {
 
     async function loadNews() {
       try {
-        
-const res = await getPublicBerita({
-  page: 1,
-  perPage: 5,
-});
+        const res = await getPublicBerita({
+          page: 1,
+          perPage: 5,
+        });
 
-console.log("Respons API:", res);
-console.log(
-  "Daftar berita:",
-  res?.data?.map((item) => ({
-    id: item.id,
-    judul: item.judul,
-    gambar: item.gambar,
-  }))
-);
+        console.log("Respons API:", res);
+        console.log(
+          "Daftar berita:",
+          res?.data?.map((item) => ({
+            id: item.id,
+            judul: item.judul,
+            gambar: item.gambar,
+          }))
+        );
 
         if (!active) return;
 
@@ -118,15 +125,15 @@ console.log(
 
   const beritaUtama = beritaList[0] || DEFAULT_BERITA[0];
 
-const beritaLainnya = [
-  ...beritaList.slice(1),
-  ...DEFAULT_BERITA.filter(
-    (defaultBerita) =>
-      !beritaList.some(
-        (berita) => String(berita.id) === String(defaultBerita.id)
-      )
-  ),
-].slice(0, 4);
+  const beritaLainnya = [
+    ...beritaList.slice(1),
+    ...DEFAULT_BERITA.filter(
+      (defaultBerita) =>
+        !beritaList.some(
+          (berita) => String(berita.id) === String(defaultBerita.id)
+        )
+    ),
+  ].slice(0, 4);
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
@@ -138,16 +145,16 @@ const beritaLainnya = [
       <Hero />
 
       {/* =====================================================
-          FEATURE
-      ====================================================== */}
-
-      <FeatureCard />
-
-      {/* =====================================================
-          STATS
+          STATS - BAGIAN HIJAU DI ATAS
       ====================================================== */}
 
       <StatsBar />
+
+      {/* =====================================================
+          FEATURE - KARTU LAYANAN DI BAWAH
+      ====================================================== */}
+
+      <FeatureCard />
 
       {/* =====================================================
           BERITA & INFORMASI

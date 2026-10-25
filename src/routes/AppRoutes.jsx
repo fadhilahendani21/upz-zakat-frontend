@@ -14,6 +14,7 @@ const VisiMisiPage = lazy(() => import("../pages/VisiMisiPage"));
 const KepengurusanPage = lazy(() => import("../pages/KepengurusanPage"));
 const ProfilUnsilPage = lazy(() => import("../pages/ProfilUnsilPage"));
 const ProgramPage = lazy(() => import("../pages/ProgramPage"));
+const ProgramDetailPage = lazy(() => import("../pages/ProgramDetailPage"));
 const BeritaPage = lazy(() => import("../pages/BeritaPage"));
 const BeritaDetailPage = lazy(() => import("../pages/BeritaDetailPage"));
 const LaporanPage = lazy(() => import("../pages/LaporanPage"));
@@ -123,9 +124,10 @@ export default function AppRoutes() {
             />
 
             {/* =========================
-                PROGRAM
-            ========================= */}
+             PROGRAM
+             ========================= */}
             <Route path="/program" element={<ProgramPage />} />
+            <Route path="/program/detail" element={<ProgramDetailPage />} />
 
             {/* =========================
                 BERITA

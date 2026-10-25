@@ -124,17 +124,15 @@ export default function LaporanPage() {
       icon: Wallet,
       label: "Total Dana Terkumpul",
       value: formatRupiah(data?.total_masuk ?? 0),
-      period: `Tahun ${
-        data?.tahun || new Date().getFullYear()
-      }`,
+      period: `Tahun ${data?.tahun || new Date().getFullYear()
+        }`,
     },
     {
       icon: HandCoins,
       label: "Total Dana Disalurkan",
       value: formatRupiah(data?.total_keluar ?? 0),
-      period: `Tahun ${
-        data?.tahun || new Date().getFullYear()
-      }`,
+      period: `Tahun ${data?.tahun || new Date().getFullYear()
+        }`,
     },
     {
       icon: Users,
@@ -153,33 +151,28 @@ export default function LaporanPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
+
       {/* =====================================================
-          HEADER
-      ====================================================== */}
+    HEADER
+====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
-
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-14">
-
+        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
           <div className="text-center">
-
-            <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-              Laporan Keuangan & Transparansi
+            <h1 className="text-xl font-bold leading-tight sm:text-2xl">
+              Laporan Keuangan &amp; Transparansi
             </h1>
 
-            <p className="mt-4 text-sm sm:text-base text-green-50 leading-relaxed max-w-3xl mx-auto">
-              {settings?.profil?.namaLembaga ||
-                "UPZ Unsil"}{" "}
-              berkomitmen mengelola dana zakat, infak, dan sedekah
-              secara transparan dan akuntabel. Berikut ringkasan
-              penerimaan dan penyaluran dana publik.
+            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
+              {settings?.profil?.namaLembaga || "UPZ Unsil"} berkomitmen
+              mengelola dana zakat, infak, dan sedekah secara transparan
+              dan akuntabel. Berikut ringkasan penerimaan dan penyaluran
+              dana publik.
             </p>
-
           </div>
-
         </div>
-
       </section>
+
 
       {/* =====================================================
           STATISTIK

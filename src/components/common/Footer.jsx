@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MapPin, LogIn, Phone, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -46,8 +45,10 @@ export default function Footer() {
         }
       }
     };
+
     window.addEventListener("upz_footer_updated", handleFooterUpdate);
     window.addEventListener("storage", handleFooterUpdate);
+
     return () => {
       window.removeEventListener("upz_footer_updated", handleFooterUpdate);
       window.removeEventListener("storage", handleFooterUpdate);
@@ -87,7 +88,6 @@ export default function Footer() {
     settings?.profil?.email ||
     "upz@unsil.ac.id";
 
-
   return (
     <footer className="bg-[#175621] text-white">
 
@@ -117,7 +117,6 @@ export default function Footer() {
                   {brandName}
                 </h3>
 
-                {/* DIBESARKAN */}
                 <p className="mt-0.5 text-xs font-medium text-green-300">
                   Universitas Siliwangi
                 </p>
@@ -287,42 +286,42 @@ export default function Footer() {
 
             <div className="space-y-3">
 
+              {/* ALAMAT */}
+              <div className="flex items-stretch gap-2.5">
 
+                <div className="flex w-9 shrink-0 items-center justify-center self-stretch rounded-lg bg-white/10">
+                  <MapPin size={17} />
+                </div>
 
-{/* ALAMAT */}
-<div className="flex items-start gap-2.5">
-  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
-    <MapPin size={14} />
-  </div>
+                <div className="min-w-0 flex-1 py-0.5">
 
-  <div className="min-w-0 flex-1 overflow-hidden">
-    <p className="text-[10px] font-medium leading-3 text-green-300">
-      Alamat
-    </p>
+                  <p className="text-[11px] font-medium leading-4 text-green-300">
+                    Alamat
+                  </p>
 
-    <p
-      title={alamat}
-      className="mt-0.5 line-clamp-2 break-words text-[9px] leading-[11px] text-green-100 [overflow-wrap:anywhere]"
-    >
-      {alamat}
-    </p>
-  </div>
-</div>
-
-              {/* WHATSAPP */}
-              <div className="flex items-start gap-2.5">
-
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
-
-                  <Phone size={14} />
+                  <p
+                    title={alamat}
+                    className="mt-0.5 break-words text-[10px] leading-[13px] text-green-100 [overflow-wrap:anywhere]"
+                  >
+                    {alamat}
+                  </p>
 
                 </div>
 
-                <div className="flex h-8 min-w-0 flex-1 items-center overflow-hidden">
+              </div>
 
-                  <div className="w-full overflow-hidden">
+              {/* WHATSAPP */}
+              <div className="flex items-stretch gap-2.5">
 
-                    <p className="truncate text-[11px] font-medium leading-4 text-green-300">
+                <div className="flex w-9 shrink-0 items-center justify-center self-stretch rounded-lg bg-white/10">
+                  <Phone size={17} />
+                </div>
+
+                <div className="flex min-w-0 flex-1 items-center py-0.5">
+
+                  <div className="w-full min-w-0">
+
+                    <p className="text-[11px] font-medium leading-4 text-green-300">
                       WhatsApp / Telepon
                     </p>
 
@@ -330,7 +329,7 @@ export default function Footer() {
                       href={whatsappHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block truncate text-xs leading-4 text-green-100 transition-colors hover:text-white"
+                      className="block break-words text-xs leading-4 text-green-100 transition-colors hover:text-white"
                     >
                       {whatsapp}
                     </a>
@@ -342,17 +341,15 @@ export default function Footer() {
               </div>
 
               {/* EMAIL */}
-              <div className="flex items-start gap-2.5">
+              <div className="flex items-stretch gap-2.5">
 
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
-
-                  <Mail size={14} />
-
+                <div className="flex w-9 shrink-0 items-center justify-center self-stretch rounded-lg bg-white/10">
+                  <Mail size={17} />
                 </div>
 
-                <div className="flex h-8 min-w-0 flex-1 items-center overflow-hidden">
+                <div className="flex min-w-0 flex-1 items-center py-0.5">
 
-                  <div className="w-full overflow-hidden">
+                  <div className="w-full min-w-0">
 
                     <p className="text-[11px] font-medium leading-4 text-green-300">
                       Email
@@ -360,7 +357,7 @@ export default function Footer() {
 
                     <a
                       href={`mailto:${email}`}
-                      className="block truncate text-xs leading-4 text-green-100 transition-colors hover:text-white"
+                      className="block break-words text-xs leading-4 text-green-100 transition-colors hover:text-white"
                     >
                       {email}
                     </a>
@@ -387,18 +384,14 @@ export default function Footer() {
           <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
 
             {/* COPYRIGHT + LOGIN */}
-
             <div className="flex items-center gap-2 text-center md:text-left">
 
               <p className="text-[11px] text-green-200">
-
                 © {new Date().getFullYear()} {orgName}.
                 All rights reserved.
-
               </p>
 
               {/* ICON LOGIN */}
-
               <Link
                 to="/masuk"
                 aria-label="Masuk"
@@ -416,7 +409,6 @@ export default function Footer() {
             </div>
 
             {/* TAGLINE */}
-
             <div className="flex items-center gap-1.5 text-[11px] text-green-200">
 
               <span>Amanah</span>

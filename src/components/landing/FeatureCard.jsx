@@ -38,8 +38,16 @@ export default function FeatureCard() {
             key={fitur.title}
             className="group flex h-full min-w-0 flex-col rounded-xl border border-gray-100 bg-white p-2.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md sm:rounded-2xl sm:p-3"
           >
-            <div className="mb-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 sm:mb-2 sm:h-9 sm:w-9">
-              {Icon && <Icon size={18} />}
+            {/* IKON DAN PANAH SEJAJAR DI BAGIAN ATAS */}
+            <div className="mb-1.5 flex w-full items-center justify-between sm:mb-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 sm:h-9 sm:w-9">
+                {Icon && <Icon size={18} />}
+              </div>
+
+              <ArrowRight
+                size={15}
+                className="shrink-0 text-brand-600 transition-transform group-hover:translate-x-1"
+              />
             </div>
 
             <h3 className="mb-1 text-xs font-semibold leading-snug text-gray-900 sm:text-sm">
@@ -49,11 +57,6 @@ export default function FeatureCard() {
             <p className="flex-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
               {fitur.desc}
             </p>
-
-            <ArrowRight
-              size={15}
-              className="mt-1.5 shrink-0 text-brand-600 transition-transform group-hover:translate-x-1 sm:mt-2"
-            />
           </Link>
         );
       })}

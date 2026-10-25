@@ -74,11 +74,10 @@ export default function KontakPage() {
 
   const whatsappClean = whatsapp.replace(/\D/g, "");
 
-  const whatsappHref = `https://wa.me/${
-    whatsappClean.startsWith("0")
+  const whatsappHref = `https://wa.me/${whatsappClean.startsWith("0")
       ? "62" + whatsappClean.slice(1)
       : whatsappClean
-  }`;
+    }`;
 
   const email =
     customSettings?.infoUtama?.email || profil.email || dummyKontak.email;
@@ -99,32 +98,32 @@ export default function KontakPage() {
 
   const sosialMediaList = customSettings?.sosialMedia
     ? [
-        {
-          label: "Facebook",
-          handle:
-            customSettings.sosialMedia.facebook?.handle || "@upzzakatunsil",
-          url: customSettings.sosialMedia.facebook?.url || "#",
-        },
-        {
-          label: "Instagram",
-          handle:
-            customSettings.sosialMedia.instagram?.handle ||
-            "@upzzakat.unsil",
-          url: customSettings.sosialMedia.instagram?.url || "#",
-        },
-        {
-          label: "Twitter / X",
-          handle:
-            customSettings.sosialMedia.twitter?.handle || "@upzzakatunsil",
-          url: customSettings.sosialMedia.twitter?.url || "#",
-        },
-        {
-          label: "YouTube",
-          handle:
-            customSettings.sosialMedia.youtube?.handle || "UPZ Zakat Unsil",
-          url: customSettings.sosialMedia.youtube?.url || "#",
-        },
-      ]
+      {
+        label: "Facebook",
+        handle:
+          customSettings.sosialMedia.facebook?.handle || "@upzzakatunsil",
+        url: customSettings.sosialMedia.facebook?.url || "#",
+      },
+      {
+        label: "Instagram",
+        handle:
+          customSettings.sosialMedia.instagram?.handle ||
+          "@upzzakat.unsil",
+        url: customSettings.sosialMedia.instagram?.url || "#",
+      },
+      {
+        label: "Twitter / X",
+        handle:
+          customSettings.sosialMedia.twitter?.handle || "@upzzakatunsil",
+        url: customSettings.sosialMedia.twitter?.url || "#",
+      },
+      {
+        label: "YouTube",
+        handle:
+          customSettings.sosialMedia.youtube?.handle || "UPZ Zakat Unsil",
+        url: customSettings.sosialMedia.youtube?.url || "#",
+      },
+    ]
     : dummyKontak.sosialMedia;
 
   const orgName =
@@ -133,28 +132,24 @@ export default function KontakPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#f8fff8] to-[#dff5df]">
 
+
       {/* =====================================================
-          HEADER
-      ====================================================== */}
+    HEADER
+====================================================== */}
+
       <section className="w-full bg-brand-700 text-white">
-
-        <div className="mx-auto max-w-7xl px-6 py-12 lg:py-14">
-
+        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
           <div className="text-center">
-
-            <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
+            <h1 className="text-xl font-bold leading-tight sm:text-2xl">
               Kami Siap Membantu Anda
             </h1>
 
-            <p className="mx-auto mt-4 max-w-3xl text-sm leading-relaxed text-green-50 sm:text-base">
+            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
               Ada pertanyaan seputar zakat, infak, sedekah, atau program
               penyaluran? Hubungi tim {orgName} lewat salah satu kanal di bawah.
             </p>
-
           </div>
-
         </div>
-
       </section>
 
 
