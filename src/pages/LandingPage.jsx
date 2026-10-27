@@ -78,16 +78,6 @@ export default function LandingPage() {
           perPage: 5,
         });
 
-        console.log("Respons API:", res);
-        console.log(
-          "Daftar berita:",
-          res?.data?.map((item) => ({
-            id: item.id,
-            judul: item.judul,
-            gambar: item.gambar,
-          }))
-        );
-
         if (!active) return;
 
         if (Array.isArray(res?.data) && res.data.length > 0) {
