@@ -279,11 +279,11 @@ export default function Footer() {
                   <MapPin size={14} />
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium leading-4 text-green-300">
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <p className="text-[11px] font-medium leading-none text-green-300">
                     Alamat
                   </p>
-                  <p className="text-xs leading-relaxed text-green-100 break-words">
+                  <p className="text-xs leading-5 text-green-100 break-words">
                     {alamat}
                   </p>
                 </div>
@@ -296,15 +296,15 @@ export default function Footer() {
                   <Phone size={14} />
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium leading-4 text-green-300">
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <p className="text-[11px] font-medium leading-none text-green-300">
                     WhatsApp / Telepon
                   </p>
                   <a
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs leading-relaxed text-green-100 transition-colors hover:text-white break-all sm:break-normal"
+                    className="block text-xs leading-5 text-green-100 transition-colors hover:text-white break-all sm:break-normal"
                   >
                     {whatsapp}
                   </a>
@@ -318,13 +318,13 @@ export default function Footer() {
                   <Mail size={14} />
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium leading-4 text-green-300">
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                  <p className="text-[11px] font-medium leading-none text-green-300">
                     Email
                   </p>
                   <a
                     href={`mailto:${email}`}
-                    className="break-all text-xs leading-relaxed text-green-100 transition-colors hover:text-white"
+                    className="block break-all text-xs leading-5 text-green-100 transition-colors hover:text-white -mt-0.5"
                   >
                     {email}
                   </a>
