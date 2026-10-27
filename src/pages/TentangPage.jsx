@@ -86,17 +86,17 @@ export default function TentangPage() {
 
 
       {/* =====================================================
-    HEADER
-====================================================== */}
+          HEADER
+      ====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
-        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="text-center">
             <h1 className="text-xl font-bold leading-tight sm:text-2xl">
               Tentang UPZ
             </h1>
 
-            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
+            <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-green-50 sm:text-sm">
               Mengenal lebih dekat {orgName} dan berbagai kegiatan yang dijalankan
               dalam pengelolaan zakat, infak, dan sedekah.
             </p>
@@ -109,27 +109,27 @@ export default function TentangPage() {
           STRUKTUR PENGURUS
       ====================================================== */}
 
-      <section className="w-full px-4 pb-12 pt-10 sm:px-6">
+      <section className="w-full px-4 pb-8 pt-6 sm:px-6 sm:pb-12 sm:pt-9">
 
         <div className="mx-auto max-w-7xl">
 
           {/* JUDUL */}
 
-          <div className="mb-7 text-center">
+          <div className="mb-5 text-center sm:mb-7">
 
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
               Struktur Pengurus
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Susunan pengurus UPZ Zakat Universitas Siliwangi.
+            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+              Susunan pengurus {orgName}.
             </p>
 
             {/* PERIODE KEPENGURUSAN */}
 
-            <p className="mt-2 text-sm font-semibold text-brand-700">
+            <span className="mt-2.5 inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
               Periode 2026/2029
-            </p>
+            </span>
 
           </div>
 
@@ -137,7 +137,7 @@ export default function TentangPage() {
               GRID PENGURUS
           ================================================== */}
 
-          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4 lg:gap-5">
 
             {loadingPengurus ? (
               Array.from({ length: 5 }).map((_, i) => (
@@ -145,39 +145,43 @@ export default function TentangPage() {
                   key={i}
                   className="rounded-2xl border border-gray-100 bg-white p-3 shadow-xs animate-pulse flex flex-col items-center"
                 >
-                  <div className="h-[180px] w-full rounded-xl bg-gray-100 mb-3" />
-                  <div className="h-3.5 w-3/4 bg-gray-200 rounded mb-1.5" />
-                  <div className="h-3 w-1/2 bg-gray-100 rounded" />
+                  <div className="h-52 sm:h-56 w-full rounded-xl bg-gray-100 mb-2.5" />
+                  <div className="h-3 w-3/4 bg-gray-200 rounded mb-1.5" />
+                  <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
                 </div>
               ))
             ) : (
               pengurusList.map((p, idx) => {
                 const fotoSrc = p.foto ? formatImageUrl(p.foto) : null;
+                const isLast = idx === pengurusList.length - 1 && pengurusList.length % 2 !== 0;
+
                 return (
                   <div
                     key={p.id || p.nama || idx}
-                    className="
+                    className={`
                       group
                       flex
                       min-w-0
                       flex-col
                       overflow-hidden
-                      rounded-2xl
+                      rounded-xl
                       border
                       border-gray-200
                       bg-white
-                      shadow-sm
+                      shadow-xs
                       transition
                       duration-300
                       hover:-translate-y-1
                       hover:shadow-md
-                    "
+                      sm:rounded-2xl
+                      ${isLast ? "col-span-2 sm:col-span-1 max-w-[240px] sm:max-w-none mx-auto w-full" : ""}
+                    `}
                   >
                     {/* =================================================
                         FOTO PENGURUS
                     ================================================== */}
 
-                    <div className="flex h-[180px] w-full shrink-0 items-center justify-center overflow-hidden bg-gray-50">
+                    <div className="flex h-52 sm:h-56 w-full shrink-0 items-center justify-center overflow-hidden bg-gray-50">
                       {fotoSrc ? (
                         <img
                           src={fotoSrc}
@@ -185,15 +189,15 @@ export default function TentangPage() {
                           className="
                             h-full
                             w-full
-                            object-contain
-                            object-center
+                            object-cover
+                            object-top
                             transition
                             duration-500
                             group-hover:scale-[1.03]
                           "
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+                        <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
                           Foto Pengurus
                         </div>
                       )}
@@ -203,14 +207,14 @@ export default function TentangPage() {
                         INFORMASI PENGURUS
                     ================================================== */}
 
-                    <div className="flex flex-col items-center justify-start px-2 pb-1.5 pt-2 text-center">
+                    <div className="flex flex-1 flex-col items-center justify-center px-2.5 py-2 text-center sm:px-3 sm:py-2.5">
                       {/* NAMA PENGURUS */}
-                      <p className="w-full break-words text-xs font-bold leading-tight text-gray-900">
+                      <p className="w-full text-xs font-bold leading-snug text-gray-900 line-clamp-2">
                         {p.nama}
                       </p>
 
                       {/* JABATAN */}
-                      <p className="mt-0.5 pb-1 text-xs font-semibold leading-tight text-brand-600 sm:text-sm">
+                      <p className="mt-0.5 text-[11px] font-semibold leading-tight text-brand-600 sm:text-xs">
                         {p.jabatan}
                       </p>
                     </div>
@@ -226,24 +230,23 @@ export default function TentangPage() {
       </section>
 
       {/* =====================================================
-          TENTANG KAMI
+          TENTANG KAMI / INFORMASI LAINNYA
       ====================================================== */}
 
-      <section className="w-full px-4 pb-14 pt-4 sm:px-6">
+      <section className="w-full px-4 pb-12 pt-2 sm:px-6 sm:pb-14">
 
         <div className="mx-auto max-w-7xl">
 
           {/* JUDUL */}
 
-          <div className="mb-8 text-center">
+          <div className="mb-6 text-center sm:mb-8">
 
-            <h2 className="text-2xl font-bold text-gray-900">
-              Tentang Kami
+            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+              Kenali Lebih Jauh
             </h2>
 
-            <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-500">
-              Kenali lebih jauh tentang UPZ Zakat Universitas
-              Siliwangi melalui informasi berikut.
+            <p className="mx-auto mt-1 max-w-2xl text-xs text-gray-500 sm:text-sm">
+              Pelajari lebih lanjut mengenai kepengurusan, visi misi, dan profil institusi kami.
             </p>
 
           </div>
@@ -252,7 +255,7 @@ export default function TentangPage() {
               3 PILIHAN HALAMAN
           ================================================== */}
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
 
             {/* =================================================
                 KEPENGURUSAN
@@ -275,7 +278,7 @@ export default function TentangPage() {
               "
             >
 
-              <div className="h-52 w-full overflow-hidden bg-gray-100">
+              <div className="h-36 sm:h-48 w-full overflow-hidden bg-gray-100">
 
                 <img
                   src={kepengurusanImage}
@@ -292,27 +295,27 @@ export default function TentangPage() {
 
               </div>
 
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
 
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-brand-600">
                   KEPENGURUSAN
                 </p>
 
-                <h3 className="mt-2 text-lg font-bold text-gray-900">
+                <h3 className="mt-1 text-base sm:text-lg font-bold text-gray-900">
                   Kepengurusan
                 </h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-gray-500">
                   Mengenal susunan pengurus UPZ Zakat Universitas
                   Siliwangi beserta peran dan tanggung jawabnya.
                 </p>
 
-                <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+                <div className="mt-3.5 sm:mt-4 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-700">
 
                   Lihat selengkapnya
 
                   <ArrowRight
-                    size={15}
+                    size={14}
                     className="transition-transform group-hover:translate-x-1"
                   />
 
@@ -343,7 +346,7 @@ export default function TentangPage() {
               "
             >
 
-              <div className="h-52 w-full overflow-hidden bg-gray-100">
+              <div className="h-36 sm:h-48 w-full overflow-hidden bg-gray-100">
 
                 <img
                   src={visiMisiImage}
@@ -360,27 +363,27 @@ export default function TentangPage() {
 
               </div>
 
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
 
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-brand-600">
                   VISI &amp; MISI
                 </p>
 
-                <h3 className="mt-2 text-lg font-bold text-gray-900">
+                <h3 className="mt-1 text-base sm:text-lg font-bold text-gray-900">
                   Visi &amp; Misi
                 </h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-gray-500">
                   Mengetahui visi dan misi UPZ dalam mewujudkan
                   pengelolaan zakat yang amanah dan terpercaya.
                 </p>
 
-                <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+                <div className="mt-3.5 sm:mt-4 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-700">
 
                   Lihat selengkapnya
 
                   <ArrowRight
-                    size={15}
+                    size={14}
                     className="transition-transform group-hover:translate-x-1"
                   />
 
@@ -411,7 +414,7 @@ export default function TentangPage() {
               "
             >
 
-              <div className="h-52 w-full overflow-hidden bg-gray-100">
+              <div className="h-36 sm:h-48 w-full overflow-hidden bg-gray-100">
 
                 <img
                   src={profilUnsilImage}
@@ -428,28 +431,28 @@ export default function TentangPage() {
 
               </div>
 
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
 
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-brand-600">
                   PROFIL LEMBAGA
                 </p>
 
-                <h3 className="mt-2 text-lg font-bold text-gray-900">
+                <h3 className="mt-1 text-base sm:text-lg font-bold text-gray-900">
                   Profil Lembaga UNSIL
                 </h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-gray-500">
                   Mengenal Universitas Siliwangi sebagai lembaga
                   pendidikan tempat UPZ Zakat Universitas Siliwangi
                   berada.
                 </p>
 
-                <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+                <div className="mt-3.5 sm:mt-4 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-700">
 
                   Lihat selengkapnya
 
                   <ArrowRight
-                    size={15}
+                    size={14}
                     className="transition-transform group-hover:translate-x-1"
                   />
 

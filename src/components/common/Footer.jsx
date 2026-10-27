@@ -3,6 +3,7 @@ import { MapPin, LogIn, Phone, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import logoUpz from "../../assets/img/logo-upz.png";
 import { useSettings } from "../../services/settingService";
+import { getPublicPengaturan } from "../../services/pengaturanService";
 
 const navigasi = [
   { label: "Beranda", to: "/" },
@@ -14,7 +15,7 @@ const navigasi = [
 ];
 
 const layanan = [
-  { label: "Kalkulator Zakat", to: "/hitung-zakat" },
+  { label: "Kalkulator Zakat", to: "/kalkulator" },
   { label: "Tunaikan Zakat", to: "/donasi" },
   { label: "Program Penyaluran", to: "/program" },
   { label: "Transparansi Dana", to: "/laporan" },
@@ -33,6 +34,11 @@ export default function Footer() {
   });
 
   useEffect(() => {
+    // Ambil data terbaru dari backend database
+    getPublicPengaturan("footer").then((data) => {
+      if (data) setFooterCustom(data);
+    });
+
     const handleFooterUpdate = (e) => {
       if (e?.detail) {
         setFooterCustom(e.detail);
@@ -92,11 +98,13 @@ export default function Footer() {
     <footer className="bg-[#175621] text-white">
 
       {/* ================= MAIN FOOTER ================= */}
+
       <div className="mx-auto max-w-7xl px-6 pb-4 pt-6 lg:px-10">
 
         <div className="grid grid-cols-3 gap-x-4 gap-y-6 lg:grid-cols-12 lg:gap-7">
 
           {/* ================= BRAND ================= */}
+
           <div className="col-span-3 lg:col-span-5">
 
             <div className="flex items-center gap-3">
@@ -130,6 +138,7 @@ export default function Footer() {
             </p>
 
             {/* ================= SOCIAL MEDIA ================= */}
+
             <div className="mt-3 flex items-center gap-2">
 
               {/* Instagram */}
@@ -220,6 +229,7 @@ export default function Footer() {
           </div>
 
           {/* ================= NAVIGASI ================= */}
+
           <div className="col-span-1 lg:col-span-2">
 
             <h4 className="text-sm font-semibold text-white">
@@ -248,6 +258,7 @@ export default function Footer() {
           </div>
 
           {/* ================= LAYANAN ================= */}
+
           <div className="col-span-1 lg:col-span-2">
 
             <h4 className="text-sm font-semibold text-white">
@@ -276,7 +287,8 @@ export default function Footer() {
           </div>
 
           {/* ================= HUBUNGI KAMI ================= */}
-          <div className="col-span-3 min-w-0 sm:col-span-2 lg:col-span-3">
+
+          <div className="col-span-1 lg:col-span-3">
 
             <h4 className="text-sm font-semibold text-white">
               Hubungi Kami
@@ -287,22 +299,20 @@ export default function Footer() {
             <div className="space-y-3">
 
               {/* ALAMAT */}
-              <div className="flex items-stretch gap-2.5">
 
-                <div className="flex w-9 shrink-0 items-center justify-center self-stretch rounded-lg bg-white/10">
-                  <MapPin size={17} />
+              <div className="flex items-start gap-2.5">
+
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                  <MapPin size={14} />
                 </div>
 
-                <div className="min-w-0 flex-1 py-0.5">
+                <div className="min-w-0">
 
                   <p className="text-[11px] font-medium leading-4 text-green-300">
                     Alamat
                   </p>
 
-                  <p
-                    title={alamat}
-                    className="mt-0.5 break-words text-[10px] leading-[13px] text-green-100 [overflow-wrap:anywhere]"
-                  >
+                  <p className="text-xs leading-5 text-green-100">
                     {alamat}
                   </p>
 
@@ -311,58 +321,52 @@ export default function Footer() {
               </div>
 
               {/* WHATSAPP */}
-              <div className="flex items-stretch gap-2.5">
 
-                <div className="flex w-9 shrink-0 items-center justify-center self-stretch rounded-lg bg-white/10">
-                  <Phone size={17} />
+              <div className="flex items-start gap-2.5">
+
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                  <Phone size={14} />
                 </div>
 
-                <div className="flex min-w-0 flex-1 items-center py-0.5">
+                <div className="min-w-0">
 
-                  <div className="w-full min-w-0">
+                  <p className="text-[11px] font-medium leading-4 text-green-300">
+                    WhatsApp / Telepon
+                  </p>
 
-                    <p className="text-[11px] font-medium leading-4 text-green-300">
-                      WhatsApp / Telepon
-                    </p>
-
-                    <a
-                      href={whatsappHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block break-words text-xs leading-4 text-green-100 transition-colors hover:text-white"
-                    >
-                      {whatsapp}
-                    </a>
-
-                  </div>
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs leading-5 text-green-100 transition-colors hover:text-white"
+                  >
+                    {whatsapp}
+                  </a>
 
                 </div>
 
               </div>
 
               {/* EMAIL */}
-              <div className="flex items-stretch gap-2.5">
 
-                <div className="flex w-9 shrink-0 items-center justify-center self-stretch rounded-lg bg-white/10">
-                  <Mail size={17} />
+              <div className="flex items-start gap-2.5">
+
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                  <Mail size={14} />
                 </div>
 
-                <div className="flex min-w-0 flex-1 items-center py-0.5">
+                <div className="min-w-0">
 
-                  <div className="w-full min-w-0">
+                  <p className="text-[11px] font-medium leading-4 text-green-300">
+                    Email
+                  </p>
 
-                    <p className="text-[11px] font-medium leading-4 text-green-300">
-                      Email
-                    </p>
-
-                    <a
-                      href={`mailto:${email}`}
-                      className="block break-words text-xs leading-4 text-green-100 transition-colors hover:text-white"
-                    >
-                      {email}
-                    </a>
-
-                  </div>
+                  <a
+                    href={`mailto:${email}`}
+                    className="break-all text-xs leading-5 text-green-100 transition-colors hover:text-white"
+                  >
+                    {email}
+                  </a>
 
                 </div>
 
@@ -377,6 +381,7 @@ export default function Footer() {
       </div>
 
       {/* ================= BOTTOM ================= */}
+
       <div className="border-t border-white/10">
 
         <div className="mx-auto max-w-7xl px-6 py-2.5 lg:px-10">
@@ -384,31 +389,32 @@ export default function Footer() {
           <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
 
             {/* COPYRIGHT + LOGIN */}
+
             <div className="flex items-center gap-2 text-center md:text-left">
 
               <p className="text-[11px] text-green-200">
+
                 © {new Date().getFullYear()} {orgName}.
                 All rights reserved.
+
               </p>
 
-              {/* ICON LOGIN */}
               <Link
                 to="/masuk"
                 aria-label="Masuk"
                 title="Masuk"
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-green-200/40 transition-all duration-200 hover:bg-white/10 hover:text-green-100"
               >
-
                 <LogIn
                   size={13}
                   strokeWidth={1.8}
                 />
-
               </Link>
 
             </div>
 
             {/* TAGLINE */}
+
             <div className="flex items-center gap-1.5 text-[11px] text-green-200">
 
               <span>Amanah</span>

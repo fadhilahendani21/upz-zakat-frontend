@@ -4,6 +4,11 @@ import {
   HandCoins,
   Users,
   HeartHandshake,
+  TrendingUp,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { getPublicLaporan } from "../services/donasiService";
 import { useSettings } from "../services/settingService";
@@ -16,24 +21,40 @@ function formatRupiah(value) {
   }).format(value ?? 0);
 }
 
-function RincianList({ title, items, total }) {
+function RincianList({ title, items, total, type = "penerimaan" }) {
   const safeTotal = total > 0 ? total : 1;
+  const isPenerimaan = type === "penerimaan";
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <h3 className="text-base font-bold text-gray-900 mb-4">
-        {title}
-      </h3>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-xs p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+              isPenerimaan
+                ? "bg-emerald-50 text-emerald-600"
+                : "bg-brand-50 text-brand-600"
+            }`}
+          >
+            {isPenerimaan ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+          </div>
+          <h3 className="text-base font-bold text-gray-900">{title}</h3>
+        </div>
+
+        <span className="text-[11px] font-semibold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
+          {items.length} Kategori
+        </span>
+      </div>
 
       {items.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-gray-400">
+          <p className="text-xs text-gray-400">
             Belum ada data transaksi untuk tahun ini.
           </p>
         </div>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {items.map((item) => {
               const percent = Math.min(
                 100,
@@ -41,20 +62,27 @@ function RincianList({ title, items, total }) {
               );
 
               return (
-                <div key={item.label}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-700">
-                      {item.label}
-                    </span>
+                <div key={item.label} className="group">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <span className="text-gray-700 font-medium">{item.label}</span>
 
-                    <span className="font-semibold text-gray-900">
-                      {formatRupiah(item.amount)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-gray-400 font-normal">
+                        {percent}%
+                      </span>
+                      <span className="font-medium text-gray-800">
+                        {formatRupiah(item.amount)}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="mt-1.5 w-full h-2 rounded-full bg-gray-100 overflow-hidden">
                     <div
-                      className="h-full bg-brand-500 rounded-full transition-all duration-500"
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        isPenerimaan
+                          ? "bg-emerald-500"
+                          : "bg-brand-600"
+                      }`}
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -63,12 +91,16 @@ function RincianList({ title, items, total }) {
             })}
           </div>
 
-          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-900">
-              Total
+          <div className="mt-5 pt-3.5 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-medium text-gray-600">
+              Total {title}
             </span>
 
-            <span className="text-sm font-bold text-brand-700">
+            <span
+              className={`text-sm sm:text-base font-medium ${
+                isPenerimaan ? "text-emerald-700" : "text-brand-700"
+              }`}
+            >
               {formatRupiah(total)}
             </span>
           </div>
@@ -153,17 +185,17 @@ export default function LaporanPage() {
 
 
       {/* =====================================================
-    HEADER
-====================================================== */}
+          HEADER
+      ====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
-        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="text-center">
             <h1 className="text-xl font-bold leading-tight sm:text-2xl">
               Laporan Keuangan &amp; Transparansi
             </h1>
 
-            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
+            <p className="mx-auto mt-2 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
               {settings?.profil?.namaLembaga || "UPZ Unsil"} berkomitmen
               mengelola dana zakat, infak, dan sedekah secara transparan
               dan akuntabel. Berikut ringkasan penerimaan dan penyaluran
@@ -178,7 +210,7 @@ export default function LaporanPage() {
           STATISTIK
       ====================================================== */}
 
-      <section className="max-w-7xl mx-auto px-6 pt-12 pb-10">
+      <section className="max-w-7xl mx-auto px-4 pt-6 pb-6 sm:px-6 sm:pt-10 sm:pb-8">
 
         {loading ? (
 
@@ -194,7 +226,7 @@ export default function LaporanPage() {
 
         ) : (
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
             {stats.map((stat) => {
 
@@ -204,26 +236,28 @@ export default function LaporanPage() {
 
                 <div
                   key={stat.label}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-xs p-3.5 sm:p-5 flex items-center gap-3 sm:gap-3.5"
                 >
 
-                  <div className="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
 
-                    <Icon size={18} />
+                    <Icon size={19} />
 
                   </div>
 
-                  <p className="mt-3 text-xs text-gray-500">
-                    {stat.label}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] sm:text-xs text-gray-500 font-medium truncate">
+                      {stat.label}
+                    </p>
 
-                  <p className="mt-1 text-base sm:text-lg font-bold text-gray-900 truncate">
-                    {stat.value}
-                  </p>
+                    <p className="mt-0.5 text-xs sm:text-base lg:text-lg font-bold text-gray-900 leading-tight break-words">
+                      {stat.value}
+                    </p>
 
-                  <p className="text-[11px] text-gray-400">
-                    {stat.period}
-                  </p>
+                    <p className="mt-0.5 text-[10px] sm:text-[11px] text-gray-400">
+                      {stat.period}
+                    </p>
+                  </div>
 
                 </div>
 
@@ -240,18 +274,20 @@ export default function LaporanPage() {
           RINCIAN
       ====================================================== */}
 
-      <section className="max-w-7xl mx-auto px-6 pb-16 grid sm:grid-cols-2 gap-6">
+      <section className="max-w-7xl mx-auto px-4 pb-12 sm:px-6 sm:pb-16 grid sm:grid-cols-2 gap-4 sm:gap-6">
 
         <RincianList
           title="Rincian Penerimaan"
           items={penerimaanList}
           total={totalPenerimaan}
+          type="penerimaan"
         />
 
         <RincianList
           title="Rincian Penyaluran"
           items={penyaluranList}
           total={totalPenyaluran}
+          type="penyaluran"
         />
 
       </section>

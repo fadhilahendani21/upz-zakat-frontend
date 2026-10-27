@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  ExternalLink,
   Eye,
 } from "lucide-react";
 import {
@@ -19,6 +18,10 @@ import {
 } from "../../components/common/SocialIcons";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import {
+  getPengaturanAdmin,
+  savePengaturanAdmin,
+} from "../../services/pengaturanService";
 
 // ============================================================================
 // DUMMY DATA AWAL (Sebelum Backend Laravel selesai)
@@ -39,8 +42,6 @@ const DUMMY_FOOTER_SETTINGS = {
   },
 };
 
-const STORAGE_KEY = "upz_footer_settings";
-
 export default function PengaturanFooterAdmin() {
   // 1. STATE FORM & STATUS
   const [formData, setFormData] = useState(DUMMY_FOOTER_SETTINGS);
@@ -52,27 +53,14 @@ export default function PengaturanFooterAdmin() {
   const handleFetch = async () => {
     try {
       setLoading(true);
-
-      // ======================================================================
-      // TODO: Ganti dengan Axios / Fetch ke API Backend Laravel jika sudah siap:
-      //
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/public/pengaturan-footer`, {
-      //   headers: { Accept: "application/json" }
-      // });
-      // const json = await res.json();
-      // if (res.ok && json.data) {
-      //   setFormData(json.data);
-      //   return;
-      // }
-      // ======================================================================
-
-      // SIMULASI DUMMY DATA / LOCALSTORAGE SEMENTARA:
-      await new Promise((resolve) => setTimeout(resolve, 300)); // Simulasi jeda network
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setFormData(JSON.parse(saved));
-      } else {
-        setFormData(DUMMY_FOOTER_SETTINGS);
+      const data = await getPengaturanAdmin("footer");
+      if (data) {
+        setFormData((prev) => ({
+          ...prev,
+          ...data,
+          sosialMedia: { ...prev.sosialMedia, ...(data.sosialMedia || {}) },
+          kontak: { ...prev.kontak, ...(data.kontak || {}) },
+        }));
       }
     } catch (err) {
       console.error("Gagal memuat pengaturan footer:", err);
@@ -118,34 +106,8 @@ export default function PengaturanFooterAdmin() {
     e.preventDefault();
     try {
       setSaving(true);
-
-      // ======================================================================
-      // TODO: Ganti dengan Axios / Fetch PUT atau POST ke API Backend Laravel:
-      //
-      // const token = localStorage.getItem("token");
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/pengaturan-footer`, {
-      //   method: "POST", // atau "PUT"
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Accept: "application/json",
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify(formData),
-      // });
-      // const json = await res.json();
-      // if (!res.ok) throw new Error(json.message || "Gagal menyimpan ke server");
-      // ======================================================================
-
-      // SIMULASI PENYIMPANAN SEMENTARA KE LOCALSTORAGE:
-      await new Promise((resolve) => setTimeout(resolve, 600)); // Jeda simulasi server
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-
-      // Kirim event agar footer publik bisa update langsung jika sedang di-tab yang sama
-      window.dispatchEvent(
-        new CustomEvent("upz_footer_updated", { detail: formData })
-      );
-
-      showToast("success", "Pengaturan footer berhasil disimpan!");
+      await savePengaturanAdmin("footer", formData);
+      showToast("success", "Pengaturan footer berhasil disimpan ke database!");
     } catch (err) {
       console.error("Gagal menyimpan footer:", err);
       showToast("error", err.message || "Terjadi kesalahan saat menyimpan.");
@@ -155,14 +117,19 @@ export default function PengaturanFooterAdmin() {
   };
 
   // 4. RESET KE DATA DEFAULT
-  const handleReset = () => {
+  const handleReset = async () => {
     if (confirm("Kembalikan informasi footer ke nilai default awal?")) {
-      setFormData(DUMMY_FOOTER_SETTINGS);
-      localStorage.removeItem(STORAGE_KEY);
-      window.dispatchEvent(
-        new CustomEvent("upz_footer_updated", { detail: DUMMY_FOOTER_SETTINGS })
-      );
-      showToast("success", "Pengaturan footer dikembalikan ke default.");
+      try {
+        setSaving(true);
+        await savePengaturanAdmin("footer", DUMMY_FOOTER_SETTINGS);
+        setFormData(DUMMY_FOOTER_SETTINGS);
+        showToast("success", "Pengaturan footer dikembalikan ke default.");
+      } catch (err) {
+        console.error("Gagal reset footer:", err);
+        showToast("error", "Gagal mengembalikan pengaturan ke default.");
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -195,46 +162,30 @@ export default function PengaturanFooterAdmin() {
         </div>
       )}
 
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Pengaturan Footer
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100">
-              Halaman Publik
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            Kelola teks deskripsi lembaga, tautan sosial media resmi, dan kontak yang tampil di footer.
-          </p>
-        </div>
+      {/* Action Bar */}
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleReset}
+          className="flex items-center gap-1.5 text-xs py-2 px-3 text-gray-600 hover:text-gray-900"
+        >
+          <RotateCcw size={14} />
+          Reset Default
+        </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="flex items-center gap-1.5 text-xs py-2.5 px-3 text-gray-600 hover:text-gray-900"
-          >
-            <RotateCcw size={14} />
-            Reset Default
-          </Button>
-
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2.5 px-5 text-xs sm:text-sm font-semibold"
-          >
-            {saving ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Save size={16} />
-            )}
-            Simpan Perubahan
-          </Button>
-        </div>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2 px-4 text-xs sm:text-sm font-semibold"
+        >
+          {saving ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Save size={16} />
+          )}
+          Simpan Perubahan
+        </Button>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">

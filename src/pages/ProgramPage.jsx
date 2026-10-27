@@ -21,6 +21,7 @@ import { useSettings } from "../services/settingService";
 const DEFAULT_PROGRAMS = [
   {
     id: 1,
+    slug: "beasiswa-pendidikan",
     icon: GraduationCap,
     title: "Beasiswa Pendidikan",
     description:
@@ -30,6 +31,7 @@ const DEFAULT_PROGRAMS = [
   },
   {
     id: 2,
+    slug: "bantuan-kesehatan",
     icon: HeartPulse,
     title: "Bantuan Kesehatan",
     description:
@@ -39,6 +41,7 @@ const DEFAULT_PROGRAMS = [
   },
   {
     id: 3,
+    slug: "santunan-yatim-dhuafa",
     icon: HandHeart,
     title: "Santunan Yatim & Dhuafa",
     description:
@@ -48,6 +51,7 @@ const DEFAULT_PROGRAMS = [
   },
   {
     id: 4,
+    slug: "pemberdayaan-ekonomi",
     icon: Store,
     title: "Pemberdayaan Ekonomi",
     description:
@@ -57,6 +61,7 @@ const DEFAULT_PROGRAMS = [
   },
   {
     id: 5,
+    slug: "bedah-rumah-dhuafa",
     icon: Home,
     title: "Bedah Rumah Dhuafa",
     description:
@@ -66,6 +71,7 @@ const DEFAULT_PROGRAMS = [
   },
   {
     id: 6,
+    slug: "air-bersih-sanitasi",
     icon: Droplets,
     title: "Air Bersih & Sanitasi",
     description:
@@ -96,6 +102,7 @@ export default function ProgramPage() {
         if (res?.data && res.data.length > 0) {
           const mapped = res.data.map((item) => ({
             id: item.id,
+            slug: item.slug || item.nama?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || String(item.id),
             title: item.nama,
             description:
               item.deskripsi || "Program penyaluran bantuan UPZ Unsil.",
@@ -125,13 +132,13 @@ export default function ProgramPage() {
       {/* Header */}
 
       <section className="w-full bg-brand-700 text-white">
-        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="text-center">
             <h1 className="text-xl font-bold leading-tight sm:text-2xl">
-              Program Penyaluran Zakat & Infaq
+              Program Penyaluran Zakat &amp; Infaq
             </h1>
 
-            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
+            <p className="mx-auto mt-2 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
               {settings?.profil?.namaSingkat || "UPZ Unsil"} menyalurkan zakat, infak, dan sedekah melalui
               berbagai program strategis yang transparan, akuntabel, dan berdampak langsung bagi mustahik.
             </p>
@@ -141,23 +148,23 @@ export default function ProgramPage() {
 
 
       {/* Daftar Program */}
-      <section className="w-full px-6 py-10">
+      <section className="w-full px-4 py-8 sm:px-6 sm:py-10">
         <div className="max-w-7xl mx-auto">
 
-          {/* Judul dan tombol Detail Program */}
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
-              Daftar Program
-            </h2>
+          {/* Judul dan Ringkasan */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 sm:text-2xl">
+                Daftar Program
+              </h2>
+              <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+                Pilih program kebaikan untuk melihat detail capaian atau berdonasi langsung.
+              </p>
+            </div>
 
-            <Link
-              to="/program/detail"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-brand-600 bg-white px-3.5 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 sm:px-4 sm:text-sm"
-            >
-              <FileText size={15} />
-              Detail Program
-              <ArrowRight size={14} />
-            </Link>
+            <span className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 border border-brand-200">
+              {programs.length} Program Aktif
+            </span>
           </div>
 
           {loading ? (
@@ -168,7 +175,7 @@ export default function ProgramPage() {
               </p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {programs.map((program, idx) => {
                 const Icon = program.icon || FolderHeart;
 
@@ -184,19 +191,27 @@ export default function ProgramPage() {
                     key={program.id || program.title || idx}
                     className="flex flex-col"
                   >
-                    <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
-                      <Icon size={22} />
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                        <Icon size={22} />
+                      </div>
+
+                      <span className="text-[11px] font-semibold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-100">
+                        {percent}% Tercapai
+                      </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-gray-900">
-                      {program.title}
-                    </h3>
+                    <Link to={`/program/${program.slug || program.id}`} className="group/title">
+                      <h3 className="text-base font-bold text-gray-900 transition-colors group-hover/title:text-brand-700 sm:text-lg">
+                        {program.title}
+                      </h3>
+                    </Link>
 
-                    <p className="mt-2 text-sm text-gray-600 leading-relaxed flex-1">
+                    <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed flex-1 line-clamp-3">
                       {program.description}
                     </p>
 
-                    <div className="mt-5">
+                    <div className="mt-5 border-t border-gray-100 pt-3">
                       <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
                         <div
                           className="h-full bg-brand-500 rounded-full transition-all duration-500"
@@ -204,39 +219,52 @@ export default function ProgramPage() {
                         />
                       </div>
 
-                      <div className="mt-2 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-brand-700">
+                      <div className="mt-2.5 flex items-center justify-between text-xs">
+                        <span className="font-bold text-brand-700">
                           {formatRupiah(program.collected)}
                         </span>
 
                         <span className="text-gray-500">
-                          dari {formatRupiah(program.target)}
+                          Target {formatRupiah(program.target)}
                         </span>
                       </div>
 
-                      <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
-                        <Users size={12} />
-                        <span>
-                          {(program.jumlah_donatur || 0).toLocaleString("id-ID")} Donatur
-                        </span>
-                      </div>
+                      <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-2 text-[11px] text-gray-500">
+                        <div className="flex items-center gap-1.5">
+                          <Users size={13} className="text-brand-600" />
+                          <span>
+                            {(program.jumlah_donatur || 0).toLocaleString("id-ID")} Donatur
+                          </span>
+                        </div>
 
-                      <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
-                        <Heart size={12} />
-                        <span>
-                          {formatRupiah(program.nominal_terkumpul || 0) + " Tersalurkan"}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <Heart size={13} className="text-brand-600" />
+                          <span>
+                            {formatRupiah(program.nominal_terkumpul || 0)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <Link
-                      to={`/donasi?program=${program.id || ""}`}
-                      state={{ programId: program.id }}
-                      className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-700 active:scale-[0.98]"
-                    >
-                      <Heart size={14} />
-                      Donasi Sekarang
-                    </Link>
+                    {/* Tombol Aksi Detail & Donasi */}
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <Link
+                        to={`/program/${program.slug || program.id}`}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-brand-300 bg-brand-50/70 px-3 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-100 active:scale-[0.98]"
+                      >
+                        <FileText size={14} />
+                        Detail Program
+                      </Link>
+
+                      <Link
+                        to={`/donasi?program=${program.slug || program.id}`}
+                        state={{ programId: program.id }}
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-700 active:scale-[0.98]"
+                      >
+                        <Heart size={14} />
+                        Donasi
+                      </Link>
+                    </div>
                   </Card>
                 );
               })}

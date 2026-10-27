@@ -53,3 +53,37 @@ export const getPublicPrograms = () => {
     headers: { Accept: "application/json" },
   }).then((res) => (res.ok ? res.json() : { data: [] }));
 };
+
+export const getPublicProgramDetail = async (idOrSlug) => {
+  if (!API_URL) return null;
+  try {
+    const res = await fetch(`${API_URL}/public/program/${encodeURIComponent(idOrSlug)}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json?.data ?? null;
+    }
+  } catch (err) {
+    console.warn("Gagal fetch detail program dari endpoint individual:", err);
+  }
+
+  // Fallback: Jika endpoint individual gagal, cari dari list publik program berdasarkan slug atau id
+  try {
+    const listRes = await getPublicPrograms();
+    const cleanParam = String(idOrSlug).toLowerCase();
+    const found = listRes?.data?.find(
+      (p) =>
+        String(p.slug) === cleanParam ||
+        String(p.id) === cleanParam ||
+        (p.nama &&
+          p.nama
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "") === cleanParam)
+    );
+    return found ?? null;
+  } catch {
+    return null;
+  }
+};

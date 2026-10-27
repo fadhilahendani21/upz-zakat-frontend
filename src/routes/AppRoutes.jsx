@@ -127,6 +127,7 @@ export default function AppRoutes() {
              PROGRAM
              ========================= */}
             <Route path="/program" element={<ProgramPage />} />
+            <Route path="/program/:idOrSlug" element={<ProgramDetailPage />} />
             <Route path="/program/detail" element={<ProgramDetailPage />} />
 
             {/* =========================

@@ -5,6 +5,7 @@ import { ShieldCheck, Wallet, FileSearch } from "lucide-react";
 import Button from "../common/Button";
 import gedungUnsil from "../../assets/images/gedung-unsil.jpeg";
 import { useSettings } from "../../services/settingService";
+import { getPublicPengaturan } from "../../services/pengaturanService";
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -20,6 +21,11 @@ export default function Hero() {
   });
 
   useEffect(() => {
+    // Ambil data terbaru dari backend database
+    getPublicPengaturan("beranda").then((data) => {
+      if (data) setBerandaCustom(data);
+    });
+
     const handleUpdate = (e) => {
       if (e?.detail) {
         setBerandaCustom(e.detail);
@@ -63,10 +69,22 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden">
-      <div className="relative mx-auto w-full max-w-none px-3 py-1 sm:px-5 sm:py-2 lg:px-6 xl:px-8 lg:py-2">
+      {/* ======================================================
+          FOTO LATAR KHUSUS HP (SEPERTI MASJID KASSITI)
+      ====================================================== */}
+      <div className="absolute inset-0 sm:hidden">
+        <img
+          src={fotoHero}
+          alt="Gedung Universitas Siliwangi"
+          className="h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-900/80 via-brand-800/68 to-brand-900/88" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-none px-4 py-8 sm:px-5 sm:py-4 lg:px-6 xl:px-8 lg:py-5">
 
         {/* ======================================================
-            FOTO LATAR
+            FOTO LATAR DESKTOP
         ====================================================== */}
         <div className="absolute inset-y-0 right-3 hidden sm:block sm:right-5 sm:w-[58%] lg:right-6 lg:w-[58%] xl:right-8 xl:w-[60%]">
           <img
@@ -99,31 +117,40 @@ export default function Hero() {
         <div className="relative z-[1] w-full max-w-full sm:max-w-[48%] md:max-w-[46%] lg:max-w-[48%] xl:max-w-[46%]">
 
           {/* BADGE */}
-          <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-[11px] font-medium text-brand-700 sm:text-xs">
-            <ShieldCheck size={14} />
+          <span className="inline-flex items-center gap-2 rounded-full border border-brand-300/30 bg-brand-900/75 px-3 py-1 text-[11px] font-semibold text-brand-100 backdrop-blur-sm sm:border-0 sm:bg-brand-50 sm:text-brand-700 sm:text-xs">
+            <ShieldCheck size={14} className="text-brand-300 sm:text-brand-600" />
             {badgeText}
           </span>
 
           {/* JUDUL */}
-          <h1 className="mt-2 text-2xl font-extrabold leading-tight text-gray-900 sm:mt-2 sm:text-3xl md:text-3xl lg:mt-2 lg:text-3xl xl:text-4xl">
-            {judulText}
+          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-white drop-shadow-sm sm:mt-2.5 sm:text-3xl sm:text-gray-900 sm:drop-shadow-none md:text-3xl lg:mt-3 lg:text-3xl xl:text-4xl">
+            {judulText === "Menunaikan Zakat, Membersamai Umat" ? (
+              <>
+                Menunaikan Zakat,{" "}
+                <span className="text-brand-200 sm:text-brand-700">
+                  Membersamai Umat
+                </span>
+              </>
+            ) : (
+              judulText
+            )}
           </h1>
 
           {/* DESKRIPSI */}
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-gray-600 sm:text-xs md:text-sm lg:mt-2">
+          <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-brand-50 drop-shadow-sm sm:text-xs sm:text-gray-600 sm:drop-shadow-none md:text-sm lg:mt-2.5">
             {deskripsiText}
           </p>
 
           {/* ======================================================
               TOMBOL HERO
           ====================================================== */}
-          <div className="mt-3 flex flex-wrap gap-2 sm:mt-3 lg:gap-3">
+          <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-4 lg:gap-3">
 
             {/* TUNAIKAN ZAKAT */}
             <button
               type="button"
               onClick={() => navigate("/zakat")}
-              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-950/40 transition-colors hover:bg-brand-500 sm:font-medium sm:shadow-sm sm:hover:bg-brand-700"
             >
               <Wallet size={18} />
               Tunaikan Zakat
@@ -134,6 +161,7 @@ export default function Hero() {
               variant="outline"
               icon={FileSearch}
               onClick={() => navigate("/hitung-zakat")}
+              className="border-white/30 bg-white font-semibold text-brand-800 shadow-sm hover:bg-brand-50 sm:border-brand-600 sm:bg-transparent sm:font-medium sm:text-brand-700 sm:shadow-none sm:hover:bg-brand-50"
             >
               Cek Perhitungan Zakat
             </Button>
@@ -141,30 +169,21 @@ export default function Hero() {
           </div>
 
           {/* KETERANGAN */}
-          <p className="mt-2 flex items-center gap-2 text-[11px] text-gray-500 sm:text-xs">
-            <ShieldCheck size={14} />
+          <p className="mt-3 flex items-center gap-2 text-[11px] text-brand-100 sm:mt-2.5 sm:text-xs sm:text-gray-500">
+            <ShieldCheck size={14} className="text-brand-300 sm:text-brand-600 shrink-0" />
             Transaksi aman dan diawasi oleh Syariah
           </p>
         </div>
 
         {/* ======================================================
-            VERSI KHUSUS HP
+            KUTIPAN HP (FROSTED GLASS)
         ====================================================== */}
-        <div className="relative mt-5 overflow-hidden rounded-2xl shadow-md sm:hidden">
-          <img
-            src={fotoHero}
-            alt="Gedung Universitas Siliwangi"
-            className="h-48 w-full object-cover object-bottom"
-          />
-        </div>
-
-        {/* KUTIPAN HP */}
-        <div className="mt-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:hidden">
-          <p className="text-xs leading-relaxed text-gray-700">
+        <div className="relative z-[1] mt-5 rounded-2xl border border-brand-300/25 bg-brand-900/40 p-4 shadow-sm backdrop-blur-md sm:hidden">
+          <p className="text-xs leading-relaxed text-white">
             &ldquo;{kutipanIsi}&rdquo;
           </p>
 
-          <p className="mt-1 text-[11px] font-medium text-gray-500">
+          <p className="mt-1.5 text-[11px] font-semibold text-brand-200">
             – {kutipanSumber}
           </p>
         </div>
@@ -172,7 +191,7 @@ export default function Hero() {
         {/* ======================================================
             KARTU KUTIPAN DESKTOP
         ====================================================== */}
-        <div className="absolute bottom-2 right-3 z-10 hidden w-44 sm:block md:right-5 md:w-52 lg:bottom-3 lg:right-6 lg:w-64 xl:right-8 xl:w-72">
+        <div className="absolute bottom-3 right-3 z-10 hidden w-44 sm:block md:bottom-3.5 md:right-5 md:w-52 lg:bottom-4.5 lg:right-6 lg:w-64 xl:right-8 xl:w-72">
           <div className="relative rounded-xl bg-white/80 p-3 pt-4 shadow-lg backdrop-blur-sm lg:rounded-2xl lg:p-4 lg:pt-5 border border-white/50">
 
             {/* ICON KUTIPAN */}

@@ -34,7 +34,7 @@ export default function Navbar() {
           NAVBAR UTAMA
       ====================================================== */}
 
-      <div className="flex h-20 w-full items-center justify-between px-3 sm:px-5 lg:px-6 xl:px-8">
+      <div className="flex h-16 sm:h-20 w-full items-center justify-between px-3.5 sm:px-5 lg:px-6 xl:px-8">
         {/* ===================================================
             LOGO
         ==================================================== */}
@@ -47,7 +47,7 @@ export default function Navbar() {
           <img
             src={logoUpz}
             alt={brandName}
-            className="h-10 w-10 shrink-0 rounded-md object-contain"
+            className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-md object-contain"
           />
 
           <div>
@@ -183,7 +183,7 @@ export default function Navbar() {
 
         <button
           type="button"
-          className="text-gray-700 lg:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-700 transition hover:bg-gray-100 active:bg-gray-200 lg:hidden"
           onClick={() => setOpen(!open)}
           aria-label={
             open
@@ -193,9 +193,9 @@ export default function Navbar() {
         >
 
           {open ? (
-            <X size={24} />
+            <X size={22} />
           ) : (
-            <Menu size={24} />
+            <Menu size={22} />
           )}
 
         </button>
@@ -208,115 +208,65 @@ export default function Navbar() {
 
       {open && (
 
-        <div className="border-t border-gray-100 bg-white px-6 py-4 lg:hidden">
+        <div className="border-t border-gray-100 bg-white px-4 py-4 shadow-lg lg:hidden">
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
 
-            {/* MENU */}
+            {/* MENU LINKS */}
 
-            {menu.map((item) => (
+            <div className="flex flex-col gap-1">
+              {menu.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-brand-50 font-semibold text-brand-700"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    }`
+                  }
+                >
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
 
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${
-                    isActive
-                      ? "text-brand-700"
-                      : "text-gray-700 hover:text-brand-700"
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
+            {/* ACTION BUTTONS MOBILE */}
 
-            ))}
+            <div className="border-t border-gray-100 pt-3 flex flex-col gap-2.5">
 
-            {/* ACTION MOBILE */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* LOGIN MUZAKKI */}
+                <Link
+                  to="/muzakki/masuk"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-brand-600 py-2.5 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-50"
+                >
+                  <LogIn size={15} />
+                  Login Muzakki
+                </Link>
 
-            <div className="border-t border-gray-100 pt-4">
+                {/* DAFTAR MUZAKKI */}
+                <Link
+                  to="/daftar-muzakki"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 py-2.5 text-xs font-semibold text-brand-700 transition-colors hover:bg-brand-100"
+                >
+                  <UserRoundPlus size={15} />
+                  Daftar
+                </Link>
+              </div>
 
-              {/* LOGIN MUZAKKI */}
-
-              <Link
-                to="/muzakki/masuk"
-                onClick={() => setOpen(false)}
-                className="
-                  flex
-                  w-full
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-lg
-                  border border-brand-600
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-brand-600
-                  transition-colors
-                  hover:bg-brand-50
-                "
-              >
-                <LogIn size={16} />
-                Login Muzakki
-              </Link>
-
-              {/* DAFTAR MUZAKKI */}
-
-              <Link
-                to="/daftar-muzakki"
-                onClick={() => setOpen(false)}
-                className="
-                  flex
-                  w-full
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-lg
-                  bg-brand-600
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-white
-                  transition-colors
-                  hover:bg-brand-700
-                "
-              >
-
-                <UserRoundPlus size={16} />
-
-                Daftar Muzakki
-
-              </Link>
-
-              {/* DONASI */}
-
+              {/* DONASI SEKARANG */}
               <Link
                 to="/donasi"
                 onClick={() => setOpen(false)}
-                className="
-                  mt-3
-                  flex
-                  w-full
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-lg
-                  bg-brand-600
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-white
-                  transition-colors
-                  hover:bg-brand-700
-                "
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
               >
-
                 <Heart size={16} />
-
                 Donasi Sekarang
-
               </Link>
 
             </div>

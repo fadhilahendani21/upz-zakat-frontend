@@ -118,17 +118,23 @@ export function formatImageUrl(url) {
   // Extract base backend url (e.g. http://localhost:8000/api -> http://localhost:8000)
   const backendBaseUrl = (API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
 
-  // If it contains a /storage/ path (relative or full URL from any host)
-  if (trimmed.includes("/storage/")) {
-    const storageIndex = trimmed.indexOf("/storage/");
-    const storagePath = trimmed.substring(storageIndex);
-    return `${backendBaseUrl}${storagePath}`;
-  }
-
   // If it's a relative api storage path (e.g. /api/storage/... or api/storage/...)
   if (trimmed.startsWith("/api/storage/") || trimmed.startsWith("api/storage/")) {
     const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
     return `${backendBaseUrl}${cleanPath}`;
+  }
+
+  // If it contains /api/storage/ anywhere in a full URL
+  if (trimmed.includes("/api/storage/")) {
+    const idx = trimmed.indexOf("/api/storage/");
+    return `${backendBaseUrl}${trimmed.substring(idx)}`;
+  }
+
+  // If it contains /storage/ path (relative or full URL), route through /api/storage/ so Laravel serves it directly
+  if (trimmed.includes("/storage/")) {
+    const storageIndex = trimmed.indexOf("/storage/");
+    const storagePath = trimmed.substring(storageIndex);
+    return `${backendBaseUrl}/api${storagePath}`;
   }
 
   return trimmed;

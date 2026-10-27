@@ -160,19 +160,19 @@ export default function LandingPage() {
           BERITA & INFORMASI
       ====================================================== */}
 
-      <section className="w-full bg-white px-6 pt-3 pb-6 sm:px-8 sm:pt-3 sm:pb-7 lg:px-6 xl:px-6">
+      <section className="w-full bg-white px-4 pt-5 pb-7 sm:px-6 sm:pt-6 sm:pb-8 lg:px-8 lg:pt-8 lg:pb-10 xl:px-8">
         <div className="mx-auto w-full max-w-none">
 
           {/* HEADER */}
 
-          <div className="mb-3 flex items-center justify-between gap-4">
+          <div className="mb-4 flex items-center justify-between gap-4">
             <h2 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
               Berita &amp; Informasi
             </h2>
 
             <Link
               to="/berita"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-200 px-3.5 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 sm:px-4"
+              className="hidden sm:inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-200 px-3.5 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 sm:px-4"
             >
               Lihat Semua
               <ArrowRight size={14} />

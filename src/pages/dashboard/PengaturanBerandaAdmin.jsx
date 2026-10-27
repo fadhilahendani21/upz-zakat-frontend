@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Home,
   Sparkles,
   Quote,
   BarChart3,
@@ -17,6 +16,10 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import gedungDefault from "../../assets/images/gedung-unsil.jpeg";
 import { fileToDataUrl } from "../../services/beritaService";
+import {
+  getPengaturanAdmin,
+  savePengaturanAdmin,
+} from "../../services/pengaturanService";
 
 // ============================================================================
 // DUMMY DATA AWAL (Sebelum Backend Laravel selesai)
@@ -40,8 +43,6 @@ const DUMMY_BERANDA_SETTINGS = {
   },
 };
 
-const STORAGE_KEY = "upz_beranda_settings";
-
 export default function PengaturanBerandaAdmin() {
   // 1. STATE FORM & STATUS
   const [formData, setFormData] = useState(DUMMY_BERANDA_SETTINGS);
@@ -54,24 +55,15 @@ export default function PengaturanBerandaAdmin() {
   const handleFetch = async () => {
     try {
       setLoading(true);
-
-      // ======================================================================
-      // TODO: Ganti dengan Axios / Fetch GET ke API Backend Laravel jika sudah siap:
-      //
-      // const response = await axios.get(`${import.meta.env.VITE_API_URL}/public/pengaturan-beranda`);
-      // if (response.data?.data) {
-      //   setFormData(response.data.data);
-      //   return;
-      // }
-      // ======================================================================
-
-      // SIMULASI DUMMY DATA SEMENTARA (localStorage fallback agar bisa langsung diuji):
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setFormData(JSON.parse(saved));
-      } else {
-        setFormData(DUMMY_BERANDA_SETTINGS);
+      const data = await getPengaturanAdmin("beranda");
+      if (data) {
+        setFormData((prev) => ({
+          ...prev,
+          ...data,
+          hero: { ...prev.hero, ...(data.hero || {}) },
+          kutipan: { ...prev.kutipan, ...(data.kutipan || {}) },
+          infoTambahan: { ...prev.infoTambahan, ...(data.infoTambahan || {}) },
+        }));
       }
     } catch (err) {
       console.error("Gagal memuat pengaturan beranda:", err);
@@ -149,29 +141,8 @@ export default function PengaturanBerandaAdmin() {
     e.preventDefault();
     try {
       setSaving(true);
-
-      // ======================================================================
-      // TODO: Ganti dengan Axios PUT/POST ke API Backend Laravel nanti:
-      //
-      // const token = localStorage.getItem("token");
-      // await axios.post(`${import.meta.env.VITE_API_URL}/pengaturan-beranda`, formData, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     Accept: "application/json",
-      //   },
-      // });
-      // ======================================================================
-
-      // SIMULASI PENYIMPANAN SEMENTARA KE LOCALSTORAGE:
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-
-      // Kirim event agar Beranda publik langsung ter-update secara realtime
-      window.dispatchEvent(
-        new CustomEvent("upz_beranda_updated", { detail: formData })
-      );
-
-      showToast("success", "Pengaturan beranda & foto berhasil disimpan!");
+      await savePengaturanAdmin("beranda", formData);
+      showToast("success", "Pengaturan beranda & foto berhasil disimpan ke database!");
     } catch (err) {
       console.error("Gagal menyimpan beranda:", err);
       showToast("error", err.message || "Terjadi kesalahan saat menyimpan.");
@@ -181,14 +152,19 @@ export default function PengaturanBerandaAdmin() {
   };
 
   // 4. RESET KE DATA DEFAULT
-  const handleReset = () => {
+  const handleReset = async () => {
     if (confirm("Kembalikan seluruh teks & foto beranda ke nilai default awal?")) {
-      setFormData(DUMMY_BERANDA_SETTINGS);
-      localStorage.removeItem(STORAGE_KEY);
-      window.dispatchEvent(
-        new CustomEvent("upz_beranda_updated", { detail: DUMMY_BERANDA_SETTINGS })
-      );
-      showToast("success", "Pengaturan beranda dikembalikan ke default.");
+      try {
+        setSaving(true);
+        await savePengaturanAdmin("beranda", DUMMY_BERANDA_SETTINGS);
+        setFormData(DUMMY_BERANDA_SETTINGS);
+        showToast("success", "Pengaturan beranda dikembalikan ke default.");
+      } catch (err) {
+        console.error("Gagal reset beranda:", err);
+        showToast("error", "Gagal mengembalikan pengaturan ke default.");
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -223,46 +199,30 @@ export default function PengaturanBerandaAdmin() {
         </div>
       )}
 
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Pengaturan Beranda
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100">
-              Halaman Depan
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            Kelola foto latar gedung hero, teks utama, serta kutipan ayat yang melayang di atas foto.
-          </p>
-        </div>
+      {/* Action Bar */}
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleReset}
+          className="flex items-center gap-1.5 text-xs py-2 px-3 text-gray-600 hover:text-gray-900"
+        >
+          <RotateCcw size={14} />
+          Reset Default
+        </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="flex items-center gap-1.5 text-xs py-2.5 px-3 text-gray-600 hover:text-gray-900"
-          >
-            <RotateCcw size={14} />
-            Reset Default
-          </Button>
-
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2.5 px-5 text-xs sm:text-sm font-semibold"
-          >
-            {saving ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Save size={16} />
-            )}
-            Simpan Perubahan
-          </Button>
-        </div>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2 px-4 text-xs sm:text-sm font-semibold"
+        >
+          {saving ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Save size={16} />
+          )}
+          Simpan Perubahan
+        </Button>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">

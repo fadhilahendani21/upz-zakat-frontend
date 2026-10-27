@@ -21,6 +21,10 @@ import {
 } from "../../components/common/SocialIcons";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import {
+  getPengaturanAdmin,
+  savePengaturanAdmin,
+} from "../../services/pengaturanService";
 
 // ============================================================================
 // DUMMY DATA AWAL (Sebelum Backend Laravel selesai)
@@ -64,8 +68,6 @@ const DUMMY_KONTAK_SETTINGS = {
   },
 };
 
-const STORAGE_KEY = "upz_kontak_settings";
-
 export default function PengaturanKontakAdmin() {
   // 1. STATE FORM & STATUS
   const [formData, setFormData] = useState(DUMMY_KONTAK_SETTINGS);
@@ -77,24 +79,15 @@ export default function PengaturanKontakAdmin() {
   const handleFetch = async () => {
     try {
       setLoading(true);
-
-      // ======================================================================
-      // TODO: Ganti dengan Axios / Fetch GET ke API Backend Laravel jika sudah siap:
-      //
-      // const response = await axios.get(`${import.meta.env.VITE_API_URL}/public/pengaturan-kontak`);
-      // if (response.data?.data) {
-      //   setFormData(response.data.data);
-      //   return;
-      // }
-      // ======================================================================
-
-      // SIMULASI DUMMY DATA SEMENTARA (localStorage fallback agar bisa langsung diuji):
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setFormData(JSON.parse(saved));
-      } else {
-        setFormData(DUMMY_KONTAK_SETTINGS);
+      const data = await getPengaturanAdmin("kontak");
+      if (data) {
+        setFormData((prev) => ({
+          ...prev,
+          ...data,
+          kantor: { ...prev.kantor, ...(data.kantor || {}) },
+          jamOperasional: { ...prev.jamOperasional, ...(data.jamOperasional || {}) },
+          sosialMedia: { ...prev.sosialMedia, ...(data.sosialMedia || {}) },
+        }));
       }
     } catch (err) {
       console.error("Gagal memuat pengaturan kontak:", err);
@@ -159,29 +152,8 @@ export default function PengaturanKontakAdmin() {
     e.preventDefault();
     try {
       setSaving(true);
-
-      // ======================================================================
-      // TODO: Ganti dengan Axios PUT/POST ke API Backend Laravel nanti:
-      //
-      // const token = localStorage.getItem("token");
-      // await axios.post(`${import.meta.env.VITE_API_URL}/pengaturan-kontak`, formData, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     Accept: "application/json",
-      //   },
-      // });
-      // ======================================================================
-
-      // SIMULASI PENYIMPANAN SEMENTARA KE LOCALSTORAGE:
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-
-      // Kirim event agar Halaman Kontak publik langsung ter-update secara realtime
-      window.dispatchEvent(
-        new CustomEvent("upz_kontak_updated", { detail: formData })
-      );
-
-      showToast("success", "Pengaturan kontak berhasil disimpan!");
+      await savePengaturanAdmin("kontak", formData);
+      showToast("success", "Pengaturan kontak berhasil disimpan ke database!");
     } catch (err) {
       console.error("Gagal menyimpan kontak:", err);
       showToast("error", err.message || "Terjadi kesalahan saat menyimpan.");
@@ -191,14 +163,19 @@ export default function PengaturanKontakAdmin() {
   };
 
   // 4. RESET KE DATA DEFAULT
-  const handleReset = () => {
+  const handleReset = async () => {
     if (confirm("Kembalikan informasi kontak ke nilai default awal?")) {
-      setFormData(DUMMY_KONTAK_SETTINGS);
-      localStorage.removeItem(STORAGE_KEY);
-      window.dispatchEvent(
-        new CustomEvent("upz_kontak_updated", { detail: DUMMY_KONTAK_SETTINGS })
-      );
-      showToast("success", "Pengaturan kontak dikembalikan ke default.");
+      try {
+        setSaving(true);
+        await savePengaturanAdmin("kontak", DUMMY_KONTAK_SETTINGS);
+        setFormData(DUMMY_KONTAK_SETTINGS);
+        showToast("success", "Pengaturan kontak dikembalikan ke default.");
+      } catch (err) {
+        console.error("Gagal reset kontak:", err);
+        showToast("error", "Gagal mengembalikan pengaturan ke default.");
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -231,46 +208,30 @@ export default function PengaturanKontakAdmin() {
         </div>
       )}
 
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Pengaturan Kontak
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100">
-              Halaman Publik
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            Kelola alamat kantor, WhatsApp, email, tautan peta Google Maps, jam kerja, dan sosial media.
-          </p>
-        </div>
+      {/* Action Bar */}
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleReset}
+          className="flex items-center gap-1.5 text-xs py-2 px-3 text-gray-600 hover:text-gray-900"
+        >
+          <RotateCcw size={14} />
+          Reset Default
+        </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="flex items-center gap-1.5 text-xs py-2.5 px-3 text-gray-600 hover:text-gray-900"
-          >
-            <RotateCcw size={14} />
-            Reset Default
-          </Button>
-
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2.5 px-5 text-xs sm:text-sm font-semibold"
-          >
-            {saving ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Save size={16} />
-            )}
-            Simpan Perubahan
-          </Button>
-        </div>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2 px-4 text-xs sm:text-sm font-semibold"
+        >
+          {saving ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Save size={16} />
+          )}
+          Simpan Perubahan
+        </Button>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">

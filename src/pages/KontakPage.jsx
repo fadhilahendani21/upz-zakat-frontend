@@ -5,6 +5,7 @@ import {
   Phone,
   Clock,
   MessageCircle,
+  ExternalLink,
 } from "lucide-react";
 import Card from "../components/common/Card";
 import {
@@ -15,6 +16,7 @@ import {
 } from "../components/common/SocialIcons";
 import { dummyKontak } from "../data/dummyKontak";
 import { useSettings } from "../services/settingService";
+import { getPublicPengaturan } from "../services/pengaturanService";
 
 const SOSMED_ICON = {
   Facebook: FacebookIcon,
@@ -27,7 +29,7 @@ export default function KontakPage() {
   const settings = useSettings();
   const profil = settings.profil || {};
 
-  // Membaca pengaturan dinamis kontak dari Admin (localStorage / state)
+  // Membaca pengaturan dinamis kontak dari Admin (backend database / cache)
   const [customSettings, setCustomSettings] = useState(() => {
     try {
       const saved = localStorage.getItem("upz_kontak_settings");
@@ -38,6 +40,11 @@ export default function KontakPage() {
   });
 
   useEffect(() => {
+    // Ambil data terbaru dari backend database
+    getPublicPengaturan("kontak").then((data) => {
+      if (data) setCustomSettings(data);
+    });
+
     // Sinkronisasi realtime jika ada perubahan dari Dashboard Admin
     const handleUpdate = (e) => {
       if (e.detail) setCustomSettings(e.detail);
@@ -60,14 +67,18 @@ export default function KontakPage() {
   }, []);
 
   const alamat =
-    customSettings?.infoUtama?.alamat || profil.alamat || dummyKontak.alamat;
+    customSettings?.kantor?.alamat ||
+    customSettings?.infoUtama?.alamat ||
+    profil.alamat ||
+    dummyKontak.alamat;
 
   // Nomor WhatsApp
   const whatsapp =
+    customSettings?.kantor?.whatsapp ||
     customSettings?.infoUtama?.whatsapp ||
     profil.whatsapp ||
     dummyKontak.whatsapp ||
-    "0812-3456-7890";
+    "081992300590";
 
   const subteksWa =
     customSettings?.infoUtama?.subteksWa || "Layanan Aktif Jam Kerja";
@@ -80,7 +91,10 @@ export default function KontakPage() {
     }`;
 
   const email =
-    customSettings?.infoUtama?.email || profil.email || dummyKontak.email;
+    customSettings?.kantor?.email ||
+    customSettings?.infoUtama?.email ||
+    profil.email ||
+    dummyKontak.email;
 
   const subteksEmail =
     customSettings?.infoUtama?.subteksEmail || "Respon Cepat 1x24 Jam";
@@ -134,17 +148,17 @@ export default function KontakPage() {
 
 
       {/* =====================================================
-    HEADER
-====================================================== */}
+          HEADER
+      ====================================================== */}
 
       <section className="w-full bg-brand-700 text-white">
-        <div className="mx-auto max-w-7xl px-6 py-8 sm:py-9">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="text-center">
             <h1 className="text-xl font-bold leading-tight sm:text-2xl">
               Kami Siap Membantu Anda
             </h1>
 
-            <p className="mx-auto mt-3 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
+            <p className="mx-auto mt-2 max-w-3xl text-xs leading-relaxed text-green-50 sm:text-sm">
               Ada pertanyaan seputar zakat, infak, sedekah, atau program
               penyaluran? Hubungi tim {orgName} lewat salah satu kanal di bawah.
             </p>
@@ -155,86 +169,114 @@ export default function KontakPage() {
 
       {/* =====================================================
           INFO KONTAK SINGKAT
-          MAX-WIDTH DIUBAH DARI 5XL -> 7XL
       ====================================================== */}
-      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-5 px-6 pb-10 pt-12 sm:grid-cols-3">
+      <section className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 pb-6 pt-6 sm:grid-cols-3 sm:gap-5 sm:px-6 sm:pb-10 sm:pt-10">
 
         {/* =================================================
-            ALAMAT
+            ALAMAT (100% DI MOBILE)
         ================================================== */}
-        <Card className="text-center">
+        <Card className="col-span-2 sm:col-span-1 flex flex-col justify-between p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 mt-0.5">
+              <MapPin size={19} />
+            </div>
 
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-gray-900">
+                Alamat Kantor
+              </h3>
 
-            <MapPin size={20} />
-
+              <p className="mt-1 text-xs leading-relaxed text-gray-600">
+                {alamat}
+              </p>
+            </div>
           </div>
 
-          <h3 className="mb-1 text-sm font-semibold text-gray-900">
-            Alamat Kantor
-          </h3>
-
-          <p className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-            {alamat}
-          </p>
-
+          <div className="mt-3.5 pt-3 border-t border-gray-100">
+            <a
+              href="https://maps.google.com/?q=Universitas+Siliwangi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-600 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-700 active:scale-[0.98]"
+            >
+              <ExternalLink size={13} />
+              <span>Petunjuk Arah</span>
+            </a>
+          </div>
         </Card>
 
 
         {/* =================================================
-            WHATSAPP
+            WHATSAPP (50% DI MOBILE)
         ================================================== */}
-        <Card className="text-center">
+        <Card className="col-span-1 flex flex-col justify-between p-3.5 sm:p-5">
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-brand-50 text-brand-600 mt-0.5">
+              <Phone size={17} />
+            </div>
 
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                WhatsApp
+              </h3>
 
-            <Phone size={20} />
+              <p className="mt-0.5 text-xs sm:text-sm font-medium text-brand-700 truncate">
+                {whatsapp}
+              </p>
 
+              <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                {subteksWa}
+              </p>
+            </div>
           </div>
 
-          <h3 className="mb-1 text-sm font-semibold text-gray-900">
-            WhatsApp &amp; Layanan
-          </h3>
-
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-sm font-semibold text-brand-700 hover:underline"
-          >
-            {whatsapp}
-          </a>
-
-          <p className="mt-1 text-xs text-gray-500">
-            {subteksWa}
-          </p>
-
+          <div className="mt-3.5 pt-3 border-t border-gray-100">
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-600 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-700 active:scale-[0.98]"
+            >
+              <MessageCircle size={14} />
+              <span className="truncate">Chat WA</span>
+            </a>
+          </div>
         </Card>
 
 
         {/* =================================================
-            EMAIL
+            EMAIL (50% DI MOBILE)
         ================================================== */}
-        <Card className="text-center">
+        <Card className="col-span-1 flex flex-col justify-between p-3.5 sm:p-5">
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-brand-50 text-brand-600 mt-0.5">
+              <Mail size={17} />
+            </div>
 
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                Email
+              </h3>
 
-            <Mail size={20} />
+              <p className="mt-0.5 text-xs sm:text-sm font-medium text-gray-700 truncate">
+                {email}
+              </p>
 
+              <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                {subteksEmail}
+              </p>
+            </div>
           </div>
 
-          <h3 className="mb-1 text-sm font-semibold text-gray-900">
-            Email Resmi
-          </h3>
-
-          <p className="mt-1 text-sm font-medium text-gray-800">
-            {email}
-          </p>
-
-          <p className="mt-1 text-xs text-gray-500">
-            {subteksEmail}
-          </p>
-
+          <div className="mt-3.5 pt-3 border-t border-gray-100">
+            <a
+              href={`mailto:${email}`}
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-600 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-700 active:scale-[0.98]"
+            >
+              <Mail size={13} />
+              <span className="truncate">Kirim Email</span>
+            </a>
+          </div>
         </Card>
 
       </section>
@@ -242,39 +284,35 @@ export default function KontakPage() {
 
       {/* =====================================================
           PETA + JAM OPERASIONAL + SOSIAL MEDIA
-          MAX-WIDTH DIUBAH DARI 5XL -> 7XL
       ====================================================== */}
-      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-5 px-6 pb-16 lg:grid-cols-3">
+      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:gap-5 px-4 pb-12 sm:px-6 sm:pb-16 lg:grid-cols-3">
 
         {/* =================================================
             PETA
         ================================================== */}
-        <Card className="overflow-hidden p-0 lg:col-span-2">
-
+        <Card className="overflow-hidden p-0 lg:col-span-2 relative">
           <iframe
             title="Lokasi Universitas Siliwangi"
             src={mapsUrl}
-            className="min-h-[280px] h-72 w-full border-0 lg:h-full"
+            className="min-h-[260px] h-64 sm:h-72 w-full border-0 lg:h-full"
             allowFullScreen
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
           />
-
         </Card>
 
 
         {/* =================================================
             JAM OPERASIONAL + SOSIAL MEDIA
         ================================================== */}
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
 
           {/* =================================================
               JAM OPERASIONAL
           ================================================== */}
-          <Card>
+          <Card className="p-4 sm:p-5">
 
-            <div className="mb-3 flex items-center gap-2">
-
+            <div className="mb-3.5 flex items-center gap-2">
               <Clock
                 size={18}
                 className="text-brand-600"
@@ -283,33 +321,28 @@ export default function KontakPage() {
               <h3 className="text-sm font-semibold text-gray-900">
                 Jam Operasional
               </h3>
-
             </div>
 
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
 
-              <li className="flex justify-between gap-3 text-sm text-gray-600">
-
-                <span>
+              <li className="flex items-center justify-between gap-3 text-xs sm:text-sm text-gray-600 rounded-lg bg-gray-50/70 p-2.5">
+                <span className="font-medium text-gray-700">
                   {jamOperasional.hariKerja}
                 </span>
 
-                <span className="text-right font-medium text-gray-800">
+                <span className="text-right font-bold text-brand-700">
                   {jamOperasional.jamKerja}
                 </span>
-
               </li>
 
-              <li className="flex justify-between gap-3 text-sm text-gray-600">
-
-                <span>
+              <li className="flex items-center justify-between gap-3 text-xs sm:text-sm text-gray-600 rounded-lg bg-gray-50/70 p-2.5">
+                <span className="font-medium text-gray-500">
                   {jamOperasional.hariLibur}
                 </span>
 
-                <span className="text-right font-medium text-gray-800">
+                <span className="text-right font-semibold text-gray-400">
                   {jamOperasional.jamLibur}
                 </span>
-
               </li>
 
             </ul>
@@ -320,13 +353,13 @@ export default function KontakPage() {
           {/* =================================================
               SOSIAL MEDIA
           ================================================== */}
-          <Card>
+          <Card className="p-4 sm:p-5">
 
             <h3 className="mb-3 text-sm font-semibold text-gray-900">
               Ikuti Kami
             </h3>
 
-            <ul className="space-y-2.5">
+            <ul className="space-y-2">
 
               {sosialMediaList.map((s) => {
 
@@ -341,17 +374,17 @@ export default function KontakPage() {
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-sm text-gray-600 transition-colors hover:text-brand-700"
+                      className="flex items-center justify-between rounded-xl p-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-brand-50/60 hover:text-brand-700 border border-gray-100"
                     >
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                          <Icon size={15} />
+                        </span>
 
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                        <span className="font-medium">{s.handle}</span>
+                      </div>
 
-                        <Icon size={16} />
-
-                      </span>
-
-                      {s.handle}
-
+                      <ExternalLink size={13} className="text-gray-400" />
                     </a>
 
                   </li>

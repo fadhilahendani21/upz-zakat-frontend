@@ -207,45 +207,7 @@ export default function PengurusAdmin() {
         </div>
       )}
 
-      {/* Header Info & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Struktur Kepengurusan
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100">
-              {list.length} Pengurus
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            Kelola data nama, jabatan, foto, dan urutan pimpinan UPZ Zakat yang tampil di halaman publik.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleResetData}
-            title="Reset ke data awal"
-            className="flex items-center gap-1.5 text-xs py-2.5 px-3 text-gray-600 hover:text-gray-900"
-          >
-            <RotateCcw size={14} />
-            Reset Data
-          </Button>
-
-          <Button
-            onClick={openAddModal}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2.5 px-4 text-xs sm:text-sm font-semibold"
-          >
-            <Plus size={18} />
-            Tambah Pengurus
-          </Button>
-        </div>
-      </div>
-
-      {/* Filter / Search Bar */}
+      {/* Action & Filter Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-3.5 rounded-2xl border border-gray-100 shadow-xs">
         <div className="relative flex-1 max-w-md">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -257,9 +219,27 @@ export default function PengurusAdmin() {
             className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition"
           />
         </div>
-        <p className="text-xs text-gray-400 px-1">
-          Urutan menentukan posisi kartu dari kiri ke kanan pada halaman publik.
-        </p>
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleResetData}
+            title="Reset ke data awal"
+            className="flex items-center gap-1.5 text-xs py-2 px-3 text-gray-600 hover:text-gray-900"
+          >
+            <RotateCcw size={14} />
+            Reset Data
+          </Button>
+
+          <Button
+            onClick={openAddModal}
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-sm py-2 px-3.5 text-xs sm:text-sm font-semibold"
+          >
+            <Plus size={16} />
+            Tambah Pengurus
+          </Button>
+        </div>
       </div>
 
       {/* Error Alert */}

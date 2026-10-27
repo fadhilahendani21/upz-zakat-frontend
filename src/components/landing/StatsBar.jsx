@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { getPublicLaporan } from "../../services/donasiService";
 import { formatRupiahShort } from "../../utils/formatRupiah";
+import { getPublicPengaturan } from "../../services/pengaturanService";
 
 export default function StatsBar() {
   const currentYear = new Date().getFullYear();
@@ -24,6 +25,11 @@ export default function StatsBar() {
   });
 
   useEffect(() => {
+    // Ambil data terbaru dari backend database
+    getPublicPengaturan("beranda").then((data) => {
+      if (data) setBerandaCustom(data);
+    });
+
     const handleUpdate = (e) => {
       if (e?.detail) setBerandaCustom(e.detail);
     };
@@ -93,8 +99,8 @@ export default function StatsBar() {
   const kutipanSumber = berandaCustom?.kutipan?.sumber;
 
   return (
-    <section className="mx-auto w-full max-w-none px-3 pt-0 pb-3 sm:px-5 lg:px-6 xl:px-8">
-      <div className="flex flex-col gap-3 rounded-2xl bg-brand-700 px-4 py-3 shadow-sm sm:px-5 sm:py-4 lg:flex-row lg:items-center lg:gap-0 lg:px-6 lg:py-4 xl:px-8">
+    <section className="mx-auto w-full max-w-none px-3 pt-1 pb-3.5 sm:px-5 sm:pt-1.5 sm:pb-4 lg:px-6 xl:px-8 lg:pt-2 lg:pb-5">
+      <div className="flex flex-col gap-3 rounded-2xl bg-brand-700 px-4 py-3.5 shadow-sm sm:px-5 sm:py-4 lg:flex-row lg:items-center lg:gap-0 lg:px-6 lg:py-4 xl:px-8">
         <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-x-5 lg:pr-7">
           {items.map((item) => (
             <div
