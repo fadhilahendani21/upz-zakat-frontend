@@ -19,6 +19,7 @@ import {
   GraduationCap,
   AlertCircle,
   Heart,
+  Search,
 } from "lucide-react";
 
 import { DOSEN_STAF_UNSIL } from "../data/dummyDosenStaf";
@@ -30,7 +31,6 @@ import {
   getZakatConfig,
 } from "../services/zakatService";
 import { registerPublicMuzakki, getPublicMuzakki } from "../services/muzakkiService";
-import Combobox from "../components/common/Combobox";
 
 const FAKULTAS_LIST = Object.keys(FAKULTAS_JURUSAN_UNSIL);
 
@@ -60,10 +60,14 @@ export default function DaftarMuzakkiUnsilPage() {
   };
 
   // =========================================================
-  // STATE PENCARIAN DATA PEGAWAI
+  // STATE PENCARIAN DATA PEGAWAI (NIP + TANGGAL LAHIR)
   // =========================================================
 
   const [pegawaiTerpilih, setPegawaiTerpilih] = useState(null);
+  const [nipSearch, setNipSearch] = useState("");
+  const [tglLahirSearch, setTglLahirSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const [dataPegawai, setDataPegawai] = useState({
     nama: "",
     nip: "",
@@ -107,134 +111,124 @@ export default function DaftarMuzakkiUnsilPage() {
   };
 
   // =========================================================
-  // FUNGSI SEARCH PEGAWAI UNTUK COMBOBOX
+  // FUNGSI PENCARIAN PEGAWAI BERDASARKAN KOMBINASI NIP & TGL LAHIR
   // =========================================================
 
-  const searchPegawaiOptions = async (query) => {
-    // Simulasi pencarian dari data dummy DOSEN_STAF_UNSIL
-    const q = query.toLowerCase().trim();
-    
-    if (!q) {
-      // Tampilkan semua data jika tidak ada query
-      return DOSEN_STAF_UNSIL.slice(0, 10).map(p => ({
-        id: p.nip,
-        nama: `${p.nama} - ${p.nip}`,
-        unit_kerja: `${p.jurusan} / ${p.unit}`,
-        // Simpan data asli dengan prefix _ agar tidak tertimpa
-        _namaAsli: p.nama,
-        _nipAsli: p.nip,
-        _nikAsli: p.nik,
-        _unitAsli: p.unit,
-        _jurusanAsli: p.jurusan,
-        _jabatanAsli: p.jabatan,
-        _emailAsli: p.email,
-        _noHpAsli: p.noHp,
-        _golonganAsli: p.golongan,
-        _jenisKelaminAsli: p.jenisKelamin,
-        _tempatLahirAsli: p.tempatLahir,
-        _tanggalLahirAsli: p.tanggalLahir,
-        _alamatLengkapAsli: p.alamatLengkap,
-      }));
-    }
+  const handleCariPegawai = () => {
+    setSearchError("");
+    const cleanNip = nipSearch.trim().replace(/\D/g, "");
+    const cleanDate = tglLahirSearch.trim();
 
-    // Filter berdasarkan nama atau NIP
-    const filtered = DOSEN_STAF_UNSIL.filter((p) => {
-      const matchNama = p.nama.toLowerCase().includes(q);
-      const matchNip = p.nip.includes(q);
-      const matchJabatan = p.jabatan?.toLowerCase().includes(q);
-      return matchNama || matchNip || matchJabatan;
-    });
-
-    return filtered.slice(0, 10).map(p => ({
-      id: p.nip,
-      nama: `${p.nama} - ${p.nip}`,
-      unit_kerja: `${p.jurusan} / ${p.unit}`,
-      // Simpan data asli dengan prefix _ agar tidak tertimpa
-      _namaAsli: p.nama,
-      _nipAsli: p.nip,
-      _nikAsli: p.nik,
-      _unitAsli: p.unit,
-      _jurusanAsli: p.jurusan,
-      _jabatanAsli: p.jabatan,
-      _emailAsli: p.email,
-      _noHpAsli: p.noHp,
-      _golonganAsli: p.golongan,
-      _jenisKelaminAsli: p.jenisKelamin,
-      _tempatLahirAsli: p.tempatLahir,
-      _tanggalLahirAsli: p.tanggalLahir,
-      _alamatLengkapAsli: p.alamatLengkap,
-    }));
-  };
-
-  const handlePegawaiSelected = (pegawai) => {
-    if (!pegawai) {
-      setPegawaiTerpilih(null);
-      setDataPegawai({
-        nama: "",
-        nip: "",
-        nik: "",
-        unit: "",
-        jurusan: "",
-        jabatan: "",
-        email: "",
-        noHp: "",
-        golongan: "",
-        jenisKelamin: "",
-        tempatLahir: "",
-        tanggalLahir: "",
-        alamatLengkap: "",
-      });
-      // Reset income components
-      setIncomeComponents(INCOME_COMPONENTS.map(comp => ({ ...comp, selected: false, nominal: 0, zakat: 0 })));
-      setFormError("");
-      setSelectedFakultas(FAKULTAS_LIST[0]);
-      setSelectedJurusan(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
+    if (!cleanNip) {
+      setSearchError("Nomor Induk Pegawai (NIP) wajib diisi.");
       return;
     }
 
-    // Simpan pegawai terpilih dengan format display untuk Combobox
-    setPegawaiTerpilih(pegawai);
-    
-    // Gunakan data asli dengan prefix _Asli
-    setDataPegawai({
-      nama: pegawai._namaAsli,
-      nip: pegawai._nipAsli,
-      nik: pegawai._nikAsli,
-      unit: pegawai._unitAsli,
-      jurusan: pegawai._jurusanAsli,
-      jabatan: pegawai._jabatanAsli,
-      email: pegawai._emailAsli,
-      noHp: pegawai._noHpAsli,
-      golongan: pegawai._golonganAsli,
-      jenisKelamin: pegawai._jenisKelaminAsli,
-      tempatLahir: pegawai._tempatLahirAsli,
-      tanggalLahir: pegawai._tanggalLahirAsli,
-      alamatLengkap: pegawai._alamatLengkapAsli,
-    });
-    setFormError("");
-    
-    // Update dropdown fakultas dan jurusan berdasarkan data yang ditemukan
-    if (pegawai._unitAsli) {
-      const foundFakultas = FAKULTAS_LIST.find(f => pegawai._unitAsli.includes(f)) || FAKULTAS_LIST[0];
-      setSelectedFakultas(foundFakultas);
-      setSelectedJurusan(pegawai._jurusanAsli || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]);
+    if (!cleanDate) {
+      setSearchError("Tanggal lahir wajib diisi.");
+      return;
     }
 
-    // Autofill income components from dummy data
-    const dummy = DOSEN_STAF_UNSIL.find(p => p.nip === pegawai._nipAsli);
-    if (dummy) {
-      setIncomeComponents(prev =>
-        prev.map(comp => {
-          const value = dummy[comp.id] || 0;
-          return {
-            ...comp,
-            nominal: value,
-            zakat: Math.round(value * 0.025),
-            selected: value > 0, // Auto-select if value > 0
-          };
-        })
+    setIsSearching(true);
+
+    const normInputDate = cleanDate.replace(/\D/g, ""); // e.g. "19680515"
+
+    // Cari di data dosen dan staf UNSIL
+    const found = DOSEN_STAF_UNSIL.find((p) => {
+      const pNip = (p.nip || "").replace(/\D/g, "");
+      const pTgl = (p.tanggalLahir || "").replace(/\D/g, "");
+      // Verifikasi kecocokan NIP dan tanggal lahir (atau 8 digit pertama NIP)
+      const matchNip = pNip === cleanNip;
+      const matchTgl = pTgl === normInputDate || pNip.slice(0, 8) === normInputDate;
+      return matchNip && matchTgl;
+    });
+
+    if (!found) {
+      setSearchError(
+        "Kombinasi NIP dan Tanggal Lahir tidak ditemukan dalam sistem kepegawaian UNSIL. Pastikan data yang dimasukkan sudah sesuai."
+      );
+      setPegawaiTerpilih(null);
+      setIsSearching(false);
+      return;
+    }
+
+    // Set pegawai terpilih
+    setPegawaiTerpilih(found);
+
+    // Otomatis isi data diri kepegawaian
+    setDataPegawai({
+      nama: found.nama || "",
+      nip: found.nip || "",
+      nik: found.nik || "",
+      unit: found.unit || "",
+      jurusan: found.jurusan || "",
+      jabatan: found.jabatan || "",
+      email: found.email || "",
+      noHp: found.noHp || "",
+      golongan: found.golongan || "",
+      jenisKelamin: found.jenisKelamin || "",
+      tempatLahir: found.tempatLahir || "",
+      tanggalLahir: found.tanggalLahir || cleanDate,
+      alamatLengkap: found.alamatLengkap || "",
+    });
+
+    // Perbarui fakultas dan jurusan terpilih
+    if (found.unit) {
+      const foundFakultas =
+        FAKULTAS_LIST.find((f) => found.unit.includes(f)) || FAKULTAS_LIST[0];
+      setSelectedFakultas(foundFakultas);
+      setSelectedJurusan(
+        found.jurusan || FAKULTAS_JURUSAN_UNSIL[foundFakultas][0]
       );
     }
+
+    // Otomatis isi komponen penghasilan & kalkulasi zakat
+    setIncomeComponents((prev) =>
+      prev.map((comp) => {
+        const val = found[comp.id] || 0;
+        return {
+          ...comp,
+          nominal: val,
+          zakat: Math.round(val * 0.025),
+          selected: val > 0,
+        };
+      })
+    );
+
+    setFormError("");
+    setIsSearching(false);
+  };
+
+  const handleResetPencarian = () => {
+    setNipSearch("");
+    setTglLahirSearch("");
+    setPegawaiTerpilih(null);
+    setSearchError("");
+    setDataPegawai({
+      nama: "",
+      nip: "",
+      nik: "",
+      unit: "",
+      jurusan: "",
+      jabatan: "",
+      email: "",
+      noHp: "",
+      golongan: "",
+      jenisKelamin: "",
+      tempatLahir: "",
+      tanggalLahir: "",
+      alamatLengkap: "",
+    });
+    setIncomeComponents(
+      INCOME_COMPONENTS.map((comp) => ({
+        ...comp,
+        selected: false,
+        nominal: 0,
+        zakat: 0,
+      }))
+    );
+    setSelectedFakultas(FAKULTAS_LIST[0]);
+    setSelectedJurusan(FAKULTAS_JURUSAN_UNSIL[FAKULTAS_LIST[0]][0]);
   };
 
   // =========================================================
@@ -758,7 +752,7 @@ export default function DaftarMuzakkiUnsilPage() {
           <div className="lg:col-span-8 overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* =================================================
-                  1. PENCARIAN DATA KEPEGAWAIAN
+                  1. PENCARIAN DATA KEPEGAWAIAN (NIP & TANGGAL LAHIR)
               ================================================== */}
               <div>
                 <SectionTitle
@@ -767,25 +761,107 @@ export default function DaftarMuzakkiUnsilPage() {
                   title="Cari Data Kepegawaian"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Ketik nama atau NIP untuk mencari data pegawai dari sistem kepegawaian UNSIL.
+                  Masukkan kombinasi NIP dan Tanggal Lahir untuk memverifikasi dan mengisi data kepegawaian Anda secara otomatis.
                 </p>
 
-                <div className="mt-4">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                    Cari Data Pegawai <span className="text-red-500">*</span>
-                  </label>
-                  <Combobox
-                    value={pegawaiTerpilih}
-                    onChange={handlePegawaiSelected}
-                    onSearch={searchPegawaiOptions}
-                    placeholder="Ketik nama pegawai atau NIP..."
-                  />
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {/* INPUT NIP */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Nomor Induk Pegawai (NIP) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={nipSearch}
+                      onChange={(e) => {
+                        setNipSearch(e.target.value.replace(/\D/g, ""));
+                        setSearchError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleCariPegawai();
+                        }
+                      }}
+                      placeholder="Contoh: 196805151993031001"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-1 focus:ring-[#08734f]"
+                      maxLength={18}
+                    />
+                  </div>
+
+                  {/* INPUT TANGGAL LAHIR */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Tanggal Lahir <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={tglLahirSearch}
+                      onChange={(e) => {
+                        setTglLahirSearch(e.target.value);
+                        setSearchError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleCariPegawai();
+                        }
+                      }}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-xs sm:text-sm outline-none transition focus:border-[#08734f] focus:ring-1 focus:ring-[#08734f]"
+                    />
+                  </div>
+                </div>
+
+                {/* TOMBOL AKSI CARI & RESET */}
+                <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleCariPegawai}
+                    disabled={isSearching || !nipSearch || !tglLahirSearch}
+                    className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSearching ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Search size={16} />
+                    )}
+                    <span>Cari Data Pegawai</span>
+                  </button>
+
                   {pegawaiTerpilih && (
-                    <p className="text-xs text-gray-400 mt-1.5 ml-1">
-                      Data ditemukan: <strong>{pegawaiTerpilih._jurusanAsli}</strong> · {pegawaiTerpilih._unitAsli}
-                    </p>
+                    <button
+                      type="button"
+                      onClick={handleResetPencarian}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+                    >
+                      <X size={14} />
+                      <span>Hapus / Cari Ulang</span>
+                    </button>
                   )}
                 </div>
+
+                {/* ALERT FEEDBACK ERROR */}
+                {searchError && (
+                  <div className="mt-3.5 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 animate-in fade-in duration-200">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+                    <p>{searchError}</p>
+                  </div>
+                )}
+
+                {/* ALERT FEEDBACK SUCCESS */}
+                {pegawaiTerpilih && !searchError && (
+                  <div className="mt-3.5 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 text-xs text-emerald-800 animate-in fade-in duration-200">
+                    <CheckCircle2 size={18} className="shrink-0 mt-0.5 text-emerald-600" />
+                    <div>
+                      <p className="font-bold text-sm text-emerald-950">
+                        Data Terverifikasi: {pegawaiTerpilih.nama}
+                      </p>
+                      <p className="mt-0.5 text-emerald-700">
+                        {pegawaiTerpilih.jurusan} · {pegawaiTerpilih.unit} ({pegawaiTerpilih.golongan || pegawaiTerpilih.jabatan})
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-slate-100" />
@@ -800,7 +876,7 @@ export default function DaftarMuzakkiUnsilPage() {
                   title="Data Diri Kepegawaian"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Isi data kepegawaian Anda. Data akan terisi otomatis jika mencari dengan NIP dan Nomor HP di atas.
+                  Data kepegawaian Anda telah terisi secara otomatis dari sistem kepegawaian UNSIL.
                 </p>
 
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -34,7 +34,7 @@ export default function Footer() {
   });
 
   useEffect(() => {
-    // Ambil data terbaru dari backend database
+    // Ambil data dinamis terbaru dari backend database
     getPublicPengaturan("footer").then((data) => {
       if (data) setFooterCustom(data);
     });
@@ -62,11 +62,13 @@ export default function Footer() {
   }, []);
 
   const brandName =
-    settings?.profil?.namaSingkat || "UPZ Unsil";
+    footerCustom?.brand?.nama || settings?.profil?.namaSingkat || "UPZ Unsil";
+
+  const subbrandName =
+    footerCustom?.brand?.subnama || "Universitas Siliwangi";
 
   const orgName =
-    settings?.profil?.namaLembaga ||
-    "UPZ Zakat Universitas Siliwangi";
+    settings?.profil?.namaLembaga || "UPZ Zakat Universitas Siliwangi";
 
   const deskripsi =
     footerCustom?.deskripsi ||
@@ -79,12 +81,13 @@ export default function Footer() {
   const alamat =
     footerCustom?.kontak?.alamat ||
     settings?.profil?.alamat ||
-    "Universitas Siliwangi, Tasikmalaya";
+    "Jl. Siliwangi No. 24, Kahuripan, Kec. Tawang, Kota Tasikmalaya, Jawa Barat 46115";
 
   const whatsapp =
+    footerCustom?.kontak?.whatsapp ||
     footerCustom?.kontak?.telepon ||
     settings?.profil?.whatsapp ||
-    "081234567890";
+    "081992300590";
 
   const whatsappClean = whatsapp.replace(/\D/g, "");
   const whatsappHref = `https://wa.me/${whatsappClean.startsWith("0") ? "62" + whatsappClean.slice(1) : whatsappClean}`;
@@ -94,43 +97,39 @@ export default function Footer() {
     settings?.profil?.email ||
     "upz@unsil.ac.id";
 
+  const tagline =
+    footerCustom?.tagline || "Amanah • Transparan • Tepat Sasaran";
+
   return (
-    <footer className="bg-[#175621] text-white">
+    <footer className="w-full max-w-full overflow-hidden bg-[#175621] text-white">
 
-      {/* ================= MAIN FOOTER ================= */}
+      {/* =====================================================
+          MAIN FOOTER
+      ====================================================== */}
+      <div className="mx-auto max-w-7xl px-4 pb-4 pt-6 sm:px-6 lg:px-10">
 
-      <div className="mx-auto max-w-7xl px-6 pb-4 pt-6 lg:px-10">
-
-        <div className="grid grid-cols-3 gap-x-4 gap-y-6 lg:grid-cols-12 lg:gap-7">
+        <div className="grid grid-cols-3 gap-x-3 gap-y-6 sm:gap-x-4 lg:grid-cols-12 lg:gap-7">
 
           {/* ================= BRAND ================= */}
-
-          <div className="col-span-3 lg:col-span-5">
+          <div className="col-span-3 lg:col-span-5 min-w-0">
 
             <div className="flex items-center gap-3">
-
-              <div className="h-9 w-9 rounded-lg bg-white p-1 shadow-sm">
-
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-white p-1 shadow-sm">
                 <img
                   src={logoUpz}
-                  alt="Logo UPZ Unsil"
+                  alt={brandName}
                   className="h-full w-full rounded-md object-contain"
                 />
-
               </div>
 
               <div>
-
-                <h3 className="text-base font-bold">
+                <h3 className="text-base font-bold text-white">
                   {brandName}
                 </h3>
-
                 <p className="mt-0.5 text-xs font-medium text-green-300">
-                  Universitas Siliwangi
+                  {subbrandName}
                 </p>
-
               </div>
-
             </div>
 
             <p className="mt-3 max-w-md text-xs leading-5 text-green-100">
@@ -138,9 +137,7 @@ export default function Footer() {
             </p>
 
             {/* ================= SOCIAL MEDIA ================= */}
-
             <div className="mt-3 flex items-center gap-2">
-
               {/* Instagram */}
               <a
                 href={instagramHref}
@@ -160,20 +157,9 @@ export default function Footer() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <rect
-                    width="20"
-                    height="20"
-                    x="2"
-                    y="2"
-                    rx="5"
-                  />
+                  <rect width="20" height="20" x="2" y="2" rx="5" />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line
-                    x1="17.5"
-                    x2="17.51"
-                    y1="6.5"
-                    y2="6.5"
-                  />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
               </a>
 
@@ -223,14 +209,12 @@ export default function Footer() {
                   <path d="m10 15 5-3-5-3z" />
                 </svg>
               </a>
-
             </div>
 
           </div>
 
           {/* ================= NAVIGASI ================= */}
-
-          <div className="col-span-1 lg:col-span-2">
+          <div className="col-span-1 lg:col-span-2 min-w-0">
 
             <h4 className="text-sm font-semibold text-white">
               Navigasi
@@ -239,27 +223,22 @@ export default function Footer() {
             <div className="mb-2.5 mt-1.5 h-0.5 w-7 rounded-full bg-green-400" />
 
             <ul className="space-y-1.5">
-
               {navigasi.map((item) => (
                 <li key={item.to}>
-
                   <Link
                     to={item.to}
                     className="inline-block text-xs text-green-100 transition-all duration-200 hover:translate-x-1 hover:text-white"
                   >
                     {item.label}
                   </Link>
-
                 </li>
               ))}
-
             </ul>
 
           </div>
 
           {/* ================= LAYANAN ================= */}
-
-          <div className="col-span-1 lg:col-span-2">
+          <div className="col-span-1 lg:col-span-2 min-w-0">
 
             <h4 className="text-sm font-semibold text-white">
               Layanan
@@ -268,27 +247,22 @@ export default function Footer() {
             <div className="mb-2.5 mt-1.5 h-0.5 w-7 rounded-full bg-green-400" />
 
             <ul className="space-y-1.5">
-
               {layanan.map((item) => (
                 <li key={item.to}>
-
                   <Link
                     to={item.to}
                     className="inline-block text-xs text-green-100 transition-all duration-200 hover:translate-x-1 hover:text-white"
                   >
                     {item.label}
                   </Link>
-
                 </li>
               ))}
-
             </ul>
 
           </div>
 
           {/* ================= HUBUNGI KAMI ================= */}
-
-          <div className="col-span-1 lg:col-span-3">
+          <div className="col-span-1 lg:col-span-3 min-w-0">
 
             <h4 className="text-sm font-semibold text-white">
               Hubungi Kami
@@ -299,77 +273,62 @@ export default function Footer() {
             <div className="space-y-3">
 
               {/* ALAMAT */}
-
               <div className="flex items-start gap-2.5">
-
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                {/* Icon hanya muncul di desktop, di mobile dihilangkan */}
+                <div className="hidden lg:flex mt-0.5 h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
                   <MapPin size={14} />
                 </div>
 
-                <div className="min-w-0">
-
+                <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-medium leading-4 text-green-300">
                     Alamat
                   </p>
-
-                  <p className="text-xs leading-5 text-green-100">
+                  <p className="text-xs leading-relaxed text-green-100 break-words">
                     {alamat}
                   </p>
-
                 </div>
-
               </div>
 
               {/* WHATSAPP */}
-
               <div className="flex items-start gap-2.5">
-
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                {/* Icon hanya muncul di desktop, di mobile dihilangkan */}
+                <div className="hidden lg:flex mt-0.5 h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
                   <Phone size={14} />
                 </div>
 
-                <div className="min-w-0">
-
+                <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-medium leading-4 text-green-300">
                     WhatsApp / Telepon
                   </p>
-
                   <a
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs leading-5 text-green-100 transition-colors hover:text-white"
+                    className="text-xs leading-relaxed text-green-100 transition-colors hover:text-white break-all sm:break-normal"
                   >
                     {whatsapp}
                   </a>
-
                 </div>
-
               </div>
 
               {/* EMAIL */}
-
               <div className="flex items-start gap-2.5">
-
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                {/* Icon hanya muncul di desktop, di mobile dihilangkan */}
+                <div className="hidden lg:flex mt-0.5 h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
                   <Mail size={14} />
                 </div>
 
-                <div className="min-w-0">
-
+                <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-medium leading-4 text-green-300">
                     Email
                   </p>
-
                   <a
                     href={`mailto:${email}`}
-                    className="break-all text-xs leading-5 text-green-100 transition-colors hover:text-white"
+                    className="break-all text-xs leading-relaxed text-green-100 transition-colors hover:text-white"
                   >
                     {email}
                   </a>
-
                 </div>
-
               </div>
 
             </div>
@@ -381,22 +340,16 @@ export default function Footer() {
       </div>
 
       {/* ================= BOTTOM ================= */}
-
       <div className="border-t border-white/10">
 
-        <div className="mx-auto max-w-7xl px-6 py-2.5 lg:px-10">
+        <div className="mx-auto max-w-7xl px-4 py-2.5 sm:px-6 lg:px-10">
 
           <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
 
             {/* COPYRIGHT + LOGIN */}
-
             <div className="flex items-center gap-2 text-center md:text-left">
-
               <p className="text-[11px] text-green-200">
-
-                © {new Date().getFullYear()} {orgName}.
-                All rights reserved.
-
+                &copy; {new Date().getFullYear()} {orgName}. All rights reserved.
               </p>
 
               <Link
@@ -405,33 +358,14 @@ export default function Footer() {
                 title="Masuk"
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-green-200/40 transition-all duration-200 hover:bg-white/10 hover:text-green-100"
               >
-                <LogIn
-                  size={13}
-                  strokeWidth={1.8}
-                />
+                <LogIn size={13} strokeWidth={1.8} />
               </Link>
-
             </div>
 
             {/* TAGLINE */}
-
-            <div className="flex items-center gap-1.5 text-[11px] text-green-200">
-
-              <span>Amanah</span>
-
-              <span className="text-green-400">
-                •
-              </span>
-
-              <span>Transparan</span>
-
-              <span className="text-green-400">
-                •
-              </span>
-
-              <span>Tepat Sasaran</span>
-
-            </div>
+            <p className="text-[11px] font-medium text-green-200">
+              {tagline}
+            </p>
 
           </div>
 
